@@ -1,5 +1,7 @@
 # Kronos Genomics
 
+This repository describes the computational pipelines we used to build and analyze our Kronos genome (*Triticum durum* cv Kronos). Kronos is an allotetraploid (AABB).
+
 ## Genome assembly
 
 ### Quality control
@@ -109,3 +111,18 @@ for folder in $(ls -d  KVK-KRONOS-*)
 
 done
 ```
+
+----------
+
+## Pre-assembly assessment
+
+Kronos is an allotetraploid species (AABB). In the field, Kronos rarely out-crosses. We therefore think that the heterozygosity should be extremely low or residual, and we aim to generate collapsed haplotypes (AB). An available Durum wheat genome ((Svevo)[https://www.nature.com/articles/s41588-019-0381-3]) is 10.45G in size. We also roughly estimate that each haplotype will be 5-6G in size, totalling up to 10-12G for the collapsed haplotypes. We will evaluate our assumptions with GenomeScope. 
+
+
+```
+
+
+```
+
+
+## Genome assembly
