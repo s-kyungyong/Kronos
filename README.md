@@ -118,11 +118,97 @@ done
 
 Kronos is an allotetraploid species (AABB). In the field, Kronos rarely out-crosses. We therefore think that the heterozygosity should be extremely low or residual, and we aim to generate collapsed haplotypes (AB). An available Durum wheat genome ((Svevo)[https://www.nature.com/articles/s41588-019-0381-3]) is 10.45G in size. We also roughly estimate that each haplotype will be 5-6G in size, totalling up to 10-12G for the collapsed haplotypes. We will evaluate our assumptions with GenomeScope. 
 
+```
+jellyfish --version
+jellyfish 2.2.10
 
+genomescope2 --version
+GenomeScope 2.0
+```
+
+```
+jellyfish count -m 21 -s 100M -t 32 -C -o kmer_counts.jf  < Kronos.HiFi.fastq
+jellyfish histo -h 5000000 -t 32 kmer_counts.jf > reads.histo  
+genomescope2 -p 4 -i reads.histo -o genomescope --verbose  
 ```
 
 
+## Genome assembly and assessment
+
+Genome assembly is done with hifiasm. Because the residual heterozygosity is low, and we aim to generate collapsed haplotypes (AB), we will only use the HiFi reads at the assembly stage.
+
+```
+hifiasm --version
+0.19.5-r587
+```
+
+```
+hifi=/global/scratch/users/skyungyong/Kronos/0.HiFi/Filtered/Kronos.HiFi.filt.fastq.gz
+hifiasm -l0 -t 54 -o l0-hic $hifi
+```
+
+This is the very last line of the log. It took about 61 hours with 54 CPUs and a peak memory of 615 GB. 
+```
+[M::main] Real time: 218150.098 sec; CPU: 9384831.006 sec; Peak RSS: 615.502 GB
+```
+
+We can quickly look at the assembly statistics with QUAST and compleasm. 
+
+```
+awk '/^S/{print ">"$2"\n"$3}' l0.bp.p_ctg.gfa | fold > Kronos.p_ctg.fa
+awk '/^S/{print ">"$2"\n"$3}' l0.bp.a_ctg.gfa | fold > Kronos.a_ctg.fa
+quast.py --fast -t 20 -o quast Kronos.p_ctg.fa Kronos.a_ctg.fa
+
+VERSION=0.2.2
+export SINGULARITY_CACHEDIR=/global/scratch/users/skyungyong/temp
+singularity exec docker://huangnengcsu/compleasm:v${VERSION} compleasm run -l poales_odb10 -t 20 -o p_busco -a Kronos.p_ctg.fa
+singularity exec docker://huangnengcsu/compleasm:v${VERSION} compleasm run -l poales_odb10 -t 20 -o a_busco -a Kronos.a_ctg.fa
+```
+
+Here is the statistics. 
+
+|    | p_ctg | a_ctg |
+|----|---------|-----------|
+| # contigs  | 3317  | 2530 |
+| Length (Gb)  | 10.55 | 0.074 |
+| Largest contig (Mb) | 346.20  | 0.976 |
+| N50 (Mb) | 40.96 | 0.0306  |
+| L50| 50 | 6  | 849 |
+||            ||
+| Complete | 5.43% | 0.71% |
+| Duplicated | 94.40% | 0.16% |
+| Fragmented | 0.10% | 0.25% |
+| Missing | 0.06% | 98.88% |
+
+The associate contigs (a_ctg) include a lot of fragments that are potentially not useful. Most of these are likeley plasmids or repeats, which will be later discarded. Some might have been separated based on residual hetrozygosity. For now, let's combine the primary and associate contigs into a single file. 
+
+```
+cat Kronos.p_ctg.fa Kronos.a_ctg.fa > Kronos.draft.fa
 ```
 
 
-## Genome assembly
+## Scaffolding and assessment
+
+Now, we will use our Hi-C data to scaffold the contigs. We will follow [this Omni-C protocol](https://omni-c.readthedocs.io/en/latest/index.html for mapping and use yahs for scaffolding. 
+```
+samtools --version
+samtools 1.15.1
+Using htslib 1.16
+
+bwa
+Version: 0.7.17-r1188
+
+```
+samtools faidx Kronos.draft.fa
+bwa index Kronos.draft.fa
+
+bwa mem -5SP -T0 -t56 haplotype1.fasta /global/scratch/users/skyungyong/S.habro_revision/0.Assembly/0.HiFi/bssh1-791863_S3HiC_R1.trimmed.fq.gz /global/scratch/users/skyungyong/S.habro_revision/0.Assembly/0.HiFi/bssh1-791863_S3HiC_R2.trimmed.fq.gz | \
+pairtools parse --min-mapq 40 --walks-policy 5unique \
+--max-inter-align-gap 30 --nproc-in 56 --nproc-out 56 --chroms-path haplotype1.fasta | \
+pairtools sort --tmpdir=./tmp --nproc 56 |pairtools dedup --nproc-in 56 \
+--nproc-out 56 --mark-dups --output-stats stats.txt |pairtools split --nproc-in 56 \
+--nproc-out 56 --output-pairs mapped.pairs --output-sam - |samtools view -bS -@56 | \
+samtools sort -@56 -o mapped.PT.bam ;samtools index mapped.PT.bam
+
+/global/scratch/users/skyungyong/Software/yahs/yahs -o YaHS -e GATC,GANTC,CTNAG,TTAA haplotype1.fasta mapped.PT.bam
+```
