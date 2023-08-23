@@ -189,7 +189,7 @@ cat Kronos.p_ctg.fa Kronos.a_ctg.fa > Kronos.draft.fa
 
 ## Scaffolding and assessment
 
-Now, we will use our Hi-C data to scaffold the contigs. We will follow [this Omni-C protocol](https://omni-c.readthedocs.io/en/latest/index.html for mapping and use yahs for scaffolding. 
+Now, we will use our Hi-C data to scaffold the contigs. We will follow [this Omni-C protocol](https://omni-c.readthedocs.io/en/latest/index.html) for mapping and use yahs for scaffolding. 
 ```
 samtools --version
 samtools 1.15.1
@@ -198,17 +198,27 @@ Using htslib 1.16
 bwa
 Version: 0.7.17-r1188
 
+pairtools --version
+pairtools, version 1.0.2
+
+yahs --version
+1.2a.2
+```
+
 ```
 samtools faidx Kronos.draft.fa
 bwa index Kronos.draft.fa
 
-bwa mem -5SP -T0 -t56 haplotype1.fasta /global/scratch/users/skyungyong/S.habro_revision/0.Assembly/0.HiFi/bssh1-791863_S3HiC_R1.trimmed.fq.gz /global/scratch/users/skyungyong/S.habro_revision/0.Assembly/0.HiFi/bssh1-791863_S3HiC_R2.trimmed.fq.gz | \
-pairtools parse --min-mapq 40 --walks-policy 5unique \
---max-inter-align-gap 30 --nproc-in 56 --nproc-out 56 --chroms-path haplotype1.fasta | \
-pairtools sort --tmpdir=./tmp --nproc 56 |pairtools dedup --nproc-in 56 \
---nproc-out 56 --mark-dups --output-stats stats.txt |pairtools split --nproc-in 56 \
---nproc-out 56 --output-pairs mapped.pairs --output-sam - |samtools view -bS -@56 | \
-samtools sort -@56 -o mapped.PT.bam ;samtools index mapped.PT.bam
+pair1=$(ls $PWD/../../0.HiC/KVK-KRONOS-*/*R1*.fastq.gz | paste - - - -d ",")
+pair2=$(ls $PWD/../../0.HiC/KVK-KRONOS-*/*R2*.fastq.gz | paste - - - -d ",")
 
-/global/scratch/users/skyungyong/Software/yahs/yahs -o YaHS -e GATC,GANTC,CTNAG,TTAA haplotype1.fasta mapped.PT.bam
+bwa mem -5SP -T0 -t56 Kronos.draft.fa $pair1 $pair2 | \
+pairtools parse --min-mapq 30 --walks-policy 5unique \
+--max-inter-align-gap 30 --nproc-in 56 --nproc-out 56 --chroms-path Kronos.draft.fa | \
+pairtools sort --tmpdir=./tmp --nproc 56 | pairtools dedup --nproc-in 56 \
+--nproc-out 56 --mark-dups --output-stats stats.txt | pairtools split --nproc-in 56 \
+--nproc-out 56 --output-pairs mapped.pairs --output-sam - |samtools view -bS -@56 | \
+samtools sort -@56 -o mapped.PT.bam ; samtools index mapped.PT.bam
+
+/global/scratch/users/skyungyong/Software/yahs/yahs -o YaHS -e GATC,GANTC,CTNAG,TTAA Kronos.draft.fa mapped.PT.bam
 ```
