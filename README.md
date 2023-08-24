@@ -116,7 +116,7 @@ done
 
 ## Pre-assembly assessment
 
-Kronos is an allotetraploid species (AABB). In the field, Kronos rarely out-crosses. We therefore think that the heterozygosity should be extremely low or residual, and we aim to generate collapsed haplotypes (AB). An available Durum wheat genome ((Svevo)[https://www.nature.com/articles/s41588-019-0381-3]) is 10.45G in size. We also roughly estimate that each haplotype will be 5-6G in size, totalling up to 10-12G for the collapsed haplotypes. We will evaluate our assumptions with GenomeScope. 
+Kronos is an allotetraploid species (AABB). In the field, Kronos rarely out-crosses. We therefore think that the heterozygosity should be extremely low or residual, and we aim to generate collapsed haplotypes (AB). An available Durum wheat genome ([Svevo](https://www.nature.com/articles/s41588-019-0381-3)) is 10.45G in size. We also roughly estimate that each haplotype will be 5-6G in size, totalling up to 10-12G for the collapsed haplotypes. We will evaluate our assumptions with GenomeScope. 
 
 ```
 jellyfish --version
@@ -147,7 +147,7 @@ This is the GenomeScope statistics.
 |Model Fit                 |    28.7973%       |   89.812% |
 |Read Error Rate            |   0.0707465%     |   0.0707465% |
 
-We can compare our Kronos statistics to the GenomeScope result for the hexaploid wheat in (this paper)[https://www.nature.com/articles/s41467-020-14998-3]. The data is in Fig. S21. Here, the genome size is esimated as haplotype size x ploidy. 
+We can compare our Kronos statistics to the GenomeScope result for the hexaploid wheat in [this paper](https://www.nature.com/articles/s41467-020-14998-3). The data is in Fig. S21. Here, the genome size is esimated as haplotype size x ploidy. 
 
 |    | Kronos | Hexaploid wheat |
 |----|---------|-----------|
