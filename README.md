@@ -127,11 +127,39 @@ GenomeScope 2.0
 ```
 
 ```
-jellyfish count -m 21 -s 100M -t 32 -C -o kmer_counts.jf  < Kronos.HiFi.fastq
-jellyfish histo -h 5000000 -t 32 kmer_counts.jf > reads.histo  
+jellyfish count -C -m 21 -s 50000000000 -t 20 Kronos.HiFi.fastq -o kmer_counts.jf
+jellyfish histo -h 5000000 -t 20 kmer_counts.jf > reads.histo
 genomescope2 -p 4 -i reads.histo -o genomescope --verbose  
 ```
 
+This is the GenomeScope statistics.
+|    | min | max |
+|----|---------|-----------|
+| Homozygous (aaaa) | 88.853%  | 91.6029% |
+| Heterozygous (not aaaa)  | 8.39712% | 11.147% |
+| aaab | 0%  | 0.632431% |
+| aabb | 2.87586% | 3.34577%  |
+| aabc | 1.65953%  | 2.9789% |
+| abcd | 3.86173% | 4.1899%  |
+| Genome Haploid Length | 2,605,665,036 bp | 2,612,433,029 bp  | 
+| Genome Repeat Length | 2,357,672,871 bp | 2,363,796,726 bp  | 
+|Genome Unique Length       |   247,992,165 bp  |  248,636,303 bp |
+|Model Fit                 |    28.7973%       |   89.812% |
+|Read Error Rate            |   0.0707465%     |   0.0707465% |
+
+We can compare our Kronos statistics to the GenomeScope result for the hexaploid wheat in (this paper)[https://www.nature.com/articles/s41467-020-14998-3]. The data is in Fig. S21. Here, the genome size is esimated as haplotype size x ploidy. 
+
+|    | Kronos | Hexaploid wheat |
+|----|---------|-----------|
+| ploidy (p) | 4 | 6 | 
+| Haplotype size (Gb) | 2.605  | 2.354 |
+| Genome size (Gb)  | 10.45 | 14.1 |
+| unique (%) | 9.52 | 8 |
+| heterozygosity (%) | 9.5 | 10.1 |
+| err (%) | 0.0707 | 0.506 |
+| dup | 0.654 | 0.836 | 
+
+The statistics looks fairly similar. I believe that just like other reference wheat genomes, we can generate collapsed haplotypes (AB) for our Kronos genome. 
 
 ## Genome assembly and assessment
 
