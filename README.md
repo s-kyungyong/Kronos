@@ -250,3 +250,13 @@ samtools sort -@56 -o mapped.PT.bam ; samtools index mapped.PT.bam
 
 /global/scratch/users/skyungyong/Software/yahs/yahs -o YaHS -e GATC,GANTC,CTNAG,TTAA Kronos.draft.fa mapped.PT.bam
 ```
+
+
+
+export SINGULARITY_CACHEDIR=/global/scratch/users/skyungyong/temp
+singularity pull HiTE.sif docker://kanghu/hite:2.0.4
+singularity run -B ${host_path}:${container_path} --pwd /HiTE  HiTE.sif python main.py --genome SH1353.haplotype-1.final.scaffolds.fa --thread 56 --outdir Haplotype-1 --plant 1 --classified 1 --domain 1
+
+# Soft-mask the genome
+singularity run -B ${host_path}:${container_path} --pwd /HiTE HiTE.sif RepeatMasker -xsmall -lib Haplotype-1/confident_TE.cons.fa.classified -dir Haplotype-1 -pa 20 SH1353.haplotype-1.fa
+
