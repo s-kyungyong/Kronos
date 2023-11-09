@@ -153,8 +153,9 @@ jellyfish histo -h 5000000 -t 56 svevo.kmer_counts.jf > svevo.reads.histo
 genomescope2 -p 4 -i svevo.reads.histo -o svevo.genomescope --verbose
 ```
 
-This is the GenomeScope statistics.
-|----| Kronos    | Svevo     |
+This is the GenomeScope statistics.  
+
+|----|| Kronos  || Svevo     |
 |    | min | max | min | max |
 |----|---------|-----------|---------|-----------|
 | Homozygous (aaaa) | 88.853%  | 91.6029% |  89.1867%     |     91.4669% |
@@ -169,19 +170,6 @@ This is the GenomeScope statistics.
 |Model Fit                 |    28.7973%       |   89.812% | 26.1724%    |      82.8801% |
 |Read Error Rate            |   0.0707465%     |   0.0707465% | 0.190909%    |     0.190909% |
 
-
-property                      min               max
-Homozygous (aaaa)             89.1867%          91.4669%
-Heterozygous (not aaaa)       8.5331%           10.8133%
-aaab                          0%                0.520259%
-aabb                          2.64974%          3.05399%
-aabc                          1.96852%          3.04119%
-abcd                          3.91484%          4.19786%
-Genome Haploid Length         2,749,147,211 bp  2,753,880,954 bp
-Genome Repeat Length          2,493,441,344 bp  2,497,734,789 bp
-Genome Unique Length          255,705,867 bp    256,146,166 bp
-Model Fit                     26.1724%          82.8801%
-Read Error Rate               0.190909%         0.190909%
 
 
 We can compare our Kronos statistics to the GenomeScope result for the hexaploid wheat in [this paper](https://www.nature.com/articles/s41467-020-14998-3). The data is in Fig. S21. Here, the genome size is esimated as haplotype size x ploidy. 
