@@ -155,10 +155,9 @@ genomescope2 -p 4 -i svevo.reads.histo -o svevo.genomescope --verbose
 
 This is the GenomeScope statistics.  
 
-|    | Kronos  |            | Svevo  |           |
+|    | Kronos  || Svevo ||
 |----|---------|-----------|---------|-----------|
 |    | min | max | min | max |
-|----|---------|-----------|---------|-----------|
 | Homozygous (aaaa) | 88.853%  | 91.6029% |  89.1867%     |     91.4669% |
 | Heterozygous (not aaaa)  | 8.39712% | 11.147% | 8.5331%    |       10.8133% |
 | aaab | 0%  | 0.632431% | 0%      |          0.520259%|
