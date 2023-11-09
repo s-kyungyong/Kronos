@@ -44,7 +44,7 @@ reads=$(ls *.default.bam)
 bam2fastq -o Kronos.HiFi -j 52 $reads
 ```
 
-Filter the reads with hifiadapterfilt. This step is not necessary. Often, the HiFi reads come out pretty clean. However, we occasionally had cases where not-so-clean HiFi reads resulted in adapters contained inside the contigs. We thus included this step for the quality control. 
+Filter the reads with hifiadapterfilt. This step is not necessary. Often, the HiFi reads come out pretty clean. However, we occasionally had cases in other species where not-so-clean HiFi reads resulted in adapters contained inside the contigs. We thus included this step for the quality control. 
 ```
 /HiFiAdapterFilt/hifiadapterfilt.sh -p Kronos -t 54
 ```
@@ -132,20 +132,57 @@ jellyfish histo -h 5000000 -t 20 kmer_counts.jf > reads.histo
 genomescope2 -p 4 -i reads.histo -o genomescope --verbose  
 ```
 
+We can also perform similar analysis for Svevo. We first downloaded the paired-end short reads from the NCBI, filtered them and evaluated k-mer. 
+```
+fasterq-dump-orig.2.11.2 --version
+fasterq-dump-orig.2.11.2 : 2.11.2
+
+trim_galore --version
+version 0.6.6
+
+cutadapt --version
+3.7
+```
+
+```
+cat Svevo_SRA.list | while read accession; do fasterq-dump-orig.2.11.2 -e 40 -t ./tmp $accession; done
+ls *.fastq | cut -d "_" -f 1 | sort -u |  while read accession; do trim_galore --illumina -j 8 --paired $accession\_1.fastq $accession\_2.fastq ; done
+
+jellyfish count -C -m 21 -s 50000000000 -t 56 *.fq -o svevo.kmer_counts.jf
+jellyfish histo -h 5000000 -t 56 svevo.kmer_counts.jf > svevo.reads.histo
+genomescope2 -p 4 -i svevo.reads.histo -o svevo.genomescope --verbose
+```
+
 This is the GenomeScope statistics.
-|    | min | max |
-|----|---------|-----------|
-| Homozygous (aaaa) | 88.853%  | 91.6029% |
-| Heterozygous (not aaaa)  | 8.39712% | 11.147% |
-| aaab | 0%  | 0.632431% |
-| aabb | 2.87586% | 3.34577%  |
-| aabc | 1.65953%  | 2.9789% |
-| abcd | 3.86173% | 4.1899%  |
-| Genome Haploid Length | 2,605,665,036 bp | 2,612,433,029 bp  | 
-| Genome Repeat Length | 2,357,672,871 bp | 2,363,796,726 bp  | 
-|Genome Unique Length       |   247,992,165 bp  |  248,636,303 bp |
-|Model Fit                 |    28.7973%       |   89.812% |
-|Read Error Rate            |   0.0707465%     |   0.0707465% |
+|----| Kronos    | Svevo     |
+|    | min | max | min | max |
+|----|---------|-----------|---------|-----------|
+| Homozygous (aaaa) | 88.853%  | 91.6029% |  89.1867%     |     91.4669% |
+| Heterozygous (not aaaa)  | 8.39712% | 11.147% | 8.5331%    |       10.8133% |
+| aaab | 0%  | 0.632431% | 0%      |          0.520259%|
+| aabb | 2.87586% | 3.34577%  | 2.64974%    |      3.05399%|
+| aabc | 1.65953%  | 2.9789% | 1.96852%     |     3.04119%|
+| abcd | 3.86173% | 4.1899%  | 3.91484%     |     4.19786%|
+| Genome Haploid Length | 2,605,665,036 bp | 2,612,433,029 bp  |  2,749,147,211 bp | 2,753,880,954 bp |
+| Genome Repeat Length | 2,357,672,871 bp | 2,363,796,726 bp  |  2,493,441,344 bp | 2,497,734,789 bp |
+|Genome Unique Length       |   247,992,165 bp  |  248,636,303 bp | 255,705,867 bp   | 256,146,166 bp |
+|Model Fit                 |    28.7973%       |   89.812% | 26.1724%    |      82.8801% |
+|Read Error Rate            |   0.0707465%     |   0.0707465% | 0.190909%    |     0.190909% |
+
+
+property                      min               max
+Homozygous (aaaa)             89.1867%          91.4669%
+Heterozygous (not aaaa)       8.5331%           10.8133%
+aaab                          0%                0.520259%
+aabb                          2.64974%          3.05399%
+aabc                          1.96852%          3.04119%
+abcd                          3.91484%          4.19786%
+Genome Haploid Length         2,749,147,211 bp  2,753,880,954 bp
+Genome Repeat Length          2,493,441,344 bp  2,497,734,789 bp
+Genome Unique Length          255,705,867 bp    256,146,166 bp
+Model Fit                     26.1724%          82.8801%
+Read Error Rate               0.190909%         0.190909%
+
 
 We can compare our Kronos statistics to the GenomeScope result for the hexaploid wheat in [this paper](https://www.nature.com/articles/s41467-020-14998-3). The data is in Fig. S21. Here, the genome size is esimated as haplotype size x ploidy. 
 
