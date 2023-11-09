@@ -155,7 +155,7 @@ genomescope2 -p 4 -i svevo.reads.histo -o svevo.genomescope --verbose
 
 This is the GenomeScope statistics.  
 
-|    | Kronos  || Svevo     ||
+|    | Kronos  |            | Svevo  |           |
 |----|---------|-----------|---------|-----------|
 |    | min | max | min | max |
 |----|---------|-----------|---------|-----------|
