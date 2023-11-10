@@ -331,6 +331,13 @@ singularity run -B ${host_path}:${container_path} --pwd /HiTE  HiTE.sif python m
 singularity run -B ${host_path}:${container_path} --pwd /HiTE HiTE.sif RepeatMasker -e ncbi -pa 40 -q -no_is -norna -nolow -div 40 -gff -lib confident_TE.cons.fa.classified -cutoff 225 ${your_genome_path} && mv ${your_genome_path}.out ${HiTE_out_dir}/HiTE.out && mv ${your_genome_path}.tbl ${HiTE_out_dir}/HiTE.tbl && mv ${your_genome_path}.out.gff ${HiTE_out_dir}/HiTE.gff
 ```
 
+According to [Telobase](http://cfb.ceitec.muni.cz/telobase/), the telomere sequences for *Triticum* is TTTAGGG. We can double check before we use this sequence.
+```
+tidk search ../../2.Scaffold/Kronos.collapsed.chromosomes.fa -s TTTAGGG -o tidk.search -d search
+tidk plot --tsv search/tidk.search_telomeric_repeat_windows.tsv
+```
+It looks like 8 scaffolds may have telomeres at the both ends. 6 may have telomeres only in one end. Some telomeres might have not been scaffolded properly due to complexity. 
+
 
 # Soft-mask the genome
 singularity run -B ${host_path}:${container_path} --pwd /HiTE HiTE.sif RepeatMasker -xsmall -lib Haplotype-1/confident_TE.cons.fa.classified -dir Haplotype-1 -pa 20 SH1353.haplotype-1.fa
