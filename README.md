@@ -175,7 +175,7 @@ The statistics looks quite similar!
 
 We can compare our Kronos statistics to the GenomeScope result for the hexaploid wheat in [this paper](https://www.nature.com/articles/s41467-020-14998-3). The data is in Fig. S21. Here, the genome size is esimated as haplotype size x ploidy (although this isn't technically correct, it seems to give the right estimate. See the discussion [here])(https://github.com/schatzlab/genomescope/issues/107).
 
-|    | Kronos | Svevo| Hexaploid wheat |
+|    | Kronos | Svevo| Bread wheat |
 |----|---------|-----------| -----------|
 | ploidy (p) | 4 | 4 | 6 | 
 | Haplotype size (Gb) | 2.612  | 2.754 | 2.354 |
@@ -239,6 +239,10 @@ The associate contigs (a_ctg) include a lot of fragments that are potentially no
 ```
 cat Kronos.p_ctg.fa Kronos.a_ctg.fa > Kronos.draft.fa
 ```
+
+Some may be interested in haplotypes, so we can also generate haplotype-resolved assemblies with the HiFi and HiC data together. However, as we focus on the collapsed genome, I will record the pipeline [here](https://github.com/s-kyungyong/Kronos/blob/main/Haplotypes/README.md).
+
+
 
 
 ## Scaffolding and assessment
