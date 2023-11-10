@@ -173,7 +173,7 @@ This is the GenomeScope statistics.
 The statistics looks quite similar!
 
 
-We can compare our Kronos statistics to the GenomeScope result for the hexaploid wheat in [this paper](https://www.nature.com/articles/s41467-020-14998-3). The data is in Fig. S21. Here, the genome size is esimated as haplotype size x ploidy (although this isn't technically correct. See the discussion [here](https://github.com/schatzlab/genomescope/issues/107) 
+We can compare our Kronos statistics to the GenomeScope result for the hexaploid wheat in [this paper](https://www.nature.com/articles/s41467-020-14998-3). The data is in Fig. S21. Here, the genome size is esimated as haplotype size x ploidy (although this isn't technically correct, it seems to give the right estimate. See the discussion [here])(https://github.com/schatzlab/genomescope/issues/107).
 
 |    | Kronos | Svevo| Hexaploid wheat |
 |----|---------|-----------| -----------|
@@ -197,7 +197,7 @@ hifiasm --version
 ```
 
 ```
-hifi=/global/scratch/users/skyungyong/Kronos/0.HiFi/Filtered/Kronos.HiFi.filt.fastq.gz
+hifi=Kronos.HiFi.filt.fastq.gz
 hifiasm -l0 -t 54 -o l0-hic $hifi
 ```
 
