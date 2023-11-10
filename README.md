@@ -310,16 +310,27 @@ scaffold_20 2.432 Mb
 ```
 It looks like the largest 14 scaffolds may be the chromosomes!
 
-Let's generate a contact map
+Let's generate a contact map.
 ```
 juicer pre YaHS.bin YaHS_scaffolds_final.agp Kronos.draft.fa.fai | sort -k2,2d -k6,6d -T ./ --parallel=8 -S32G | awk 'NF' > alignments_sorted.txt.part && mv alignments_sorted.txt.part alignments_sorted.txt
 python -c "from Bio import SeqIO; print('\n'.join([f'{record.id}\t{len(record.seq)}' for record in SeqIO.parse('YaHS_scaffolds_final.fa', 'fasta')]))" > scaf.length
 java -jar -Xmx32G juicer_tools.1.9.9_jcuda.0.8.jar pre alignments_sorted.txt out.hic.part scaf.length && mv out.hic.part out.hic
 ```
 
+## Repeat masking
+
+We will use [HiTE](https://github.com/CSU-KangHu/HiTE) for repeat masking. 
+
+```
 export SINGULARITY_CACHEDIR=/global/scratch/users/skyungyong/temp
 singularity pull HiTE.sif docker://kanghu/hite:2.0.4
-singularity run -B ${host_path}:${container_path} --pwd /HiTE  HiTE.sif python main.py --genome SH1353.haplotype-1.final.scaffolds.fa --thread 56 --outdir Haplotype-1 --plant 1 --classified 1 --domain 1
+WD=$(pwd)
+singularity run -B ${host_path}:${container_path} --pwd /HiTE  HiTE.sif python main.py --genome $WD/Kronos.collapsed.chromosomes.fa --thread 56 --outdir $WD/Kronos_output --recover 1 --annotate 1 --plant 1 --classified 1 --domain 1
+
+# soft-mask genomes
+singularity run -B ${host_path}:${container_path} --pwd /HiTE HiTE.sif RepeatMasker -e ncbi -pa 40 -q -no_is -norna -nolow -div 40 -gff -lib confident_TE.cons.fa.classified -cutoff 225 ${your_genome_path} && mv ${your_genome_path}.out ${HiTE_out_dir}/HiTE.out && mv ${your_genome_path}.tbl ${HiTE_out_dir}/HiTE.tbl && mv ${your_genome_path}.out.gff ${HiTE_out_dir}/HiTE.gff
+```
+
 
 # Soft-mask the genome
 singularity run -B ${host_path}:${container_path} --pwd /HiTE HiTE.sif RepeatMasker -xsmall -lib Haplotype-1/confident_TE.cons.fa.classified -dir Haplotype-1 -pa 20 SH1353.haplotype-1.fa
