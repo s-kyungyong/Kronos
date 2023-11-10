@@ -170,19 +170,20 @@ This is the GenomeScope statistics.
 |Model Fit                 |    28.7973%       |   89.812% | 26.1724%    |      82.8801% |
 |Read Error Rate            |   0.0707465%     |   0.0707465% | 0.190909%    |     0.190909% |
 
+The statistics looks quite similar!
 
 
-We can compare our Kronos statistics to the GenomeScope result for the hexaploid wheat in [this paper](https://www.nature.com/articles/s41467-020-14998-3). The data is in Fig. S21. Here, the genome size is esimated as haplotype size x ploidy. 
+We can compare our Kronos statistics to the GenomeScope result for the hexaploid wheat in [this paper](https://www.nature.com/articles/s41467-020-14998-3). The data is in Fig. S21. Here, the genome size is esimated as haplotype size x ploidy (although this isn't technically correct. See the discussion [here](https://github.com/schatzlab/genomescope/issues/107) 
 
-|    | Kronos | Hexaploid wheat |
-|----|---------|-----------|
-| ploidy (p) | 4 | 6 | 
-| Haplotype size (Gb) | 2.605  | 2.354 |
-| Genome size (Gb)  | 10.45 | 14.1 |
-| unique (%) | 9.52 | 8 |
-| heterozygosity (%) | 9.5 | 10.1 |
-| err (%) | 0.0707 | 0.506 |
-| dup | 0.654 | 0.836 | 
+|    | Kronos | Svevo| Hexaploid wheat |
+|----|---------|-----------| -----------|
+| ploidy (p) | 4 | 4 | 6 | 
+| Haplotype size (Gb) | 2.612  | 2.754 | 2.354 |
+| Genome size (Gb)  | 10.45 | 11.02 | 14.1 |
+| unique (%) | 9.52 | 9.3 | 8 |
+| heterozygosity (%) | 9.5 | 9.4 |  10.1 |
+| err (%) | 0.0707 | 0.191 | 0.506 |
+| dup | 0.654 | 2.67 | 0.836 | 
 
 The statistics looks fairly similar. I believe that just like other reference wheat genomes, we can generate collapsed haplotypes (AB) for our Kronos genome. 
 
