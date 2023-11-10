@@ -310,8 +310,12 @@ scaffold_20 2.432 Mb
 ```
 It looks like the largest 14 scaffolds may be the chromosomes!
 
-
-
+Let's generate a contact map
+```
+juicer pre YaHS.bin YaHS_scaffolds_final.agp Kronos.draft.fa.fai | sort -k2,2d -k6,6d -T ./ --parallel=8 -S32G | awk 'NF' > alignments_sorted.txt.part && mv alignments_sorted.txt.part alignments_sorted.txt
+python -c "from Bio import SeqIO; print('\n'.join([f'{record.id}\t{len(record.seq)}' for record in SeqIO.parse('YaHS_scaffolds_final.fa', 'fasta')]))" > scaf.length
+java -jar -Xmx32G juicer_tools.1.9.9_jcuda.0.8.jar pre alignments_sorted.txt out.hic.part scaf.length && mv out.hic.part out.hic
+```
 
 export SINGULARITY_CACHEDIR=/global/scratch/users/skyungyong/temp
 singularity pull HiTE.sif docker://kanghu/hite:2.0.4
