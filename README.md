@@ -248,6 +248,7 @@ Some may be interested in haplotypes, so we can also generate haplotype-resolved
 ## Scaffolding and assessment
 
 Now, we will use our Hi-C data to scaffold the contigs. We will follow [this Omni-C protocol](https://omni-c.readthedocs.io/en/latest/index.html) for mapping and use yahs for scaffolding. 
+
 ```
 samtools --version
 samtools 1.15.1
@@ -267,10 +268,11 @@ yahs --version
 samtools faidx Kronos.draft.fa
 bwa index Kronos.draft.fa
 
-pair1=$(ls $PWD/../../0.HiC/KVK-KRONOS-*/*R1*.fastq.gz | paste - - - -d ",")
-pair2=$(ls $PWD/../../0.HiC/KVK-KRONOS-*/*R2*.fastq.gz | paste - - - -d ",")
+#align Hi-C read pairs
+bwa mem -o aligned.sam -5SP -T0 -t52 /Kronos.draft.fa <(zcat 0.HiC/KVK-*/*R1*trimmed.fq.gz) <(zcat 0.HiC/KVK-*/*R2*trimmed.fq.gz)
 
-bwa mem -5SP -T0 -t56 Kronos.draft.fa $pair1 $pair2 | \
+#process the alignments
+samtools view -@56 -h aligned.sam  \
 pairtools parse --min-mapq 30 --walks-policy 5unique \
 --max-inter-align-gap 30 --nproc-in 56 --nproc-out 56 --chroms-path Kronos.draft.fa | \
 pairtools sort --tmpdir=./tmp --nproc 56 | pairtools dedup --nproc-in 56 \
@@ -278,8 +280,36 @@ pairtools sort --tmpdir=./tmp --nproc 56 | pairtools dedup --nproc-in 56 \
 --nproc-out 56 --output-pairs mapped.pairs --output-sam - |samtools view -bS -@56 | \
 samtools sort -@56 -o mapped.PT.bam ; samtools index mapped.PT.bam
 
-/global/scratch/users/skyungyong/Software/yahs/yahs -o YaHS -e GATC,GANTC,CTNAG,TTAA Kronos.draft.fa mapped.PT.bam
+yahs -o YaHS -e GATC,GANTC,CTNAG,TTAA Kronos.draft.fa mapped.PT.bam
 ```
+
+We can quickly check the length of the scaffolds. We expect 14 largest scaffolds (7 chromosomes x AB). 
+```
+python -c "from Bio import SeqIO; print('\n'.join([f'{record.id} {round(len(record.seq)/1000000, 3)} Mb' for record in SeqIO.parse('YaHS_scaffolds_final.fa', 'fasta')]))" | sort -r -nk 2 | head -n 20
+
+scaffold_1 864.152 Mb
+scaffold_2 828.542 Mb
+scaffold_3 795.82 Mb
+scaffold_4 767.866 Mb
+scaffold_5 766.027 Mb
+scaffold_6 759.128 Mb
+scaffold_7 753.477 Mb
+scaffold_8 733.6 Mb
+scaffold_9 731.153 Mb
+scaffold_10 720.28 Mb
+scaffold_11 708.843 Mb
+scaffold_12 699.697 Mb
+scaffold_13 624.303 Mb
+scaffold_14 600.444 Mb
+scaffold_15 3.636 Mb
+scaffold_16 3.606 Mb
+scaffold_17 2.687 Mb
+scaffold_18 2.63 Mb
+scaffold_19 2.481 Mb
+scaffold_20 2.432 Mb
+```
+It looks like the largest 14 scaffolds may be the chromosomes!
+
 
 
 
