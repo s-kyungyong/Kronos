@@ -336,9 +336,24 @@ We did not observe any abnormal features from the contact map and are happy to m
 
 ## Scaffolding renaming
 
-We will remove chloroplast and mitocondiral genomes and reassign the scaffold names. 
-NC_002762.1.fasta
-NC_036024.1.fasta
+We will remove chloroplast and mitocondiral genomes into separate files and reassign the scaffold names. For the plasmids, we will download these two accessions from the NCBI. The wheat reference genome can be downloaded from [EnsemblPlants](https://plants.ensembl.org/Triticum_aestivum/Info/Index).
+```
+Triticum aestivum chloroplast, complete genome: NC_002762.1
+Triticum aestivum cultivar Chinese Yumai mitochondrion, complete genome: NC_036024.1
+Triticum_aestivum.IWGSC.dna.toplevel.fa
+```
+
+As the scaffolds are too large, minimap won't be able to run. Let's break the assemblies first. 
+```
+python break_fa.py YaHS_scaffolds_final.fa
+python break_fa.py Triticum_aestivum.IWGSC.dna.toplevel.fa
+```
+
+We can then run minimap v2.24-r1122. 
+cat NC_002762.1.fasta NC_036024.1.fasta > Triticum_aestivum.plasmids.fa
+minimap2 -x asm5 -t 52 ../Triticum_aestivum.IWGSC.dna.toplevel.broken.fa YaHS_scaffolds_final.broken.fa > minimap.ref.paf
+minimap2 -x asm5 -t 52 ../Triticum_aestivum.plasmids.fa YaHS_scaffolds_final.fa > minimap.plasmid.paf
+
 
 ## Repeat masking
 
