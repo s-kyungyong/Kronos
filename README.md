@@ -310,12 +310,35 @@ scaffold_20 2.432 Mb
 ```
 It looks like the largest 14 scaffolds may be the chromosomes!
 
-Let's generate a contact map.
+Let's generate a contact map and visualize through JuiceBox.
 ```
-juicer pre YaHS.bin YaHS_scaffolds_final.agp Kronos.draft.fa.fai | sort -k2,2d -k6,6d -T ./ --parallel=8 -S32G | awk 'NF' > alignments_sorted.txt.part && mv alignments_sorted.txt.part alignments_sorted.txt
-python -c "from Bio import SeqIO; print('\n'.join([f'{record.id}\t{len(record.seq)}' for record in SeqIO.parse('YaHS_scaffolds_final.fa', 'fasta')]))" > scaf.length
-java -jar -Xmx32G juicer_tools.1.9.9_jcuda.0.8.jar pre alignments_sorted.txt out.hic.part scaf.length && mv out.hic.part out.hic
+/global/scratch/users/skyungyong/Software/yahs/juicer pre -a -o out_JBAT YaHS.bin YaHS_scaffolds_final.agp Kronos.draft.fa.fai >out_JBAT.log 2>&1
+java -jar juicer_tools.1.9.9_jcuda.0.8.jar pre out_JBAT.txt out_JBAT.hic <(cat out_JBAT.log  | grep PRE_C_SIZE | awk '{print $2" "$3}')
 ```
+The two outputs, out_JBAT.hic and out_JBAT.assembly, can be loaded into [Juicebox](https://github.com/aidenlab/Juicebox/wiki/Download). Set the scale as below:
+```
+grep 'scale factor' out_JBAT.log
+[I::main_pre] scale factor: 8
+```
+
+For visualization, we will use the following setups:
+```
+Show: Log(Observed+1)
+Normalization: Balanced
+Color Range: 0-13-19 (for the entire assembly)
+```
+
+(/global/scratch/users/skyungyong/Software/yahs/juicer pre ../YaHS.bin ../YaHS_scaffolds_final.agp ../Kronos.draft.fa.fai | sort -k2,2d -k6,6d -T ./ --parallel=30 -S256G | awk 'NF' > alignments_sorted.txt.part) && (mv alignments_sorted.txt.part alignments_sorted.txt)
+python -c "from Bio import SeqIO; print('\n'.join([f'{record.id}\t{len(record.seq)}' for record in SeqIO.parse('YaHS_scaffolds_final.fa', 'fasta')]))"  > scaf.length
+(java -jar /global/scratch/users/skyungyong/Software/juicer-1.6/CPU/common/juicer_tools.1.9.9_jcuda.0.8.jar pre alignments_sorted.txt out.hic.part scaf.length) && (mv out.hic.part out.hic)
+
+We did not observe any abnormal features from the contact map and are happy to move on!
+
+## Scaffolding renaming
+
+We will remove chloroplast and mitocondiral genomes and reassign the scaffold names. 
+NC_002762.1.fasta
+NC_036024.1.fasta
 
 ## Repeat masking
 
@@ -342,3 +365,6 @@ It looks like 8 scaffolds may have telomeres at the both ends. 6 may have telome
 # Soft-mask the genome
 singularity run -B ${host_path}:${container_path} --pwd /HiTE HiTE.sif RepeatMasker -xsmall -lib Haplotype-1/confident_TE.cons.fa.classified -dir Haplotype-1 -pa 20 SH1353.haplotype-1.fa
 
+## RNA-seq
+
+ls *.fastq | cut -d "_" -f 1 | sort -u | while read accession; do trim_galore -a -j 8 --paired $accession\_1.fastq $accession\_2.fastq ; done
