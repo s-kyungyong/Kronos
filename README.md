@@ -328,9 +328,10 @@ Normalization: Balanced
 Color Range: 0-13-19 (for the entire assembly)
 ```
 
-(/global/scratch/users/skyungyong/Software/yahs/juicer pre ../YaHS.bin ../YaHS_scaffolds_final.agp ../Kronos.draft.fa.fai | sort -k2,2d -k6,6d -T ./ --parallel=30 -S256G | awk 'NF' > alignments_sorted.txt.part) && (mv alignments_sorted.txt.part alignments_sorted.txt)
+```
+juicer pre YaHS.bin YaHS_scaffolds_final.agp Kronos.draft.fa.fai | sort -k2,2d -k6,6d -T ./ --parallel=30 -S256G | awk 'NF' > alignments_sorted.txt
 python -c "from Bio import SeqIO; print('\n'.join([f'{record.id}\t{len(record.seq)}' for record in SeqIO.parse('YaHS_scaffolds_final.fa', 'fasta')]))"  > scaf.length
-(java -jar /global/scratch/users/skyungyong/Software/juicer-1.6/CPU/common/juicer_tools.1.9.9_jcuda.0.8.jar pre alignments_sorted.txt out.hic.part scaf.length) && (mv out.hic.part out.hic)
+java -jar juicer_tools.1.9.9_jcuda.0.8.jar pre alignments_sorted.txt out.hic scaf.length
 
 We did not observe any abnormal features from the contact map and are happy to move on!
 
