@@ -371,13 +371,18 @@ python process_scaffolds.py
 | N's | 4400| 16000| 7400| 18400| 3800| 20400| 13400| 18600| 4400| 21400| 5200| 20400| 5200| 20000| 731600 | 
 | unambiguous base pairs | 600439581| 708826986| 795812989| 828523133| 759124428| 864131987| 767852317| 699678356| 720275659| 731131626| 624298173| 733579245| 753471566| 766006795| 210519344 |
 
+
+51,529,289 base pairs where separated as chloroplast, and 8,923,050 as mitochondria. 
+
+
+
 ## Repeat masking
 
 We will use [HiTE](https://github.com/CSU-KangHu/HiTE) for repeat masking. 
 
 ```
 export SINGULARITY_CACHEDIR=/global/scratch/users/skyungyong/temp
-singularity pull HiTE.sif docker://kanghu/hite:2.0.4
+singularity pull HiTE.sif docker://kanghu/hite:3.0.0
 WD=$(pwd)
 singularity run -B ${host_path}:${container_path} --pwd /HiTE  HiTE.sif python main.py --genome $WD/Kronos.collapsed.chromosomes.fa --thread 56 --outdir $WD/Kronos_output --recover 1 --annotate 1 --plant 1 --classified 1 --domain 1
 
@@ -399,3 +404,19 @@ singularity run -B ${host_path}:${container_path} --pwd /HiTE HiTE.sif RepeatMas
 ## RNA-seq
 
 ls *.fastq | cut -d "_" -f 1 | sort -u | while read accession; do trim_galore -a -j 8 --paired $accession\_1.fastq $accession\_2.fastq ; done
+
+
+We are using hisat v2.2.1 to map the paired end libraries. The reads will be aligned as below. 
+```
+# index the genome 
+hisat2-build -p 20 ../2.Scaffold/Kronos.collapsed.chromosomes.fa Kronos
+
+# align the reads
+reads_1=$(ls *_val_1.fq | paste -sd ',')
+reads_2=$(ls *_val_2.fq | paste -sd ',')
+hisat2 -p 56 -x Kronos -1 $reads_1 -2 $reads_2 --dta -S Kronos.mapped.sam 
+```
+However, some of the sequencing data are big. For instance, SRX10965365, SRX10965366, and SRX10965367 are 460G, 340G and 510G in size, respectively. We will map individual or some combined paired-end libraries, and then merge them into a single alignment file later to speed up this process.
+
+
+
