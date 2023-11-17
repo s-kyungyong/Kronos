@@ -350,11 +350,26 @@ python break_fa.py YaHS_scaffolds_final.fa
 python break_fa.py Triticum_aestivum.IWGSC.dna.toplevel.fa
 ```
 
-We can then run minimap v2.24-r1122. 
+We can then run minimap v2.24-r1122. This step took > 72 hours. It is recommended to split the query and submit multiple jobs.
+```
 cat NC_002762.1.fasta NC_036024.1.fasta > Triticum_aestivum.plasmids.fa
 minimap2 -x asm5 -t 52 ../Triticum_aestivum.IWGSC.dna.toplevel.broken.fa YaHS_scaffolds_final.broken.fa > minimap.ref.paf
+sort -k1,1 -k3,3n minimap.ref.paf > minimap.ref.sorted.paf
 minimap2 -x asm5 -t 52 ../Triticum_aestivum.plasmids.fa YaHS_scaffolds_final.fa > minimap.plasmid.paf
+sort -k1,1 -k3,3n minimap.plasmid.paf > minimap.plasmid.sorted.paf
+```
 
+Run the following script to reassign the scaffold names and separate plasmid DNAs. This will compare 14 Kronos scaffolds and 21 Wheat chromosomes and transfer the chromosome IDs. 
+```
+python process_scaffolds.py
+```
+
+| Chromosomes  | 1A | 1B | 2A | 2B | 3A | 3B | 4A | 4B | 5A | 5B | 6A | 6B | 7A | 7B | Un | 
+|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|
+| scaffold ID  | 14  | 11 | 3 | 2 | 6 | 1 | 4 | 12 | 10 | 9 | 13 | 8 | 7 | 5 | - | 
+| size  | 600443981 | 708842986 |
+| N's | 346.20  | 0.976 |
+|
 
 ## Repeat masking
 
