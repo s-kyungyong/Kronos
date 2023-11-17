@@ -173,7 +173,7 @@ This is the GenomeScope statistics.
 The statistics looks quite similar!
 
 
-We can compare our Kronos statistics to the GenomeScope result for the hexaploid wheat in [this paper](https://www.nature.com/articles/s41467-020-14998-3). The data is in Fig. S21. Here, the genome size is esimated as haplotype size x ploidy (although this isn't technically correct, it seems to give the right estimate. See the discussion [here])(https://github.com/schatzlab/genomescope/issues/107).
+We can compare our Kronos statistics to the GenomeScope result for the hexaploid wheat in [this paper](https://www.nature.com/articles/s41467-020-14998-3). The data is in Fig. S21. Here, the genome size is esimated as haplotype size x ploidy. Although this isn't technically correct, it seems to give the right estimate. See the discussion [here](https://github.com/schatzlab/genomescope/issues/107).
 
 |    | Kronos | Svevo| Bread wheat |
 |----|---------|-----------| -----------|
@@ -367,9 +367,9 @@ python process_scaffolds.py
 | Chromosomes  | 1A | 1B | 2A | 2B | 3A | 3B | 4A | 4B | 5A | 5B | 6A | 6B | 7A | 7B | Un | 
 |----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|
 | scaffold ID  | 14  | 11 | 3 | 2 | 6 | 1 | 4 | 12 | 10 | 9 | 13 | 8 | 7 | 5 | - | 
-| size  | 600443981 | 708842986 |
-| N's | 346.20  | 0.976 |
-|
+| size  | 600443981| 708842986| 795820389| 828541533| 759128228| 864152387| 767865717| 699696956| 720280059| 731153026| 624303373| 733599645| 753476766| 766026795| 211250944 | 
+| N's | 4400| 16000| 7400| 18400| 3800| 20400| 13400| 18600| 4400| 21400| 5200| 20400| 5200| 20000| 731600 | 
+| unambiguous base pairs | 600439581| 708826986| 795812989| 828523133| 759124428| 864131987| 767852317| 699678356| 720275659| 731131626| 624298173| 733579245| 753471566| 766006795| 210519344 |
 
 ## Repeat masking
 
