@@ -412,9 +412,16 @@ We are using hisat v2.2.1 to map the paired end libraries. The reads will be ali
 hisat2-build -p 20 ../2.Scaffold/Kronos.collapsed.chromosomes.fa Kronos
 
 # align the reads
-reads_1=$(ls *_val_1.fq | paste -sd ',')
-reads_2=$(ls *_val_2.fq | paste -sd ',')
-hisat2 -p 56 -x Kronos -1 $reads_1 -2 $reads_2 --dta -S Kronos.mapped.sam 
+for lib in $(ls *_val_1.fq); do
+  prefix=$(echo $lib | cut -d "_" -f 1)
+  read_1=$lib
+  read_2=$(echo $lib | sed 's/1_val_1/2_val_2/')
+  hisat2 -p 56 -x Kronos -1 $read_1 -2 $read_2 --dta -S $prefix.mapped.sam
+  echo 'done' > $prefix.done
+done
+
+# filter and sort with samtools
+samtools -@56 -q 30 -h -b
 ```
 However, some of the sequencing data are big. For instance, SRX10965365, SRX10965366, and SRX10965367 are 460G, 340G and 510G in size, respectively. We will map individual or some combined paired-end libraries, and then merge them into a single alignment file later to speed up this process.
 
