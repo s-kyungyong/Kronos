@@ -2,6 +2,7 @@ from operator import itemgetter
 from Bio import SeqIO
 import logging
 from collections import defaultdict
+import sys
 
 #Reference wheat genome sequence IDs
 ref_order = [ f'{i}{letter}' for i in range(1,8) for letter in ['A', 'B', 'D']]
@@ -171,13 +172,15 @@ def assign_chromosomes(minimap_output, scaf_length):
 def write_sequences(fasta_file, chr_dict, chloroplasts, mitochondira, outfile_prefix):
 
   records = list(SeqIO.parse(fasta_file, 'fasta'))
-  chr2scaf = {}
 
-  for record in records:
-      #Replace sequence IDs for large scaffolds
-      if str(record.id) in chr_dict:
-        chr2scaf[ chr_dict[str(record.id)] ] = str(record.id)
-        record.id = chr_dict[str(record.id)]
+  if chr_dict != None:
+    chr2scaf = {}
+  
+    for record in records:
+        #Replace sequence IDs for large scaffolds
+        if str(record.id) in chr_dict:
+          chr2scaf[ chr_dict[str(record.id)] ] = str(record.id)
+          record.id = chr_dict[str(record.id)]
 
   categorized_records = defaultdict(list)
   for record in records:
@@ -190,12 +193,17 @@ def write_sequences(fasta_file, chr_dict, chloroplasts, mitochondira, outfile_pr
     else:
       categorized_records['other'].append(record)
 
-  with open(f'{outfile_prefix}.chromosomes.fa', 'w') as output_file:
-    for item in categorized_records['chr']:
-      output_file.write(f">{item.id} source:{chr2scaf[item.id]}\n{item.seq}\n")
-
-    unplaced = ('N' * 200).join( str(item.seq) for item in categorized_records['other'] )
-    output_file.write(f">Un\n{unplaced}\n")
+  if chr_dict != None:
+    with open(f'{outfile_prefix}.chromosomes.fa', 'w') as output_file:
+      for item in categorized_records['chr']:
+        output_file.write(f">{item.id} source:{chr2scaf[item.id]}\n{item.seq}\n")
+  
+      unplaced = ('N' * 200).join( str(item.seq) for item in categorized_records['other'] )
+      output_file.write(f">Un\n{unplaced}\n")
+  else:
+    with open(f'{outfile_prefix}.genomic.fa', 'w') as output_file:
+      for item in categorized_records['other']:
+        SeqIO.write(item, output_file, 'fasta')
 
   with open(f'{outfile_prefix}.chloroplasts.fa', 'w') as chlo_file, open(
             f'{outfile_prefix}.mitochondira.fa', 'w') as mito_file:
@@ -203,13 +211,26 @@ def write_sequences(fasta_file, chr_dict, chloroplasts, mitochondira, outfile_pr
     SeqIO.write(categorized_records['mito'], mito_file, 'fasta')
 
 
-# file collections
-# minimap outputs for plasmid search, ref genome search
-# input scaffolds and final genome output prefix
-inputs = ['minimap.plasmid.sorted.paf',
-        'minimap.ref.sorted.paf',
-        '../YaHS_scaffolds_final.fa',
-        'Kronos.collapsed' ]
+# inputs should be: 
+# 1) minimap paf output against plasmid
+# 2) minimap paf output against reference genome (could be None) 
+# 3) Input genome
+# 4) Output prefix 
+
+inputs = sys.argv[1:]
+
+if len(inputs) != 4:
+  print('Required inputs are: ')
+  print('1) minimap paf output against plasmid')
+  print('2) minimap paf output against reference genome (could be None)') 
+  print('3) Input genome')
+  print('4) Output prefix')  
+  print('Additional input named "scaf.length" that stores the sequence IDs and sequence lengths will be used')
+
+#inputs = ['minimap.plasmid.sorted.paf',
+#        'minimap.ref.sorted.paf',
+#        '../YaHS_scaffolds_final.fa',
+#        'Kronos.collapsed' ]
 
 # get scaffold length
 scaf_len = {}
@@ -222,6 +243,9 @@ for line in open('scaf.length', 'r'):
 # collect plasmid sequences here
 plasmid_output, genome_output, fasta_file, outfile_prefix = inputs
 chloroplasts, mitochondria  = identify_plasmids(plasmid_output, scaf_len)
-chr_dict = assign_chromosomes(genome_output, scaf_len)
+if genome_output != 'None':
+  chr_dict = assign_chromosomes(genome_output, scaf_len)
+else:
+  chr_dict = None 
 plasmids = chloroplasts + mitochondria
 plasmids_records = write_sequences(fasta_file, chr_dict, chloroplasts, mitochondria, outfile_prefix)
