@@ -375,6 +375,11 @@ python process_scaffolds.py
 51,529,289 base pairs where separated as chloroplast, and 8,923,050 as mitochondria. 
 
 
+minimap2 -x asm5 -t 20 ../../Triticum_aestivum.plasmids.fa Kronos.draft.fa > min
+imap.plasmid.paf
+sort -k1,1 -k3,3n minimap.plasmid.paf > minimap.plasmid.sorted.paf
+
+
 
 ## Repeat masking
 
