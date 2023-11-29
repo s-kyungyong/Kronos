@@ -226,7 +226,8 @@ if len(inputs) != 4:
   print('3) Input genome')
   print('4) Output prefix')  
   print('Additional input named "scaf.length" that stores the sequence IDs and sequence lengths will be used')
-
+  sys.exit()
+  
 #inputs = ['minimap.plasmid.sorted.paf',
 #        'minimap.ref.sorted.paf',
 #        '../YaHS_scaffolds_final.fa',
