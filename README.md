@@ -379,6 +379,7 @@ minimap2 -x asm5 -t 20 ../../Triticum_aestivum.plasmids.fa Kronos.draft.fa > min
 imap.plasmid.paf
 sort -k1,1 -k3,3n minimap.plasmid.paf > minimap.plasmid.sorted.paf
 python ../process_scaffolds.py ../minimap.plasmid.sorted.paf None Kronos.draft.fa Kronos.contigs
+quast -t 20 --fast Kronos.contigs.genomic.fa
 
 
 ## Repeat masking
