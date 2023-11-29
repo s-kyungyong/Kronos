@@ -361,7 +361,7 @@ sort -k1,1 -k3,3n minimap.plasmid.paf > minimap.plasmid.sorted.paf
 
 Run the following script to reassign the scaffold names and separate plasmid DNAs. This will compare 14 Kronos scaffolds and 21 Wheat chromosomes and transfer the chromosome IDs. 
 ```
-python process_scaffolds.py
+python process_scaffolds.py minimap.plasmid.sorted.paf minimap.ref.sorted.paf YaHS_scaffolds_final.fa Kronos.collapsed
 ```
 
 | Chromosomes  | 1A | 1B | 2A | 2B | 3A | 3B | 4A | 4B | 5A | 5B | 6A | 6B | 7A | 7B | Un | 
@@ -378,7 +378,7 @@ python process_scaffolds.py
 minimap2 -x asm5 -t 20 ../../Triticum_aestivum.plasmids.fa Kronos.draft.fa > min
 imap.plasmid.paf
 sort -k1,1 -k3,3n minimap.plasmid.paf > minimap.plasmid.sorted.paf
-
+python ../process_scaffolds.py ../minimap.plasmid.sorted.paf None Kronos.draft.fa Kronos.contigs
 
 
 ## Repeat masking
