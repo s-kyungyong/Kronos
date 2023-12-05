@@ -412,6 +412,11 @@ singularity run -B ${host_path}:${container_path} --pwd /HiTE HiTE.sif RepeatMas
 ls *.fastq | cut -d "_" -f 1 | sort -u | while read accession; do trim_galore -a -j 8 --paired $accession\_1.fastq $accession\_2.fastq ; done
 
 
+Trinity
+ls *.fq | cut -d "_" -f 1 | sort -u > prefix.list
+
+--just_normalize_reads --CPU 56 --left --right --seqType fq --output trinity_
+
 We are using hisat v2.2.1 to map the paired end libraries. The reads will be aligned as below. 
 ```
 # index the genome 
