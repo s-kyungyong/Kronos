@@ -427,7 +427,16 @@ for lib in $(ls *_val_1.fq); do
 done
 
 # filter and sort with samtools
-samtools -@56 -q 30 -h -b
+for sam in *.mapped.sam; do
+  bam="${sam%.sam}.bam"
+  samtools view -@ 56 -q 20 -h -b -F 260 "$sam" | samtools sort -@ 56 -o "$bam"
+  samtools index "$bam"
+done
+```
+We can then use psiclass to get the transcripts. 
+```
+ls *.mapped.bam > mapped.bam.list
+psiclass -p 52 --lb mapped.bam.list
 ```
 However, some of the sequencing data are big. For instance, SRX10965365, SRX10965366, and SRX10965367 are 460G, 340G and 510G in size, respectively. We will map individual or some combined paired-end libraries, and then merge them into a single alignment file later to speed up this process.
 
