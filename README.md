@@ -384,17 +384,20 @@ quast -t 20 --fast Kronos.contigs.genomic.fa
 
 ## Repeat masking
 
-We will use [HiTE](https://github.com/CSU-KangHu/HiTE) for repeat masking. 
-
+We will use [HiTE](https://github.com/CSU-KangHu/HiTE) for repeat masking. This step took slightly more than two weeks. 
 ```
 export SINGULARITY_CACHEDIR=/global/scratch/users/skyungyong/temp
 singularity pull HiTE.sif docker://kanghu/hite:3.0.0
 WD=$(pwd)
-singularity run -B ${host_path}:${container_path} --pwd /HiTE  HiTE.sif python main.py --genome $WD/Kronos.collapsed.chromosomes.fa --thread 56 --outdir $WD/Kronos_output --recover 1 --annotate 1 --plant 1 --classified 1 --domain 1
-
-# soft-mask genomes
-singularity run -B ${host_path}:${container_path} --pwd /HiTE HiTE.sif RepeatMasker -e ncbi -pa 40 -q -no_is -norna -nolow -div 40 -gff -lib confident_TE.cons.fa.classified -cutoff 225 ${your_genome_path} && mv ${your_genome_path}.out ${HiTE_out_dir}/HiTE.out && mv ${your_genome_path}.tbl ${HiTE_out_dir}/HiTE.tbl && mv ${your_genome_path}.out.gff ${HiTE_out_dir}/HiTE.gff
+singularity run -B ${host_path}:${container_path} --pwd /HiTE  HiTE.sif python main.py --genome $WD/Kronos.collapsed.chromosomes.fa --thread 56 --outdir $WD/Kronos_output --recover 1 --plant 1 --classified 1 --domain 1
 ```
+
+Then, we can mask the genome with the constructed library. To save time, we seperated each chromosome and masked it individually across multiple nodes with ReapeatMasker v4.1.5. 
+```
+RepeatMasker -xsmall -e ncbi -pa 56 -q -no_is -norna -nolow -div 40 -gff -lib /confident_TE.cons.fa.classified -dir $prefix\/ -cutoff 225 $prefix\/$prefix\.fa
+```
+
+
 
 According to [Telobase](http://cfb.ceitec.muni.cz/telobase/), the telomere sequences for *Triticum* is TTTAGGG. We can double check before we use this sequence.
 ```
@@ -409,15 +412,31 @@ singularity run -B ${host_path}:${container_path} --pwd /HiTE HiTE.sif RepeatMas
 
 ## RNA-seq
 
+We donwloaded the paired-end RNA-seq data from the NCBI. The list can be found in [SRA.list](https://github.com/s-kyungyong/Kronos/blob/main/RNAseq/SRA.list). Let's first remove adapters and low-quality reads from the libraries. Trim_galore and cutadapt versions were v0.6.6 and v3.7. 
+```
 ls *.fastq | cut -d "_" -f 1 | sort -u | while read accession; do trim_galore -a -j 8 --paired $accession\_1.fastq $accession\_2.fastq ; done
+```
+This generated about 1.6 Tb of fastq files in total
+
+### De novo assembly
+
+De novo assembly is done with Trinity v2.15.1. We initially tried running Trinity on the 1.6 Tb of paired-end fastq files all at once. After two weeks, Trinity was still stuck at the insilico normalization step with about 35-45% progress. We, therefore, had to take some other ways around.
+
+Let's normalize each paired-end library first. We submitted ~50 jobs across different nodes to speed this step. 
+```
+read=/global/scratch/users/skyungyong/Kronos/4.RNAseq
+prefix=$1
+left=$read/$prefix\_1_val_1.fq
+right=$read/$prefix\_2_val_2.fq
+
+singularity run -B $PWD /global/scratch/users/skyungyong/Software/trinity.sif Trinity --verbose --max_memory 90G --just_normalize_reads --seqType fq --CPU 40 --left $left --right $right --output trinity_$prefix
+```
 
 
-Trinity
-ls *.fq | cut -d "_" -f 1 | sort -u > prefix.list
 
---just_normalize_reads --CPU 56 --left --right --seqType fq --output trinity_
+### Mapping
 
-We are using hisat v2.2.1 to map the paired end libraries. The reads will be aligned as below. 
+The RNA-seq data can be also mapped to the genome and processed. We are using hisat v2.2.1 to map the paired end libraries. The reads will be aligned as below. 
 ```
 # index the genome 
 hisat2-build -p 20 ../2.Scaffold/Kronos.collapsed.chromosomes.fa Kronos
@@ -443,7 +462,7 @@ We can then use psiclass to get the transcripts.
 ls *.mapped.bam > mapped.bam.list
 psiclass -p 52 --lb mapped.bam.list
 ```
-However, some of the sequencing data are big. For instance, SRX10965365, SRX10965366, and SRX10965367 are 460G, 340G and 510G in size, respectively. We will map individual or some combined paired-end libraries, and then merge them into a single alignment file later to speed up this process.
+
 
 
 
