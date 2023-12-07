@@ -432,7 +432,12 @@ right=$read/$prefix\_2_val_2.fq
 singularity run -B $PWD /global/scratch/users/skyungyong/Software/trinity.sif Trinity --verbose --max_memory 90G --just_normalize_reads --seqType fq --CPU 40 --left $left --right $right --output trinity_$prefix
 ```
 
+Then, create a file that describes the samples and run Trinity. Now, the paired-end libraries were about 
+```
+ls -d trinity_* | while read folder; do prefix=$(echo $folder | cut -d "_" -f 2); left=$(ls $(pwd)/$folder\/insilico_read_normalization/*_1_val_1*.fq); right=$(ls $(pwd)\/$folder\/insilico_read_normalization/*_2_val_2*.fq); echo $prefix $prefix $left $right; done > sample.list
 
+singularity run -B $PWD /global/scratch/users/skyungyong/Software/trinity.sif Trinity  --verbose --seqType fq --max_memory 240G --CPU 56 --samples_file $PWD/sample.list
+```
 
 ### Mapping
 
