@@ -396,7 +396,9 @@ Then, we can mask the genome with the constructed library. To save time, we sepe
 ```
 RepeatMasker -xsmall -e ncbi -pa 56 -q -no_is -norna -nolow -div 40 -gff -lib /confident_TE.cons.fa.classified -dir $prefix\/ -cutoff 225 $prefix\/$prefix\.fa
 ```
+For the unplaced scaffold (Un), RepeatMasker somehow got stuck at the processrepeat step. It turned out the software gets infinetly stuck in a while loop (around line 404). We didn not spend a lot of time troubleshooting this. Rather, we removed the problematic sequence (N_8755) from confident_TE.cons.fa.classified and re-run RepeatMasker. 
 
+### Telomere search
 
 
 According to [Telobase](http://cfb.ceitec.muni.cz/telobase/), the telomere sequences for *Triticum* is TTTAGGG. We can double check before we use this sequence.
@@ -462,12 +464,26 @@ for sam in *.mapped.sam; do
   samtools index "$bam"
 done
 ```
-We can then use psiclass to get the transcripts. 
+We can then use psiclass to get the transcripts. To save time, we will process this for each chromosome. We first split each bam file into the designated folders as below. 
+
 ```
-ls *.mapped.bam > mapped.bam.list
-psiclass -p 52 --lb mapped.bam.list
+chr=$1
+mkdir $chr  # Create directory outside the loop
+cp mapped.bam.list $chr
+for bam in $(cat mapped.bam.list); do
+  samtools view -@ 56 -bh 4.RNAseq/$bam $chr > $chr/$(basename $bam)
+done
 ```
 
+Psiclass can be run simply as below. We submitted the jobs to 15 nodes and processed each chromosome individually. 
+```
+chr=$1
+cd $chr && /global/scratch/users/skyungyong/Software/psiclass/psiclass -p 40 --lb mapped.bam.list
+```
+for chr in {1B,2A,3B,3A,3B,4A,4B,5A,5B,6A,6B,7A,7B,Un}; do 
+  mkdir $chr
+  
+  ; done
 
 
 
