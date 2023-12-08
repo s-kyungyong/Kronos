@@ -398,6 +398,12 @@ RepeatMasker -xsmall -e ncbi -pa 56 -q -no_is -norna -nolow -div 40 -gff -lib /c
 ```
 For the unplaced scaffold (Un), RepeatMasker somehow got stuck at the processrepeat step. It turned out the software gets infinetly stuck in a while loop (around line 404). We didn not spend a lot of time troubleshooting this. Rather, we removed the problematic sequence (N_8755) from confident_TE.cons.fa.classified and re-run RepeatMasker. 
 
+Then all masked fasta files are merged into one
+```
+cat */*.fa.masked > Kronos.collapsed.chromosomes.masked.fa
+```
+
+
 ### Telomere search
 
 
@@ -464,6 +470,13 @@ for sam in *.mapped.sam; do
   samtools index "$bam"
 done
 ```
+
+We will also merge the bam files into one and use it later for the genome annotation with BRAKER. 
+```
+samtools merge -@ 56 -h SRX10965366.mapped.bam -o all.merged.bam *.mapped.bam
+samtools sort -@ 56 all.merged.bam > all.merged.sorted.bam
+```
+
 We can then use psiclass to get the transcripts. To save time, we will process this for each chromosome. We first split each bam file into the designated folders as below. 
 
 ```
@@ -485,5 +498,25 @@ for chr in {1B,2A,3B,3A,3B,4A,4B,5A,5B,6A,6B,7A,7B,Un}; do
   
   ; done
 
+### Braker
 
+To run BRAKER, we need three inputs 1) a soft-masked genome (Kronos.collapsed.chromosomes.masked.fa), 2) mapped RNA-seq data (all.merged.sorted.bam), and 3) protein datasets. We downloaded 2,850,097 sequences from UniProt by searching for the following: 
+
+```
+(taxonomy_id:38820)
+```
+
+Then, Run BRAKER.
+```
+singularity build braker3.sif docker://teambraker/braker3:latest
+singularity exec -B $PWD:$PWD braker3.sif cp -r /usr/share/augustus/config .
+
+singularity exec braker3.sif braker.pl --verbosity=3 \
+    --genome=Kronos.collapsed.chromosomes.masked.fa \
+    --bam=all.merged.sorted.bam \
+    --prot_seq=protkb_taxonomy_id_38820_2023_12_08.fasta \
+    --species=Kronos --threads 48 --gff3 \
+    --workingdir=./braker \
+    --AUGUSTUS_CONFIG_PATH=./config
+```
 
