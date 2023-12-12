@@ -493,10 +493,8 @@ Psiclass can be run simply as below. We submitted the jobs to 15 nodes and proce
 chr=$1
 cd $chr && /global/scratch/users/skyungyong/Software/psiclass/psiclass -p 40 --lb mapped.bam.list
 ```
-for chr in {1B,2A,3B,3A,3B,4A,4B,5A,5B,6A,6B,7A,7B,Un}; do 
-  mkdir $chr
-  
-  ; done
+
+stringtie -o stringtie.gtf -p 56 --conservative ../../4.RNAseq/all.merged.sorted.bam
 
 ### Braker
 
@@ -515,8 +513,14 @@ singularity exec braker3.sif braker.pl --verbosity=3 \
     --genome=Kronos.collapsed.chromosomes.masked.fa \
     --bam=all.merged.sorted.bam \
     --prot_seq=protkb_taxonomy_id_38820_2023_12_08.fasta \
-    --species=Kronos --threads 48 --gff3 \
+    --species=Kronos_collapsed --threads 48 --gff3 \
+    --nocleanup \
     --workingdir=./braker \
     --AUGUSTUS_CONFIG_PATH=./config
 ```
+Then, UTR was added as below.
+
+
+
+### NLR annotation
 
