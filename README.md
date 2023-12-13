@@ -440,12 +440,27 @@ right=$read/$prefix\_2_val_2.fq
 singularity run -B $PWD /global/scratch/users/skyungyong/Software/trinity.sif Trinity --verbose --max_memory 90G --just_normalize_reads --seqType fq --CPU 40 --left $left --right $right --output trinity_$prefix
 ```
 
-Then, create a file that describes the samples and run Trinity. Now, the paired-end libraries were about 
+Then, create a file that describes the samples and run Trinity.
 ```
 ls -d trinity_* | while read folder; do prefix=$(echo $folder | cut -d "_" -f 2); left=$(ls $(pwd)/$folder\/insilico_read_normalization/*_1_val_1*.fq); right=$(ls $(pwd)\/$folder\/insilico_read_normalization/*_2_val_2*.fq); echo $prefix $prefix $left $right; done > sample.list
 
-singularity run -B $PWD /global/scratch/users/skyungyong/Software/trinity.sif Trinity  --verbose --seqType fq --max_memory 240G --CPU 56 --samples_file $PWD/sample.list
+singularity run -B $PWD /global/scratch/users/skyungyong/Software/trinity.sif Trinity  --verbose --seqType fq --max_memory 1500G --CPU 56 --samples_file $PWD/sample.list
 ```
+After re-normalization, Trinity produced ~56 Gb of the paired-end reads. It took a few days to run the software, the resulting transcripts were ~1 Gb. 
+
+Let's process the transcripts with TransDecoder v5.7.1
+/global/scratch/users/skyungyong/Software/TransDecoder-TransDecoder-v5.7.1/TransDecoder.LongOrfs -t trinity_out_dir.Trinity.fasta
+
+wget https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
+gunzip Pfam-A.hmm.gz
+hmmsearch --cpu 56 -E 1e-10 --domtblout pfam.domtblout Pfam-A.hmm longest_orfs.pep
+
+makeblastdb -in uniprotkb_taxonomy_id_38820_2023_12_08.fasta -out uniprotkb_38820 -dbtype 'prot'
+blastp -query longest_orfs.pep -db uniprotkb_38820  -max_target_seqs 1 -outfmt 6 -evalue 1e-5 -num_threads 56 > blastp.outfmt6
+
+
+
+    
 
 ### Mapping
 
