@@ -597,11 +597,15 @@ gene level |   315 |   200 |   84 |  231 |  116 |        0.42 |       0.267 |
 ----------------------------------------------------------------------------/
 
 
+
 optimize_augustus.pl --species=Sohab --cpus=8 --UTR=off genes.gb.train
 augustus --species=Sohab genes.gb.test | tee second-test.out
 
 MAKER will be run with trained SNAP and AUGUSTUS as well as 
 
+
+
+wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-57/fasta/triticum_aestivum/pep/Triticum_aestivum.IWGSC.pep.all.fa.gz
 
 ### Evience modeler 
 
