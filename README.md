@@ -418,7 +418,7 @@ It looks like 8 scaffolds may have telomeres at the both ends. 6 may have telome
 # Soft-mask the genome
 singularity run -B ${host_path}:${container_path} --pwd /HiTE HiTE.sif RepeatMasker -xsmall -lib Haplotype-1/confident_TE.cons.fa.classified -dir Haplotype-1 -pa 20 SH1353.haplotype-1.fa
 
-## RNA-seq
+## Genome annotation: RNA-seq
 
 We donwloaded the paired-end RNA-seq data from the NCBI. The list can be found in [SRA.list](https://github.com/s-kyungyong/Kronos/blob/main/RNAseq/SRA.list). Let's first remove adapters and low-quality reads from the libraries. Trim_galore and cutadapt versions were v0.6.6 and v3.7. 
 ```
@@ -448,18 +448,23 @@ singularity run -B $PWD /global/scratch/users/skyungyong/Software/trinity.sif Tr
 ```
 After re-normalization, Trinity produced ~56 Gb of the paired-end reads. It took a few days to run the software, the resulting transcripts were ~1 Gb. 
 
-Let's process the transcripts with TransDecoder v5.7.1
-/global/scratch/users/skyungyong/Software/TransDecoder-TransDecoder-v5.7.1/TransDecoder.LongOrfs -t trinity_out_dir.Trinity.fasta
+Let's process the transcripts with TransDecoder v5.7.1.
+
+```
+TransDecoder.LongOrfs -t trinity_out_dir.Trinity.fasta
 
 wget https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
 gunzip Pfam-A.hmm.gz
 hmmsearch --cpu 56 -E 1e-10 --domtblout pfam.domtblout Pfam-A.hmm longest_orfs.pep
 
-makeblastdb -in uniprotkb_taxonomy_id_38820_2023_12_08.fasta -out uniprotkb_38820 -dbtype 'prot'
-blastp -query longest_orfs.pep -db uniprotkb_38820  -max_target_seqs 1 -outfmt 6 -evalue 1e-5 -num_threads 56 > blastp.outfmt6
+# diamond version is 2.0.15
+diamond makedb --in uniprotkb_taxonomy_id_38820_2023_12_08.fasta --db uniprot_38820_diamond # see below to check where these sequences came from
+diamond blastp --threads 56 --evalue 1e-5 --db uniprot_38820_diamond.dmnd --max-target-seqs 1 --out diamond.outfmt6 --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen --query longest_orfs.pep
 
+TransDecoder.Predict --retain_pfam_hits pfam.domtblout --retain_blastp_hits diamond.outfmt6 -t trinity_out_dir.Trinity.fasta
+```
 
-
+Not all transcripts would be in good quality, and we would need to process them later on. 
     
 
 ### Mapping
@@ -492,24 +497,14 @@ samtools merge -@ 56 -h SRX10965366.mapped.bam -o all.merged.bam *.mapped.bam
 samtools sort -@ 56 all.merged.bam > all.merged.sorted.bam
 ```
 
-We can then use psiclass to get the transcripts. To save time, we will process this for each chromosome. We first split each bam file into the designated folders as below. 
-
+We can then use stringtie v2.2.1 to process this. 
 ```
-chr=$1
-mkdir $chr  # Create directory outside the loop
-cp mapped.bam.list $chr
-for bam in $(cat mapped.bam.list); do
-  samtools view -@ 56 -bh 4.RNAseq/$bam $chr > $chr/$(basename $bam)
-done
+stringtie -o stringtie.gtf -p 56 --conservative all.merged.sorted.bam
 ```
 
-Psiclass can be run simply as below. We submitted the jobs to 15 nodes and processed each chromosome individually. 
-```
-chr=$1
-cd $chr && /global/scratch/users/skyungyong/Software/psiclass/psiclass -p 40 --lb mapped.bam.list
-```
+### Miniprot
 
-stringtie -o stringtie.gtf -p 56 --conservative ../../4.RNAseq/all.merged.sorted.bam
+/global/scratch/users/skyungyong/Software/miniprot/miniprot -t 56 --gff --outc=0.95 -N 0 ../3.Repeat/Kronos_output_latest/Kronos.collapsed.chromosomes.fa ../5.Annotations/Braker/uniprotkb_taxonomy_id_38820_2023_12_08.fasta
 
 ### Braker
 
@@ -534,6 +529,81 @@ singularity exec braker3.sif braker.pl --verbosity=3 \
     --AUGUSTUS_CONFIG_PATH=./config
 ```
 Then, UTR was added as below.
+
+### Maker
+
+We will first train SNAP and AUGUSTUS. AUGUSTUS is retrained to get different parameters, hoping that it will capture gene structures missed in BRAKER's run. Let's first get reliable gene models. We will consider gene models reliable if BRAKER's and Trinity's models agree with 100% coverage and identity. 
+
+diamond makedb --in ../Trinity/trinity_out_dir.Trinity.fasta.transdecoder.pep --db trinity.transdecoder
+diamond blastp --threads 56 --evalue 1e-10 --db trinity.transdecoder --max-target-seqs 1 --out braker.against.trinity.transdecoder.diamond.out --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen --query ../Braker/braker_rerun/braker.aa
+
+less braker.against.trinity.transdecoder.diamond.out | awk '$13 == $14 && $7 == 1 && $9 == 1 && $8 == $10 && $3 > 98 && $4 > 200 {print}' > train.initial.list
+less train.initial.list | wc -l
+8662
+
+We will randomly split these into two sets and use to train SNAP and AUGUSTUS, respectively. Some of these transcripts come from the same gene, so we will filter those out. 
+python select_genemodels.py train.initial.list ../Braker/braker_rerun/braker.gff3
+augustus.train.gff has 3734 genes
+snap.train.gff has 3734 genes
+
+
+
+#SNAP
+#Download gff3_to_zff.pl from here: https://biowize.wordpress.com/2012/06/01/training-the-snap-ab-initio-gene-predictor/
+perl gff3_to_zff.pl < snap.train.gff3 > genome.ann
+#The order of the scaffolds needs to be the same with the genome.ann file
+grep '>' genome.ann | cut -d ">" -f 2 |  while read line; do awk -v seq=$line -v RS=">" '$1 == seq {print R
+S $0; exit}' ../../../3.Repeat/Kronos_output_latest/Kronos.collapsed.chromosomes.fa; done > genome.dna
+
+fathom -gene-stats genome.ann genome.dna > gene-stats.log
+fathom -validate genome.ann genome.dna > gene.validate
+fathom -categorize 1000 genome.ann genome.dna
+fathom -export 1000 -plus uni.*
+fathom -validate export.ann export.dna
+forge export.ann export.dna
+
+hmm-assembler.pl Kronos . > Sohab.hmm
+
+
+
+gff2gbSmallDNA.pl ../augustus.train.gff ../../Braker/Kronos.collapsed.chromosomes.masked.fa 2000 genes
+randomSplit.pl genes.gb 200
+new_species.pl --species=Kronos_re
+etraining --species=Kronos_re genes.gb.train
+augustus --species=Kronos_re genes.gb.test | tee first-test.out
+
+*******      Evaluation of gene prediction     *******
+
+---------------------------------------------\
+                 | sensitivity | specificity |
+---------------------------------------------|
+nucleotide level |       0.893 |       0.757 |
+---------------------------------------------/
+
+----------------------------------------------------------------------------------------------------------\
+           |  #pred |  #anno |      |    FP = false pos. |    FN = false neg. |             |             |
+           | total/ | total/ |   TP |--------------------|--------------------| sensitivity | specificity |
+           | unique | unique |      | part | ovlp | wrng | part | ovlp | wrng |             |             |
+----------------------------------------------------------------------------------------------------------|
+           |        |        |      |                414 |                310 |             |             |
+exon level |   1458 |   1354 | 1044 | ------------------ | ------------------ |       0.771 |       0.716 |
+           |   1458 |   1354 |      |  127 |    8 |  279 |  127 |    7 |  176 |             |             |
+----------------------------------------------------------------------------------------------------------/
+
+----------------------------------------------------------------------------\
+transcript | #pred | #anno |   TP |   FP |   FN | sensitivity | specificity |
+----------------------------------------------------------------------------|
+gene level |   315 |   200 |   84 |  231 |  116 |        0.42 |       0.267 |
+----------------------------------------------------------------------------/
+
+
+optimize_augustus.pl --species=Sohab --cpus=8 --UTR=off genes.gb.train
+augustus --species=Sohab genes.gb.test | tee second-test.out
+
+MAKER will be run with trained SNAP and AUGUSTUS as well as 
+
+
+### Evience modeler 
 
 
 
