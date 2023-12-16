@@ -216,7 +216,7 @@ quast.py --fast -t 20 -o quast Kronos.p_ctg.fa Kronos.a_ctg.fa
 VERSION=0.2.2
 export SINGULARITY_CACHEDIR=/global/scratch/users/skyungyong/temp
 singularity exec docker://huangnengcsu/compleasm:v${VERSION} compleasm run -l poales_odb10 -t 20 -o p_busco -a Kronos.p_ctg.fa
-singularity exec docker://huangnengcsu/compleasm:v${VERSION} compleasm run -l poales_odb10 -t 20 -o a_busco -a Kronos.a_ctg.fa
+ exec docker://huangnengcsu/compleasm:v${VERSION} compleasm run -l poales_odb10 -t 20 -o a_busco -a Kronos.a_ctg.fa
 ```
 
 Here is the statistics. 
@@ -386,8 +386,8 @@ quast -t 20 --fast Kronos.contigs.genomic.fa
 
 We will use [HiTE](https://github.com/CSU-KangHu/HiTE) for repeat masking. This step took slightly more than two weeks. 
 ```
-export SINGULARITY_CACHEDIR=/global/scratch/users/skyungyong/temp
-singularity pull HiTE.sif docker://kanghu/hite:3.0.0
+export _CACHEDIR=/global/scratch/users/skyungyong/temp
+singularity pull HiTE.sif docker://kanghu/hite:3.0.0 nb
 WD=$(pwd)
 singularity run -B ${host_path}:${container_path} --pwd /HiTE  HiTE.sif python main.py --genome $WD/Kronos.collapsed.chromosomes.fa --thread 56 --outdir $WD/Kronos_output --recover 1 --plant 1 --classified 1 --domain 1
 ```
@@ -396,11 +396,14 @@ Then, we can mask the genome with the constructed library. To save time, we sepe
 ```
 RepeatMasker -xsmall -e ncbi -pa 56 -q -no_is -norna -nolow -div 40 -gff -lib /confident_TE.cons.fa.classified -dir $prefix\/ -cutoff 225 $prefix\/$prefix\.fa
 ```
-For the unplaced scaffold (Un), RepeatMasker somehow got stuck at the processrepeat step. It turned out the software gets infinetly stuck in a while loop (around line 404). We didn not spend a lot of time troubleshooting this. Rather, we removed the problematic sequence (N_8755) from confident_TE.cons.fa.classified and re-run RepeatMasker. 
+For the unplaced scaffold (Un), RepeatMasker somehow got stuck in the processrepeat script. It turned out the software gets infinetly stuck in a while loop (around line 404). We didn not spend a lot of time troubleshooting this. Rather, we removed the problematic sequence (N_8755) from confident_TE.cons.fa.classified and re-run RepeatMasker. 
 
 Then all masked fasta files are merged into one
 ```
 cat */*.fa.masked > Kronos.collapsed.chromosomes.masked.fa
+cat */*.fa.out > Kronos.collapsed.chromosomes.masked.rm.out
+cat */*.out.gff > Kronos.collapsed.chromosomes.masked.out.gff
+bedtools maskfasta  -fi Kronos.collapsed.chromosomes.masked.fa -bed Kronos.collapsed.chromosomes.masked.out.gff -fo Kronos.collapsed.chromosomes.hard-masked.fa
 ```
 
 
@@ -439,6 +442,9 @@ right=$read/$prefix\_2_val_2.fq
 
 singularity run -B $PWD /global/scratch/users/skyungyong/Software/trinity.sif Trinity --verbose --max_memory 90G --just_normalize_reads --seqType fq --CPU 40 --left $left --right $right --output trinity_$prefix
 ```
+
+cat trinity_S*/insilico_read_normalization/*1_val_1*.fq > right.norm.all.fq
+cat trinity_S*/insilico_read_normalization/*2_val_2*.fq > left.norm.all.fq
 
 Then, create a file that describes the samples and run Trinity.
 ```
@@ -529,6 +535,24 @@ singularity exec braker3.sif braker.pl --verbosity=3 \
     --AUGUSTUS_CONFIG_PATH=./config
 ```
 Then, UTR was added as below.
+
+### Ginger
+
+conda create ginger && conda activate ginger
+conda install mamba
+mamba install python salmon gffread nextflow=21.04 pasa transdecoder hisat2 samtools stringtie velvet oases trinity gmap cd-hit seqkit spaln=3.0.0 augustus snap perl-carp perl-pathtools perl-data-dumper perl-db_file perl-findbin perl-uri perl-exporter perl-dbi perl-parallel-forkmanager perl-getopt-long matplotlib
+
+git clone https://github.com/i10labtitech/GINGER.git && cd GINGER
+mkdir util/mapping util/evaluation
+make
+
+
+wge https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-57/fasta/triticum_aestivum/pep/Triticum_aestivum.IWGSC.pep.all.fa.gz
+wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-57/fasta/triticum_turgidum/pep/Triticum_turgidum.Svevo.v1.pep.all.fa.gz
+wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-57/fasta/triticum_dicoccoides/pep/Triticum_dicoccoides.WEWSeq_v.1.0.pep.all.fa.gz
+wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-57/fasta/triticum_spelta/pep/Triticum_spelta.PGSBv2.0.pep.all.fa.gz
+wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-57/fasta/triticum_urartu/pep/Triticum_urartu.IGDB.pep.all.fa.gz
+gunzip * 
 
 ### Maker
 
