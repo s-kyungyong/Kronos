@@ -539,8 +539,9 @@ Then, UTR was added as below.
 ### Ginger
 
 conda create ginger && conda activate ginger
-conda install mamba
-mamba install python salmon gffread nextflow=21.04 pasa transdecoder hisat2 samtools stringtie velvet oases trinity gmap cd-hit seqkit spaln=3.0.0 augustus snap perl-carp perl-pathtools perl-data-dumper perl-db_file perl-findbin perl-uri perl-exporter perl-dbi perl-parallel-forkmanager perl-getopt-long matplotlib
+conda install mamba python=3.9
+mamba install salmon gffread nextflow=21.04 pasa bwa bowtie2 transdecoder hisat2 samtools stringtie velvet oases trinity gmap cd-hit seqkit spaln=3.0.0 augustus snap 
+perl-carp perl-pathtools perl-data-dumper perl-db_file perl-findbin perl-uri perl-exporter perl-dbi perl-parallel-forkmanager perl-getopt-long matplotlib
 
 git clone https://github.com/i10labtitech/GINGER.git && cd GINGER
 mkdir util/mapping util/evaluation
@@ -553,6 +554,9 @@ wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-57/fasta/triticum_d
 wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-57/fasta/triticum_spelta/pep/Triticum_spelta.PGSBv2.0.pep.all.fa.gz
 wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-57/fasta/triticum_urartu/pep/Triticum_urartu.IGDB.pep.all.fa.gz
 gunzip * 
+
+
+samtools view -h -b -f 3 all.merged.sorted.bam > 
 
 ### Maker
 
