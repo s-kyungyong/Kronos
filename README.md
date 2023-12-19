@@ -543,6 +543,7 @@ conda install mamba python=3.9
 mamba install salmon gffread nextflow=21.04 pasa bwa bowtie2 transdecoder hisat2 samtools stringtie velvet oases trinity gmap cd-hit seqkit spaln=3.0.0 augustus snap 
 perl-carp perl-pathtools perl-data-dumper perl-db_file perl-findbin perl-uri perl-exporter perl-dbi perl-parallel-forkmanager perl-getopt-long matplotlib
 
+
 git clone https://github.com/i10labtitech/GINGER.git && cd GINGER
 mkdir util/mapping util/evaluation
 make
