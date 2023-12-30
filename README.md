@@ -534,7 +534,6 @@ singularity exec braker3.sif braker.pl --verbosity=3 \
     --workingdir=./braker \
     --AUGUSTUS_CONFIG_PATH=./config
 ```
-Then, UTR was added as below.
 
 ### Ginger
 
@@ -562,82 +561,7 @@ gunzip *
 
 samtools view -h -b -f 3 all.merged.sorted.bam > 
 
-### Maker
 
-We will first train SNAP and AUGUSTUS. AUGUSTUS is retrained to get different parameters, hoping that it will capture gene structures missed in BRAKER's run. Let's first get reliable gene models. We will consider gene models reliable if BRAKER's and Trinity's models agree with 100% coverage and identity. 
-
-diamond makedb --in ../Trinity/trinity_out_dir.Trinity.fasta.transdecoder.pep --db trinity.transdecoder
-diamond blastp --threads 56 --evalue 1e-10 --db trinity.transdecoder --max-target-seqs 1 --out braker.against.trinity.transdecoder.diamond.out --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen --query ../Braker/braker_rerun/braker.aa
-
-less braker.against.trinity.transdecoder.diamond.out | awk '$13 == $14 && $7 == 1 && $9 == 1 && $8 == $10 && $3 > 98 && $4 > 200 {print}' > train.initial.list
-less train.initial.list | wc -l
-8662
-
-We will randomly split these into two sets and use to train SNAP and AUGUSTUS, respectively. Some of these transcripts come from the same gene, so we will filter those out. 
-python select_genemodels.py train.initial.list ../Braker/braker_rerun/braker.gff3
-augustus.train.gff has 3734 genes
-snap.train.gff has 3734 genes
-
-
-
-#SNAP
-#Download gff3_to_zff.pl from here: https://biowize.wordpress.com/2012/06/01/training-the-snap-ab-initio-gene-predictor/
-perl gff3_to_zff.pl < snap.train.gff3 > genome.ann
-#The order of the scaffolds needs to be the same with the genome.ann file
-grep '>' genome.ann | cut -d ">" -f 2 |  while read line; do awk -v seq=$line -v RS=">" '$1 == seq {print R
-S $0; exit}' ../../../3.Repeat/Kronos_output_latest/Kronos.collapsed.chromosomes.fa; done > genome.dna
-
-fathom -gene-stats genome.ann genome.dna > gene-stats.log
-fathom -validate genome.ann genome.dna > gene.validate
-fathom -categorize 1000 genome.ann genome.dna
-fathom -export 1000 -plus uni.*
-fathom -validate export.ann export.dna
-forge export.ann export.dna
-
-hmm-assembler.pl Kronos . > Sohab.hmm
-
-
-
-gff2gbSmallDNA.pl ../augustus.train.gff ../../Braker/Kronos.collapsed.chromosomes.masked.fa 2000 genes
-randomSplit.pl genes.gb 200
-new_species.pl --species=Kronos_re
-etraining --species=Kronos_re genes.gb.train
-augustus --species=Kronos_re genes.gb.test | tee first-test.out
-
-*******      Evaluation of gene prediction     *******
-
----------------------------------------------\
-                 | sensitivity | specificity |
----------------------------------------------|
-nucleotide level |       0.893 |       0.757 |
----------------------------------------------/
-
-----------------------------------------------------------------------------------------------------------\
-           |  #pred |  #anno |      |    FP = false pos. |    FN = false neg. |             |             |
-           | total/ | total/ |   TP |--------------------|--------------------| sensitivity | specificity |
-           | unique | unique |      | part | ovlp | wrng | part | ovlp | wrng |             |             |
-----------------------------------------------------------------------------------------------------------|
-           |        |        |      |                414 |                310 |             |             |
-exon level |   1458 |   1354 | 1044 | ------------------ | ------------------ |       0.771 |       0.716 |
-           |   1458 |   1354 |      |  127 |    8 |  279 |  127 |    7 |  176 |             |             |
-----------------------------------------------------------------------------------------------------------/
-
-----------------------------------------------------------------------------\
-transcript | #pred | #anno |   TP |   FP |   FN | sensitivity | specificity |
-----------------------------------------------------------------------------|
-gene level |   315 |   200 |   84 |  231 |  116 |        0.42 |       0.267 |
-----------------------------------------------------------------------------/
-
-
-
-optimize_augustus.pl --species=Sohab --cpus=8 --UTR=off genes.gb.train
-augustus --species=Sohab genes.gb.test | tee second-test.out
-
-MAKER will be run with trained SNAP and AUGUSTUS as well as 
-
-
-
-wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-57/fasta/triticum_aestivum/pep/Triticum_aestivum.IWGSC.pep.all.fa.gz
 
 ### Evience modeler 
 
