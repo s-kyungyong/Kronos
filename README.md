@@ -508,9 +508,20 @@ We can then use stringtie v2.2.1 to process this.
 stringtie -o stringtie.gtf -p 56 --conservative all.merged.sorted.bam
 ```
 
+for prefix in 1A 1B 2A 2B 3A 3B 4A 4B 5A 5B 6A 6B 7A 7B Un; do
+    sed "s/>/>${prefix}/g" ${prefix}/trinity_out_dir/Trinity-GG.fasta >> Trinity-GG.fasta
+done
+
+cat ../../4.RNAseq/Genome-guided/Trinity-GG.fasta ../Trinity/trinity_out_dir.Trinity.fasta > transcripts.fasta
+singularity exec -B  /global/scratch/users/skyungyong/Kronos/ pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl -c /usr/local/src/PASApipeline/sample_data/sqlite.confs/alignAssembly.config -r -C -R --CPU 56 --ALIGNERS gmap,blat,minimap2 --TRANSDECODER  --ALT_SPLICE -g /global/scratch/users/skyungyong/Kronos/3.Repeat/Kronos_output_latest/RepeatMasking/Kronos.collapsed.chromosomes.masked.fa -t /global/scratch/users/skyungyong/Kronos/5.Annotations/PASA/transcripts.fasta --trans_gtf /global/scratch/users/skyungyong/Kronos/5.Annotations/Stringtie/stringtie.gtf
+
+ pwd
+/global/scratch/users/skyungyong/Kronos/5.Annotations
+
 ### Miniprot
 
 /global/scratch/users/skyungyong/Software/miniprot/miniprot -t 56 --gff --outc=0.95 -N 0 ../3.Repeat/Kronos_output_latest/Kronos.collapsed.chromosomes.fa ../5.Annotations/Braker/uniprotkb_taxonomy_id_38820_2023_12_08.fasta
+
 
 ### Braker
 
