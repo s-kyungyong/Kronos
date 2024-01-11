@@ -575,8 +575,18 @@ samtools view -h -b -f 3 all.merged.sorted.bam >
 
 
 ### Evience modeler 
+cp ../Braker/braker_rerun/braker.gtf .
+singularity exec -B /global/scratch/users/skyungyong/Kronos/ EVidenceModeler.v2.1.0.simg perl /usr/local/bin/EvmUtils/misc/braker_GTF_to_EVM_GFF3.pl braker.gtf | awk '$1 != "" {$2="braker"}1' OFS="\t" > gene_predictions.gff3
 
+cp ../Ginger/ginger_phase2.gff .
+python ginger2evm.py ginger_phase2.gff > ginger.reformatted.gff
+cat ginger.reformatted.gff >> gene_predictions.gff3
 
+cp ../Miniprot/miniprot.gff3 .
+ singularity exec -B /global/scratch/users/skyungyong/Kronos/ EVidenceModeler.v2.1.0.simg python3 /usr/local/bin/EvmUtils/misc/miniprot_GFF_2_EVM_GFF3.py miniprot.gff3 > protein_a
+lignments.gff3
 
+cp ../PASA/sample_mydb_pasa.sqlite.pasa_assemblies.gff3 .
+awk '$1 != "" {$2="pasa"}1' OFS="\t" sample_mydb_pasa.sqlite.pasa_assemblies.gff3 > transcript_alignments.gff3
 ### NLR annotation
 
