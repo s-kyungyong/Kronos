@@ -473,6 +473,10 @@ TransDecoder.Predict --retain_pfam_hits pfam.domtblout --retain_blastp_hits diam
 Not all transcripts would be in good quality, and we would need to process them later on. 
     
 
+PASA
+TransDecoder.LongOrfs -t sample_mydb_pasa.sqlite.assemblies.fasta
+TransDecoder.Predict -t TransDecoder.LongOrfs -t sample_mydb_pasa.sqlite.assemblies.fasta
+
 ### Mapping
 
 The RNA-seq data can be also mapped to the genome and processed. We are using hisat v2.2.1 to map the paired end libraries. The reads will be aligned as below. 
@@ -570,9 +574,35 @@ wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-57/fasta/triticum_u
 gunzip * 
 
 
+AUGUSTUS training
+compare PASA and BRAKER annotation. Extract the gene models, if they are perfect matches
+cp ../../../Braker/braker_rerun/braker.gff3 .
+cp ../../../Braker/braker_rerun/braker.aa .
+makeblastdb -in trinity_out_dir.Trinity.fasta.transdecoder.pep -out trinity -dbtype 'prot'
+blastp -num_threads 40 -evalue 1e-10 -max_target_seqs 1 -max_hsps 1 -outfmt "6 std qlen slen" -out braker_vs_trinity.blast.out -query braker.aa -db trinity
+
+makeblastdb -in ../../../Triticum_aestivum.IWGSC.pep.all.fa -out IWGSC -dbtype 'prot'
+blastp -num_threads 40 -evalue 1e-10 -max_target_seqs 1 -max_hsps 1 -outfmt "6 std qlen slen" -out braker_vs_IWGSC.blast.out -query braker.aa -db IWGSC
+
+python select_genes.py
+python select_genes.py
+Total number of selected gene models: 23785
+augustus.gff3 has 8500 genes
+snap.gff3 has 8500 genes
+
+
+gff2gbSmallDNA.pl ../augustus.gff3 ../../../../../3.Repeat/Kronos_output_latest/RepeatMasking/Kronos.collapsed.chromosomes.masked.fa 2000 genes.gb
+randomSplit.pl genes.gb 400
+new_species.pl --species=Kronos_manual --AUGUSTUS_CONFIG_PATH=/global/scratch/users/skyungyong/Kronos/5.Annotations/Braker/config
+singularity exec -B /global/scratch/users/skyungyong/Kronos/ /global/scratch/users/skyungyong/Kronos/5.Annotations/Braker/braker3.sif etraining --AUGUSTUS_CONFIG_PATH=/global/scratch/users/skyungyong/Kronos/5.Annotations/Braker/config --species=Kronos_manual genes.gb.train
+singularity exec -B /global/scratch/users/skyungyong/Kronos/ /global/scratch/users/skyungyong/Kronos/5.Annotations/Braker/braker3.sif augustus --AUGUSTUS_CONFIG_PATH=/global/scratch/users/skyungyong/Kronos/5.Annotations/Braker/config --species=Kronos_manual genes.gb.test | tee first-test.out
+
+
+cp ../../../../../3.Repeat/Kronos_output_latest/RepeatMasking/Kronos.collapsed.chromosomes.masked.fa genome.dna
 samtools view -h -b -f 3 all.merged.sorted.bam > 
 
-
+g17351.t3
+g22576.t1
 
 ### Evience modeler 
 cp ../Braker/braker_rerun/braker.gtf .
