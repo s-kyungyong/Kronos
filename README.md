@@ -592,7 +592,7 @@ snap.gff3 has 8500 genes
 
 
 gff2gbSmallDNA.pl ../augustus.gff3 ../../../../../3.Repeat/Kronos_output_latest/RepeatMasking/Kronos.collapsed.chromosomes.masked.fa 2000 genes.gb
-randomSplit.pl genes.gb 400
+randomSplit.pl genes.gb 400l
 new_species.pl --species=Kronos_manual --AUGUSTUS_CONFIG_PATH=/global/scratch/users/skyungyong/Kronos/5.Annotations/Braker/config
 singularity exec -B /global/scratch/users/skyungyong/Kronos/ /global/scratch/users/skyungyong/Kronos/5.Annotations/Braker/braker3.sif etraining --AUGUSTUS_CONFIG_PATH=/global/scratch/users/skyungyong/Kronos/5.Annotations/Braker/config --species=Kronos_manual genes.gb.train
 singularity exec -B /global/scratch/users/skyungyong/Kronos/ /global/scratch/users/skyungyong/Kronos/5.Annotations/Braker/braker3.sif augustus --AUGUSTUS_CONFIG_PATH=/global/scratch/users/skyungyong/Kronos/5.Annotations/Braker/config --species=Kronos_manual genes.gb.test | tee first-test.out
@@ -605,18 +605,28 @@ g17351.t3
 g22576.t1
 
 ### Evience modeler 
-cp ../Braker/braker_rerun/braker.gtf .
-singularity exec -B /global/scratch/users/skyungyong/Kronos/ EVidenceModeler.v2.1.0.simg perl /usr/local/bin/EvmUtils/misc/braker_GTF_to_EVM_GFF3.pl braker.gtf | awk '$1 != "" {$2="braker"}1' OFS="\t" > gene_predictions.gff3
+mkdir abinitio
+singularity exec -B /global/scratch/users/skyungyong/Kronos/ EVidenceModeler.v2.1.0.simg perl /usr/local/bin/EvmUtils/misc/augustus_GFF3_to_EVM_GFF3.pl ../Braker/braker_rerun/augustus.hints.gff3 | awk '$1 != "" {$2="augustus1"}1' OFS="\t" | sed 's/model./aug1_model./g' | sed 's/;;/;/g' | sed 's/;.exon/.exon/g' > abinitio/augustus_1.gff3
+python ginger_int_to_evmgff.py ../../Ginger/ginger_augustus.gff > temp.gff3 && | awk '$1 != "" {$2="augustus2"}1' OFS="\t" temp.gff3 > augustus_2.gff3
+python ginger_int_to_evmgff.py ../../Ginger/ginger_snap.gff > snap.gff3
+singularity exec -B /global/scratch/users/skyungyong/Kronos/ ../EVidenceModeler.v2.1.0.simg perl /usr/local/bin/EvmUtils/misc/GeneMarkHMM_GTF_to_EVM_GFF3.pl ../../Braker/braker_rerun/GeneMark-ETP/genemark.gtf > genemark.gff3
+python fix_genemark.py genemark.gff3 > temp.gff3 && mv temp.gff3 genemark.gff3
+singularity exec -B /global/scratch/users/skyungyong/Kronos/ ../EVidenceModeler.v2.1.0.simg perl /usr/local/bin/EvmUtils/misc/braker_GTF_to_EVM_GFF3.pl ../../Braker/braker_rerun/braker.gtf | awk '$1 != "" {$2="braker"}1' OFS="\t" > braker.gff3
+python ginger2evm.py ../../Ginger/ginger_phase2.gff > ginger.gff3
+cat abinitio/*gff3 > abinitio.gff3
 
-cp ../Ginger/ginger_phase2.gff .
-python ginger2evm.py ginger_phase2.gff > ginger.reformatted.gff
-cat ginger.reformatted.gff >> gene_predictions.gff3
-
-cp ../Miniprot/miniprot.gff3 .
- singularity exec -B /global/scratch/users/skyungyong/Kronos/ EVidenceModeler.v2.1.0.simg python3 /usr/local/bin/EvmUtils/misc/miniprot_GFF_2_EVM_GFF3.py miniprot.gff3 > protein_a
-lignments.gff3
+mkdir homology
+singularity exec -B /global/scratch/users/skyungyong/Kronos/ EVidenceModeler.v2.1.0.simg python3 /usr/local/bin/EvmUtils/misc/miniprot_GFF_2_EVM_GFF3.py miniprot.gff3 > miniprot.gff3
+python ginger2homology.py ../../Ginger/ginger_homology.gff  > ginger_homology.gff3
+cat homology/*.gff3 > homology.gff3
 
 cp ../PASA/sample_mydb_pasa.sqlite.pasa_assemblies.gff3 .
 awk '$1 != "" {$2="pasa"}1' OFS="\t" sample_mydb_pasa.sqlite.pasa_assemblies.gff3 > transcript_alignments.gff3
+
+other evidence
+ singularity exec -B  /global/scratch/users/skyungyong/Kronos/ pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/scripts/pasa_asmbls_to_training_set.dbi --pasa_transcripts_fasta sample_mydb_pasa.sqlite.assemblies.fasta --pasa_transcripts_gff3 sample_mydb_pasa.sqlite.pasa_assemblies.gff3
+
+ cp sample_mydb_pasa.sqlite.assemblies.fasta.transdecoder.genome.gff3 ../EVM/others/transdecoder.gff3
+
 ### NLR annotation
 
