@@ -628,5 +628,52 @@ other evidence
 
  cp sample_mydb_pasa.sqlite.assemblies.fasta.transdecoder.genome.gff3 ../EVM/others/transdecoder.gff3
 
+
+V2
+#Only use ginger and braker final outputs
+cat braker.gff3 ginger.gff3 > ../abinitio.gff3
+
+cp ../V1/transcripts.gff3 .
+
+
+mkdir others
+(base) [skyungyong@n0151 V2]$ cp ../V1/others/transdecoder.gff3 others/
+only get complete ones
+python get_complete.py
+cat transdecoder.complete.gff >> ../abinitio.gff3
+
+mkdir homology && cd homology
+ls
+Aegilops_tauschii.Aet_v4.0.pep.all.fa                            Hordeum_vulgare_goldenpromise.GPv1.pep.all.fa  Triticum_spelta.PGSBv2.0.pep.all.fa
+Avena_sativa_ot3098.Oat_OT3098_v2.pep.all.fa                     Lolium_perenne.MPB_Lper_Kyuss_1697.pep.all.fa  Triticum_turgidum.Svevo.v1.pep.all.fa
+Avena_sativa_sang.Asativa_sang.v1.1.pep.all.fa                   Secale_cereale.Rye_Lo7_2018_v1p1p1.pep.all.fa  Triticum_urartu.IGDB.pep.all.fa
+Brachypodium_distachyon.Brachypodium_distachyon_v3.0.pep.all.fa  Triticum_aestivum.IWGSC.pep.all.fa
+Hordeum_vulgare.MorexV3_pseudomolecules_assembly.pep.all.fa      Triticum_dicoccoides.WEWSeq_v.1.0.pep.all.fa
+
+/global/scratch/users/skyungyong/Software/miniprot/miniprot -t 56 --gff --outc=0.95 -N 0 /global/scratch/users/skyungyong/Kronos/3.Repeat/Kronos_output_latest/RepeatMasking/Kronos.collapsed.chromosomes.masked.fa protein.evidence.fasta > minimap.gff3
+
+ 
+
+cat *.fa > protein.evidence.fasta
+
+
+V3 - Bring the homology information from V1 (uniprot/miniprot + Ginger's alignment)
+Weight similar to V1
+bring augustus and genemark from braker with low weight.
+cp ../V2/abinitio.gff3 .
+cat ../V1/abinitio.gff3 | awk '$2 == "augustus1" || $2 == "GeneMark.hmm" {print}'  >> abinitio.gff3
+cp ../V2/transcripts.gff3 .
+cp ../V1/protein_alignments.gff3 homology.gff3
+
+ABINITIO_PREDICTION     augustus1       1.5
+ABINITIO_PREDICTION     GeneMark.hmm    1.5
+ABINITIO_PREDICTION     braker  3.5
+ABINITIO_PREDICTION     ginger  3.5
+PROTEIN homology        2
+PROTEIN                  miniprot       1
+OTHER_PREDICTION        transdecoder    2
+TRANSCRIPT               pasa   7
+
+
 ### NLR annotation
 
