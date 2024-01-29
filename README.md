@@ -686,6 +686,10 @@ PROTEIN                  miniprot       1.8
 OTHER_PREDICTION        transdecoder    5
 TRANSCRIPT               pasa   10
 
+V5
+Add maker
+separate ginger_multi ginger_single -> a bit higher for ginger_single
+
 
 
 
