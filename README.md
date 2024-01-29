@@ -674,6 +674,20 @@ PROTEIN                  miniprot       1
 OTHER_PREDICTION        transdecoder    2
 TRANSCRIPT               pasa   7
 
+Overall, V3 looks better, but missing genes. Keep the same input but alter weight
+
+V4
+ABINITIO_PREDICTION     augustus1       1.3
+ABINITIO_PREDICTION     GeneMark.hmm    1.0
+ABINITIO_PREDICTION     braker  4
+ABINITIO_PREDICTION     ginger  4
+PROTEIN homology        2.3
+PROTEIN                  miniprot       1.8
+OTHER_PREDICTION        transdecoder    5
+TRANSCRIPT               pasa   10
+
+
+
 
 ### NLR annotation
 
