@@ -689,14 +689,14 @@ TRANSCRIPT               pasa   10
 V5
 
 separate ginger_multi ginger_single -> a bit higher for ginger_single
-ABINITIO_PREDICTION     funannotate    4
+ABINITIO_PREDICTION     funannotate    3
 ABINITIO_PREDICTION     braker  3
 ABINITIO_PREDICTION     ginger  3
 ABINITIO_PREDICTION     gingers  4
 PROTEIN homology        1
 PROTEIN                  miniprot       1
 OTHER_PREDICTION        transdecoder    2
-TRANSCRIPT               pasa   6
+TRANSCRIPT               pasa   8
 
 
 
