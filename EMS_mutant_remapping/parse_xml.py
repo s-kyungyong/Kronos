@@ -21,9 +21,9 @@ def parse_sra_xml(file_path):
     return biosamples
 
 
-file_path = 'C:\\Users\\skyun\\Downloads\\biosample_result.xml'  # Replace with the path to your XML file
+file_path = 'biosample_result.xml'  # Replace with the path to your XML file
 biosamples = parse_sra_xml(file_path)
 
-with open('C:\\Users\\skyun\\Downloads\\biosample2Kronos.list', 'w') as o:
+with open('biosample2Kronos.list', 'w') as o:
     for item in biosamples:
         o.write('\t'.join(item) + '\n')
