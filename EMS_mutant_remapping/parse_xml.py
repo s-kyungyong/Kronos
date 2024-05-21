@@ -10,13 +10,16 @@ def parse_sra_xml(file_path):
         sample_name = biosample.find(".//Id[@db_label='Sample name']")
         
         if biosample_id is not None and sample_name is not None:
-            biosamples.append((biosample_id.text, sample_name.text))
+            biosamples.append((biosample_id.text, 'Kronos' + sample_name.text))
         else:
             print(f'{biosample_id} and {sample_name} not properly paired')
 
     return biosamples
 
 
-file_path = 'biosample_result.xml'  # Replace with the path to your XML file
+file_path = 'C:\\Users\\skyun\\Downloads\\biosample_result.xml'  # Replace with the path to your XML file
 biosamples = parse_sra_xml(file_path)
 
+with open('C:\\Users\\skyun\\Downloads\\biosample2Kronos.list', 'w') as o:
+    for item in biosamples:
+        o.write('\t'.join(item) + '\n')
