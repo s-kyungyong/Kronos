@@ -10,7 +10,11 @@ def parse_sra_xml(file_path):
         sample_name = biosample.find(".//Id[@db_label='Sample name']")
         
         if biosample_id is not None and sample_name is not None:
-            biosamples.append((biosample_id.text, 'Kronos' + sample_name.text))
+            
+            if 'Kronos' not in sample_name.text:
+                biosamples.append((biosample_id.text, 'Kronos' + sample_name.text))
+            else:
+                biosamples.append((biosample_id.text, sample_name.text))
         else:
             print(f'{biosample_id} and {sample_name} not properly paired')
 
