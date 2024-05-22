@@ -1,4 +1,4 @@
-Mutant ID	SRA accession	Capture ID	Batch
+Mutant ID	SRA accession	Capture ID	Remap ID
 Kronos0-1	SRX688079	KTC1	1
 Kronos166	SRX688097	KTC1	1
 Kronos199	SRX688114	KTC1	1
