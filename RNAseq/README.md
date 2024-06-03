@@ -133,3 +133,6 @@ SRR6834786
 SRR6834787
 SRR6834784
 SRR6834785
+
+
+mamba install -n isoseq tama isoseq
