@@ -1,32 +1,122 @@
 
 For IsoSeq: 
 
-We downloaded available long-read RNA-seq datasets with focus on Sequel I and II. If HiFi or CCS reads are uploaded into SRA, we directly used them. If subread bam files were uploaded, we processed them. 
-
-
-
-
-We used data from two BioProject accessions: PRJEB15048 and PRJNA427246
-
-wget https://downloads.pacbcloud.com/public/software/installers/smrtlink_7.0.1.66975.zip
-unzip smrtlink_7.0.1.66975.zip 
-bash smrtlink_7.0.1.66975.run --rootdir /global/scratch/users/skyungyong/Software/smrtlink
-------
-#### **A. Data download**
-------
-
+We downloaded available long-read RNA-seq datasets as forms of CCS or HiFi reads with focus on Sequel I and II. There is no datasets directly from Kronos, and these are from *Triticum*. These are the accessions:
 
 ```
-grep 'ERR' SRA.list | while read -r accession; do
-  cd $accession
-  wget -c -r -np -nH --cut-dirs=5 -R "index.html*" ftp://ftp.sra.ebi.ac.uk/vol1/run/ERR159/"${accession}"/
-  cd ..
+ERR11193282
+ERR11193283
+ERR11193284
+ERR11193285
+ERR11193286
+ERR11193287
+ERR11193288
+ERR11193289
+ERR11193290
+ERR11193291
+ERR11193292
+ERR11193293
+ERR11193294
+ERR11193295
+ERR11193296
+ERR11193297
+ERR12253793
+ERR12253794
+ERR12253795
+ERR12253796
+ERR12253797
+ERR12253798
+ERR12253799
+ERR12253800
+ERR12253801
+ERR12253802
+ERR12253803
+ERR12253804
+ERR12253805
+ERR12253806
+ERR12253807
+ERR12253808
+ERR12253809
+ERR12253810
+ERR12253811
+ERR12253812
+ERR12253813
+ERR12253814
+ERR12253815
+ERR12253816
+ERR12253817
+ERR12253818
+ERR12253819
+ERR12253820
+ERR12410760
+ERR9880824
+ERR9880825
+SRR21460473
+SRR21460474
+SRR24111001
+SRR24111002
+SRR24111003
+SRR24111004
+SRR24111005
+SRR24111006
+SRR24111007
+SRR24111008
+SRR24111009
+SRR24111010
+SRR24111011
+SRR24111012
+SRR24111013
+SRR24111014
+SRR24111015
+SRR24111016
+SRR24111017
+SRR24111018
+SRR24111019
+SRR24111020
+SRR24111021
+SRR24111022
+SRR24111027
+SRR24111036
+SRR24111037
+SRR24111038
+SRR24111039
+SRR25268805
+SRR25268806
+SRR25268807
+SRR25268808
+SRR25268809
+SRR25268810
+SRR25268811
+SRR25268813
+SRR25268814
+SRR25268815
+SRR25268816
+SRR25268817
+SRR28004282
+SRR28004283
+SRR28004284
+SRR28004285
+SRR28004286
+SRR28004287
+SRR28004288
+SRR28004289
+SRR28004290
+SRR28004291
+SRR28004292
+SRR28004293
+SRR28004294
+SRR28004295
+```
+Download fastq files.
+```
+cat Run.list| while read accession; do
+  prefetch "${accession}"
+  fasterq-dump -e 56 "${accession}"
+done
 ```
 
+The native Iso-Seq pipeline relies on BAM files, and we only have fastq files. Most of the runs don't seem to include the bam files as well, so we will simply trim adapters and remove poly-A tails if possible and then align those reads with minimap. This is not the most sophisticated way, but no other chocies. 
 
-/global/scratch/users/skyungyong/Software/smrtlink/smrtcmds/bin/bax2bam  --subread -o ERR1597909 *.bax.h5
-/global/scratch/users/skyungyong/Software/smrtlink/smrtcmds/bin/ccs -j 56 --min-pass 1 ERR1597909.subreads.bam ERR1597909.ccs.bam
-/global/scratch/users/skyungyong/Software/smrtlink/smrtcmds/bin/lima --dump-clips --peek-guess --isoseq -j 56 ERR1597909.ccs.bam barcodes.fa ERR1597909.ccs.lima.bam
-/global/scratch/users/skyungyong/Software/smrtlink/smrtcmds/bin/isoseq3 refine --require-polya ERR1597909.ccs.lima.Clontech_5p--NEB_Clontech_3p.bam barcodes.fa ERR1597909.flnc.bam
-/global/scratch/users/skyungyong/Software/smrtlink/smrtcmds/bin/isoseq3 cluster ERR1597909.flnc.bam unpolished.bam
-/global/scratch/users/skyungyong/Software/smrtlink/smrtcmds/bin/isoseq3 polish unpolished.bam ERR1597909.subreads.bam polished.bam
+
+
+./minimap2 -ax splice:hq -uf
