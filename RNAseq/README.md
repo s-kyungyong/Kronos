@@ -28,3 +28,9 @@ done
 For short reads:
 
 hisat2-build -p 56 Kronos.collapsed.chromosomes.masked.v1.1.broken.fa Kronos.broken
+for lib in $(ls SRX10965365*_val_1.fq); do
+  prefix=$(echo $lib | cut -d "_" -f 1)
+  read_1=$lib
+  read_2=$(echo $lib | sed 's/1_val_1/2_val_2/')
+  hisat2 -p 56 -x /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/Reference/Kronos.broken -1 $read_1 -2 $read_2 --no-discordant --no-mixed --dta -S /global/scratch/projects/vector_kvklab/KS-IsoSeq-HiFi/Stringtie/ShortReads/${prefix}.sam
+done
