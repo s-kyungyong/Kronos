@@ -1,111 +1,8 @@
 
 For IsoSeq: 
 
-We downloaded available long-read RNA-seq datasets as forms of CCS or HiFi reads with focus on Sequel I and II. There is no datasets directly from Kronos, and these are from *Triticum*. These are the accessions:
+We downloaded available long-read RNA-seq datasets as forms of CCS or HiFi reads with focus on Sequel I and II. There is no datasets directly from Kronos, and these are from *Triticum*. The accessions are available in SRA.list
 
-```
-ERR11193282
-ERR11193283
-ERR11193284
-ERR11193285
-ERR11193286
-ERR11193287
-ERR11193288
-ERR11193289
-ERR11193290
-ERR11193291
-ERR11193292
-ERR11193293
-ERR11193294
-ERR11193295
-ERR11193296
-ERR11193297
-ERR12253793
-ERR12253794
-ERR12253795
-ERR12253796
-ERR12253797
-ERR12253798
-ERR12253799
-ERR12253800
-ERR12253801
-ERR12253802
-ERR12253803
-ERR12253804
-ERR12253805
-ERR12253806
-ERR12253807
-ERR12253808
-ERR12253809
-ERR12253810
-ERR12253811
-ERR12253812
-ERR12253813
-ERR12253814
-ERR12253815
-ERR12253816
-ERR12253817
-ERR12253818
-ERR12253819
-ERR12253820
-ERR12410760
-ERR9880824
-ERR9880825
-SRR21460473
-SRR21460474
-SRR24111001
-SRR24111002
-SRR24111003
-SRR24111004
-SRR24111005
-SRR24111006
-SRR24111007
-SRR24111008
-SRR24111009
-SRR24111010
-SRR24111011
-SRR24111012
-SRR24111013
-SRR24111014
-SRR24111015
-SRR24111016
-SRR24111017
-SRR24111018
-SRR24111019
-SRR24111020
-SRR24111021
-SRR24111022
-SRR24111027
-SRR24111036
-SRR24111037
-SRR24111038
-SRR24111039
-SRR25268805
-SRR25268806
-SRR25268807
-SRR25268808
-SRR25268809
-SRR25268810
-SRR25268811
-SRR25268813
-SRR25268814
-SRR25268815
-SRR25268816
-SRR25268817
-SRR28004282
-SRR28004283
-SRR28004284
-SRR28004285
-SRR28004286
-SRR28004287
-SRR28004288
-SRR28004289
-SRR28004290
-SRR28004291
-SRR28004292
-SRR28004293
-SRR28004294
-SRR28004295
 ```
 Download fastq files.
 ```
@@ -117,6 +14,17 @@ done
 
 The native Iso-Seq pipeline relies on BAM files, and we only have fastq files. Most of the runs don't seem to include the bam files as well, so we will simply trim adapters and remove poly-A tails if possible and then align those reads with minimap. This is not the most sophisticated way, but no other chocies. 
 
+python filter.py
+
+for fq in *.filtered.fq; do
+  prefix=$(echo $fq | cut -d "." -f 1)
+  minimap2 -I 12G -t 56 -x splice:hq -a -o "${prefix}.sam" /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/Reference/Kronos.collapsed.chromosomes.masked.v1.1.broken.fa Stringtie/LongReads/"${prefix}.filtered.fq"
+  samtools view -@56 -h -b Stringtie/LongReads"${prefix}.sam" | samtools sort -@ 56 > Stringtie/"${prefix}.bam"
+done
+  samtools merge -@56 all.bam *.bam
 
 
-./minimap2 -ax splice:hq -uf
+
+For short reads:
+
+hisat2-build -p 56 Kronos.collapsed.chromosomes.masked.v1.1.broken.fa Kronos.broken
