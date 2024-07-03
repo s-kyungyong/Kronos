@@ -34,3 +34,6 @@ for lib in $(ls SRX10965365*_val_1.fq); do
   read_2=$(echo $lib | sed 's/1_val_1/2_val_2/')
   hisat2 -p 56 -x /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/Reference/Kronos.broken -1 $read_1 -2 $read_2 --no-discordant --no-mixed --dta -S /global/scratch/projects/vector_kvklab/KS-IsoSeq-HiFi/Stringtie/ShortReads/${prefix}.sam
 done
+
+
+stringtie -p 56 -v --mix LongReads/all.sorted.bam ShortReads/all.merged.bam
