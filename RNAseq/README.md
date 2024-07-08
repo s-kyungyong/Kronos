@@ -37,3 +37,8 @@ done
 
 
 stringtie -p 56 -v --mix LongReads/all.sorted.bam ShortReads/all.merged.bam
+
+
+python merge_gtf.py
+gffread -w PostProcessing/Kronos.transcripts.fa -g ../Kronos.collapsed.chromosomes.masked.fa Kronos.all.gtf
+nohup TransDecoder.LongOrfs -t Kronos.transcripts.fa &
