@@ -41,4 +41,7 @@ stringtie -p 56 -v --mix LongReads/all.sorted.bam ShortReads/all.merged.bam
 
 python merge_gtf.py
 gffread -w PostProcessing/Kronos.transcripts.fa -g ../Kronos.collapsed.chromosomes.masked.fa Kronos.all.gtf
-nohup TransDecoder.LongOrfs -t Kronos.transcripts.fa &
+TransDecoder.LongOrfs -t Kronos.transcripts.fa
+/usr/local/bin/diamond makedb --threads 40 --db all.evidence.fa --in all.evidence.fa #v2.1.9.163
+
+/usr/local/bin/diamond blastp --threads 40 --db ../../database/all.evidence.fa --evalue 1e-10 --max-hsps 1 --max-target-seqs 1 --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen --out longest.against.db.dmnd.out --query longest_orfs.pep
