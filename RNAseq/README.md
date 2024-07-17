@@ -45,3 +45,15 @@ TransDecoder.LongOrfs -t Kronos.transcripts.fa
 /usr/local/bin/diamond makedb --threads 40 --db all.evidence.fa --in all.evidence.fa #v2.1.9.163
 
 /usr/local/bin/diamond blastp --threads 40 --db ../../database/all.evidence.fa --evalue 1e-10 --max-hsps 1 --max-target-seqs 1 --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen --out longest.against.db.dmnd.out --query longest_orfs.pep
+
+
+
+gffread -w Kronos.stringtie.transcripts.fa -g /global/scratch/users/skyungyong/Kronos/5.Annotations/Final/Final_Final_for_release/Kronos.collapsed.chromosomes.masked.v1.1.fa Kronos.stringtie.all.gtf
+
+__
+mamba crate -n isoquant python=3.8 isoquant
+activate isoquant
+python filter.py
+
+
+
