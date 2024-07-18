@@ -55,5 +55,5 @@ mamba crate -n isoquant python=3.8 isoquant
 activate isoquant
 python filter.py
 
-
-
+fq=$(ls *.filtered.fq)
+isoquant.py --threads 56 --reference /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/Reference/Kronos.collapsed.chromosomes.masked.v1.1.broken.fa --genedb /global/scratch/projects/vector_kvklab/KS-IsoSeq-HiFi/Stringtie/Guided/Kronos.v1.0.all.recoordinated.gff3 --illumina_bam /global/scratch/projects/vector_kvklab/KS-IsoSeq-HiFi/Stringtie/ShortReads/all.merged.bam --output Isoquant_Kronos --data_type pacbio_ccs --fastq $fq
