@@ -58,12 +58,13 @@ python filter.py
 fq=$(ls *.filtered.fq)
 isoquant.py --threads 56 --reference /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/Reference/Kronos.collapsed.chromosomes.masked.v1.1.broken.fa --genedb /global/scratch/projects/vector_kvklab/KS-IsoSeq-HiFi/Stringtie/Guided/Kronos.v1.0.all.recoordinated.gtf --illumina_bam /global/scratch/projects/vector_kvklab/KS-IsoSeq-HiFi/Stringtie/ShortReads/all.merged.bam --output Isoquant_Kronos --data_type pacbio_ccs --fastq $fq
 
-/global/scratch/users/skyungyong/Software/TransDecoder-TransDecoder-v5.7.1/util/gtf_genome_to_cdna_fasta.pl OUT.transcript_models.gtf /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/Reference/Kronos.collapsed.chromosomes.masked.v1.1.broken.fa > transdecoder.transcripts.fa
 
-/global/scratch/users/skyungyong/Software/TransDecoder-TransDecoder-v5.7.1/util/gtf_to_alignment_gff3.pl OUT.transcript_models.gtf > transcripts.gff3
+
+gffcompare -r Kronos.v1.0.all.recoordinated.gtf -o Kronos isoquant.all.split.gtf  stringtie.denovo.all.split.renamed.gtf stringtie.guided.all.split.renamed.gtf
 /global/scratch/users/skyungyong/Software/TransDecoder-TransDecoder-v5.7.1/util/gtf_genome_to_cdna_fasta.pl Kronos.combined.repositioned.gtf /global/scratch/users/skyungyong/Kronos/5.Annotations/Final/Final_Final_for_release/Kronos.collapsed.chromosomes.masked.v1.1.fa > transcripts.fa
 
 /global/scratch/users/skyungyong/Software/TransDecoder-TransDecoder-v5.7.1/util/gtf_to_alignment_gff3.pl Kronos.combined.repositioned.gtf > transcripts.gff3
+
 /global/scratch/users/skyungyong/Software/TransDecoder-TransDecoder-v5.7.1/TransDecoder.LongOrfs -t transcripts.fa
 
 # extract complete
