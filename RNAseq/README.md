@@ -71,9 +71,13 @@ gffcompare -r Kronos.v1.0.all.recoordinated.gtf -o Kronos isoquant.all.split.gtf
 python extract_complete.py longest_orfs.pep > longest_orfs.complete.pep
 
 #plant ensemble only
-diamond makedb --threads 40 --db all.prot.evidence.fa -in all.prot.evidence.fa
+diamond makedb --threads 40 --db all.prot.evidence.fa --in all.prot.evidence.fa
 diamond blastp --threads 40 --db db/all.prot.evidence.fa --evalue 1e-10 --max-hsps 1 --max-target-seqs 1 --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen --out longest.against.db.dmnd.out --query longest_orfs.complete.pep
 awk '($8 - $7 + 1)/($13 - 1) > 0.97 && ($10 - $9 + 1)/($14) > 0.97 {print}' longest.against.db.dmnd.out > longest.against.db.dmnd.out.filtered
 /global/scratch/users/skyungyong/Software/TransDecoder-TransDecoder-v5.7.1/TransDecoder.Predict --retain_blastp_hits transcripts.fa.transdecoder_dir/longest.against.db.dmnd.out.filtered -t transcripts.fa
 
+/global/scratch/users/skyungyong/Software/TransDecoder-TransDecoder-v5.7.1/util/cdna_alignment_orf_to_genome_orf.pl transcripts.fa.transdecoder.gff3 transcripts.gff3 transcripts.fa > transcripts.fa.transdecoder.genome.gff3
 
+
+Now refine the annotation with maker
+from uniprot: Poaceae AND (taxonomy_id:4479)
