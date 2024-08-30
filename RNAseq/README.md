@@ -81,3 +81,11 @@ awk '($8 - $7 + 1)/($13 - 1) > 0.97 && ($10 - $9 + 1)/($14) > 0.97 {print}' long
 
 Now refine the annotation with maker
 from uniprot: Poaceae AND (taxonomy_id:4479)
+
+
+#do it for three 
+python /global/scratch/users/skyungyong/Software/BRAKER/scripts/stringtie2fa.py -f stringtie.denovo.all.split.renamed.gtf -g /global/scratch/users/skyungyong/Kronos/5.Annotations/Final/Final_Final_for_release/Kronos.collapsed.chromosomes.masked.v1.1.fa -o stringtie.denovo.all.split.renamed.fa
+
+/global/scratch/users/skyungyong/Software/gmst.pl --strand both stringtie.denovo.all.split.renamed.fa.mrna --output stringtie.denovo.all.split.renamed.fa.mrna.gmst.out --format GFF
+
+python /global/scratch/users/skyungyong/Software/BRAKER/scripts/gmst2globalCoords.py -t stringtie.denovo.all.split.renamed.repositioned.gtf -p stringtie.denovo.all.split.renamed.repositioned.no_Ns.fa.mrna.gmst.out -o stringtie.denovo.gmst.global.gtf -g /global/scratch/users/skyungyong/Kronos/5.Annotations/Final/Final_Final_for_release/Kronos.collapsed.chromosomes.masked.v1.1.fa
