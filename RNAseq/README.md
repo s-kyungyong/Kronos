@@ -59,11 +59,12 @@ fq=$(ls *.filtered.fq)
 isoquant.py --threads 56 --reference /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/Reference/Kronos.collapsed.chromosomes.masked.v1.1.broken.fa --genedb /global/scratch/projects/vector_kvklab/KS-IsoSeq-HiFi/Stringtie/Guided/Kronos.v1.0.all.recoordinated.gtf --illumina_bam /global/scratch/projects/vector_kvklab/KS-IsoSeq-HiFi/Stringtie/ShortReads/all.merged.bam --output Isoquant_Kronos --data_type pacbio_ccs --fastq $fq
 
 
+# now testing stringtie denovo only
+gffcompare -r Kronos.v1.0.all.gff3 -o Kronos isoquant.all.split.repositioned.gtf  stringtie.denovo.all.split.renamed.repositioned.gtf stringtie.guided.all.split.renamed.repositioned.gtf
+/global/scratch/users/skyungyong/Software/TransDecoder-TransDecoder-v5.7.1/util/gtf_genome_to_cdna_fasta.pl Kronos.combined.gtf
+ /global/scratch/users/skyungyong/Kronos/5.Annotations/Final/Final_Final_for_release/Kronos.collapsed.chromosomes.masked.v1.1.fa > transcripts.fa
 
-gffcompare -r Kronos.v1.0.all.recoordinated.gtf -o Kronos isoquant.all.split.gtf  stringtie.denovo.all.split.renamed.gtf stringtie.guided.all.split.renamed.gtf
-/global/scratch/users/skyungyong/Software/TransDecoder-TransDecoder-v5.7.1/util/gtf_genome_to_cdna_fasta.pl Kronos.combined.repositioned.gtf /global/scratch/users/skyungyong/Kronos/5.Annotations/Final/Final_Final_for_release/Kronos.collapsed.chromosomes.masked.v1.1.fa > transcripts.fa
-
-/global/scratch/users/skyungyong/Software/TransDecoder-TransDecoder-v5.7.1/util/gtf_to_alignment_gff3.pl Kronos.combined.repositioned.gtf > transcripts.gff3
+/global/scratch/users/skyungyong/Software/TransDecoder-TransDecoder-v5.7.1/util/gtf_to_alignment_gff3.pl Kronos.combined.gtf > transcripts.gff3
 
 /global/scratch/users/skyungyong/Software/TransDecoder-TransDecoder-v5.7.1/TransDecoder.LongOrfs -t transcripts.fa
 
@@ -79,13 +80,59 @@ awk '($8 - $7 + 1)/($13 - 1) > 0.97 && ($10 - $9 + 1)/($14) > 0.97 {print}' long
 /global/scratch/users/skyungyong/Software/TransDecoder-TransDecoder-v5.7.1/util/cdna_alignment_orf_to_genome_orf.pl transcripts.fa.transdecoder.gff3 transcripts.gff3 transcripts.fa > transcripts.fa.transdecoder.genome.gff3
 
 
-Now refine the annotation with maker
-from uniprot: Poaceae AND (taxonomy_id:4479)
 
 
-#do it for three 
-python /global/scratch/users/skyungyong/Software/BRAKER/scripts/stringtie2fa.py -f stringtie.denovo.all.split.renamed.gtf -g /global/scratch/users/skyungyong/Kronos/5.Annotations/Final/Final_Final_for_release/Kronos.collapsed.chromosomes.masked.v1.1.fa -o stringtie.denovo.all.split.renamed.fa
+gffcompare -r ../Kronos.v1.0.all.gff3 ../Stringtie_denovo_transdecoder/transcripts.fa.transdecoder.genome.complete_only.gff3
+gffread -F -M -d gffcmp.duplicates -K ../Kronos.v1.0.all.gff3 ../Stringtie_denovo_transdecoder/transcripts.fa.transdecoder.genome.complete_only.gff3 > gffread.out
 
-/global/scratch/users/skyungyong/Software/gmst.pl --strand both stringtie.denovo.all.split.renamed.fa.mrna --output stringtie.denovo.all.split.renamed.fa.mrna.gmst.out --format GFF
+  172203 reference transcripts loaded.
+  25 duplicate reference transcripts discarded.
+  227208 query transfrags loaded.
 
-python /global/scratch/users/skyungyong/Software/BRAKER/scripts/gmst2globalCoords.py -t stringtie.denovo.all.split.renamed.repositioned.gtf -p stringtie.denovo.all.split.renamed.repositioned.no_Ns.fa.mrna.gmst.out -o stringtie.denovo.gmst.global.gtf -g /global/scratch/users/skyungyong/Kronos/5.Annotations/Final/Final_Final_for_release/Kronos.collapsed.chromosomes.masked.v1.1.fa
+These genes need to be fixed
+['TrturKRN1A01G039440', 'TrturKRN1A01G039430']
+['TrturKRN1A01G039460', 'TrturKRN1A01G039430']
+['TrturKRN1A01G039480', 'TrturKRN1A01G039430']
+['TrturKRN1B01G019200', 'TrturKRN1B01G019210']
+['TrturKRN1B01G028300', 'TrturKRN1B01G028290']
+['TrturKRN1B01G032370', 'TrturKRN1B01G032360']
+['TrturKRN1B01G057670', 'TrturKRN1B01G057680']
+['TrturKRN1B01G069790', 'TrturKRN1B01G069780']
+['TrturKRN2B01G070470', 'TrturKRN2B01G070460']
+['TrturKRN3B01G013460', 'TrturKRN3B01G013440', 'TrturKRN3B01G013430']
+['TrturKRN3B01G013480', 'TrturKRN3B01G013430']
+['TrturKRN4A01G043880', 'TrturKRN4A01G043890']
+['TrturKRN6A01G013540', 'TrturKRN6A01G013530']
+['TrturKRN7A01G004660', 'TrturKRN7A01G004650']
+['TrturKRN7A01G073810', 'TrturKRN7A01G073800']
+
+1) Identical genes: "=" or "c" : 20179
+2) Nothing predicted in V2: 44962
+3) Unique complete genes in V2: 4643
+4) Low -> High: 
+
+
+
+
+
+ gffread -g /global/scratch/users/skyungyong/Kronos/5.Annotations/Final/Final_Final_for_release/Kronos.collapsed.chromosomes.masked.v1.1.fa -x Kronos.cds.fa -w Kronos.exon.fa -y Kronos.pep.fa ../transcripts.fa.transdecoder.genome.gff3
+
+less ../Kronos.tracking.coding.only | awk '{print $2 "\t" $4}' | sort | uniq -c > Kronos.tracking.summary
+less Kronos.tracking.summary | awk '{print $2}' | sort | uniq -c > Kronos.tracking.summary.gene.counts
+
+
+1) Identical genes: no changes in V1 and V2
+high: 19034
+low:  11902
+
+1) Version 2 unique transcripts
+in gffcompare, all transcripts of a gene are 'u' (unknown) as there are no overlapping genes. One of these transripts have CDS_type=complete and protein=complete
+python select_novel_genes.py > add_new_genes.list
+== 4596 new genes were added
+
+2) Improved in Version 2
+classified as 'low quality' in V1, but in V2, they are complete genes
+== 6779 genes improved
+
+
+
