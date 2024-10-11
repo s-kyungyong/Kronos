@@ -135,4 +135,8 @@ classified as 'low quality' in V1, but in V2, they are complete genes
 == 6779 genes improved
 
 
+repeat annotation with EDTA
 
+wget https://trep-db.uzh.ch/downloads/trep-db_complete_Rel-19.fasta.gz
+
+For the annotation of noncoding RNAs, tRNAscan-SE software52 was used to predict the tRNAs with eukaryotic parameters. miRNAs, rRNAs, and snRNAs were detected using Infernal cmscan53 to search the Rfam database54. The rRNAs and the corresponding subunits were annotated with RNAmmer v1.255.
