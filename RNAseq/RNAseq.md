@@ -30,3 +30,7 @@ SAMtools:
 256 for filtering out secondary alignment
 4 for unmapped (if specify 4, it will filter out all unmapped alignments)
 
+- Annotation gene rescue:
+1. Script for appending missing gene modules
+
+
