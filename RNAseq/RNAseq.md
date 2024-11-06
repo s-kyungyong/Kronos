@@ -1,3 +1,17 @@
+- RNAseq filtering
+```
+# Construct the fastp command
+            cmd = [
+                fastp_path,
+                "--in1", in1,
+                "--out1", out1,
+                "--in2", in2,
+                "--out2", out2,
+                "-q", "20",
+                "--detect_adapter_for_pe",
+                "-w", "16"
+            ]
+```
 - Parameters for STAR
 1. Indexing
 ```
