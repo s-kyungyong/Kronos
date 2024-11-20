@@ -47,4 +47,12 @@ SAMtools:
 - Annotation gene rescue:
 1. Script for appending missing gene modules
 
+# Procedures:
+- Creating reference database, so-called indexing, for different read length data (150bp/100bp):
+```
+mkdir 150bp && STAR --runThreadN 56 --runMode genomeGenerate --genomeDir 150bp --genomeFastaFiles /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/Kronos.collapsed.chromosomes.masked.v1.1.fa --sjdbOverhang 149 --sjdbGTFfile ../../KS-Makido/Processing/65.Final_Final/Kronos.v2.0.gff3 --sjdbGTFtagExonParentTranscript Parent
+
+mkdir 100bp && STAR --runThreadN 56 --runMode genomeGenerate --genomeDir 100bp --genomeFastaFiles /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/Kronos.collapsed.chromosomes.masked.v1.1.fa --sjdbOverhang 99 --sjdbGTFfile ../../KS-Makido/Processing/65.Final_Final/Kronos.v2.0.gff3 --sjdbGTFtagExonParentTranscript Parent
+```
+150 bp database: `/global/scratch/projects/vector_kvklab/KS-Kronos_remapping/RNAseqDB/150bp/` and 100 bp database: 
 
