@@ -137,3 +137,14 @@ mkdir RH
 mv *RH_only* RH/ && cd RH
 bash ./wheat_tilling_pub/postprocessing/vcf_modifications/fixMAPSOutputAndMakeVCF.sh
 ```
+
+Find the paramters that maximize the number of EMS-type substitutions while maintaining EMS mutation rates > 98%. Then, generate the final outputs by collecting mutations detected using those parameters.
+```
+python summarize_vcf.py
+python ../final_vcf.py combined.mapspart2.Lib20HetMinPer15HetMinCovVariableHomMinCovVariable.reformatted.corrected.10kb_bins.RH.byContig.MI.No_RH.maps.vcf No_RH.maps.vcf
+python ../final_vcf.py combined.mapspart2.Lib20HetMinPer15HetMinCovVariableHomMinCovVariable.reformatted.corrected.10kb_bins.RH.byContig.MI.RH_only.maps.vcf RH_only.maps.vcf
+```
+java -jar /global/scratch/users/skyungyong/Software/snpEff/snpEff.jar eff -v Kronosv2 combined.mapspart2.Lib20HetMinPer15HetMinCovVariableHomMinCovVariable.reformatted.corrected.10kb_bins.RH.byContig.MI.No_RH.maps.vcf > 
+combined.mapspart2.Lib20HetMinPer15HetMinCovVariableHomMinCovVariable.reformatted.corrected.10kb_bins.RH.byContig.MI.No_RH.maps.snpeff.vcf
+java -jar /global/scratch/users/skyungyong/Software/snpEff/snpEff.jar eff -v Kronosv2 combined.mapspart2.Lib20HetMinPer15HetMinCovVariableHomMinCovVariable.reformatted.corrected.10kb_bins.RH.byContig.MI.RH_only.maps.vcf > combined.mapspart2.Lib20HetMinPer15HetMinCovVariableHomMinCovVariable.reformatted.corrected.10kb_bins.RH.byContig.MI.RH_only.maps.snpeff.vcf
+Finally, let's run varient effect predictions using the v2 annotation set. 
