@@ -117,5 +117,23 @@ for pair in "2,3" "3,2", "3,4" "3,5" "4,3" "5,3" "6,4"; do
 done
 ```
 
-Once all folders were processed, all outputs were merged
+Once all folders were processed, all outputs were merged together.
+```
+for tsv in MAPS-1/MAPS_output/*.tsv; do
+  cat MAPS-*/MAPS_output/${tsv} > ${tsv}
+done
+```
 
+Then, convert the SRR accessions to proper Kronos mutant names and the tsv files to vcf formats. 
+```
+ls *.tsv | while read line; do python reformat_maps2_tsv.py $line ; done
+ls *.reformatted.tsv | while read line; bash ./wheat_tilling_pub/postprocessing/residual_heterogeneity/generate_RH.sh $line chr.length.list; done
+
+mkdir no_RH
+mv *No_RH.maps* no_RH/ && cd no_RH/
+bash wheat_tilling_pub/postprocessing/vcf_modifications/fixMAPSOutputAndMakeVCF.sh
+
+mkdir RH
+mv *RH_only* RH/ && cd RH
+bash ./wheat_tilling_pub/postprocessing/vcf_modifications/fixMAPSOutputAndMakeVCF.sh
+```
