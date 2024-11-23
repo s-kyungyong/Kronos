@@ -3,13 +3,13 @@ import sys
 input_file = sys.argv[1]
 output_file = input_file.replace('.tsv', '.reformatted.tsv')
 
-accessions = "accessions.list"
+accessions = "MAPS_groups.list"
 suffix     = ".sorted.rmdup.bam"
 
 accession2kr = {}
 used         = {}
 for line in open(accessions, 'r'):
-  accession2kr[ line.split()[1] + suffix ] = line.split()[0]
+  accession2kr[ line.split()[3] + suffix ] = line.split()[1]
 
 with open(output_file, 'w') as o:
   for i, line in enumerate(open(input_file, 'r')):
