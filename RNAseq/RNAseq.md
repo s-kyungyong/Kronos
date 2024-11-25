@@ -56,3 +56,10 @@ mkdir 100bp && STAR --runThreadN 56 --runMode genomeGenerate --genomeDir 100bp -
 ```
 150 bp database: `/global/scratch/projects/vector_kvklab/KS-Kronos_remapping/RNAseqDB/150bp/` and 100 bp database: 
 
+Using samtools v1.20 , extract primary alignments. 
+```
+for bam in *Aligned.sortedByCoord.out.bam; do
+    out=$(echo $bam | sed 's/.bam/.primary.bam/g')
+    samtools view -@ 40 -F 260 -o ${out} ${bam}
+done
+```
