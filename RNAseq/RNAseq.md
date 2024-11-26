@@ -56,10 +56,31 @@ mkdir 100bp && STAR --runThreadN 56 --runMode genomeGenerate --genomeDir 100bp -
 ```
 150 bp database: `/global/scratch/projects/vector_kvklab/KS-Kronos_remapping/RNAseqDB/150bp/` and 100 bp database: 
 
-Using samtools v1.20 , extract primary alignments. 
+```
+for pair1 in $(ls ../../wheat_RNAseq/VanGessel_all_100bp/*.filtered.fastq); do
+  prefix=$(basename ${pair1} | cut -d "." -f 1)
+  STAR --runThreadN 56 --genomeDir /global/scratch/projects/vector_kvklab/wheat_RNAseq/100bp/  --readFilesIn ${pair1} --outFilterMultimapNmax 5 --outFilterMismatchNoverReadLmax 0.04 --outFileNamePrefix ${prefix}. --outSAMtype BAM SortedByCoordinate --outSAMprimaryFlag AllBestScore
+  done
+```
+
+Using samtools v1.20, extract primary alignments. We define unique alignments as an alignment without two or more equivalent best score. 
 ```
 for bam in *Aligned.sortedByCoord.out.bam; do
-    out=$(echo $bam | sed 's/.bam/.primary.bam/g')
-    samtools view -@ 40 -F 260 -o ${out} ${bam}
+    # Define output file names
+    out1=$(echo $bam | sed 's/.bam/.primary.bam/g')
+    out2=$(echo $bam | sed 's/.bam/.primaryUniq.bam/g')
+    prefix=$(echo $bam | cut -d "." -f 1)
+    
+    # Step 1: Filter primary alignments
+    samtools view -@ 40 -F 260 -o ${out1} ${bam}
+    
+    # Step 2: Count alignments per read and extract unique ones
+    samtools view -@ 40 -O SAM ${out1} | awk '{counts[$1]++} END {for (read in counts) if (counts[read] == 1) print read}' > ${prefix}.unique_reads.txt
+    
+    # Step 3: Extract unique reads into a new BAM file
+    samtools view -@ 40 -h -O SAM ${out1} | grep -E '^@|($(grep -Ff ${prefix}.unique_reads.txt))' | samtools view -@ 40 -b > ${out2}
+    
+    # Optional: Clean up intermediate files
+    rm ${prefix}.unique_reads.txt
 done
 ```
