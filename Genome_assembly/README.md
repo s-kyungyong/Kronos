@@ -377,3 +377,9 @@ sort -k1,1 -k3,3n minimap.plasmid.paf > minimap.plasmid.sorted.paf
 python ../process_scaffolds.py ../minimap.plasmid.sorted.paf None Kronos.draft.fa Kronos.contigs
 quast -t 20 --fast Kronos.contigs.genomic.fa
 
+
+Repeat annotation: temp
+singularity exec -B $(pwd):$(pwd) /global/scratch/users/skyungyong/Software/EDTA.sif EDTA.pl --genome /global/scratch/users/skyungyong/Kronos/5.Annotations/Final/Kronos.collapsed.chromosomes.masked.v1.1.fa --species others --step all --sensitive 1 --anno 1 --evaluate 1 --threads 56 --cds Kronos.v2.0.cds.fa --rmlib
+
+./tRNAscan-SE_installed/bin/tRNAscan-SE -E -o tRNAscan-SE.out -f tRNAscan-SE.ss -s tRNAscan-SE.iso -m tRNAscan-SE.stats -c ./tRNAscan-SE_installed/bin/tRNAscan-SE.conf ../Final/Kronos.collapsed.chromosomes.v1.1.fa
+
