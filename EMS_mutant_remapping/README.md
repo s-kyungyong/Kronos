@@ -148,3 +148,59 @@ java -jar /global/scratch/users/skyungyong/Software/snpEff/snpEff.jar eff -v Kro
 combined.mapspart2.Lib20HetMinPer15HetMinCovVariableHomMinCovVariable.reformatted.corrected.10kb_bins.RH.byContig.MI.No_RH.maps.snpeff.vcf
 java -jar /global/scratch/users/skyungyong/Software/snpEff/snpEff.jar eff -v Kronosv2 combined.mapspart2.Lib20HetMinPer15HetMinCovVariableHomMinCovVariable.reformatted.corrected.10kb_bins.RH.byContig.MI.RH_only.maps.vcf > combined.mapspart2.Lib20HetMinPer15HetMinCovVariableHomMinCovVariable.reformatted.corrected.10kb_bins.RH.byContig.MI.RH_only.maps.snpeff.vcf
 Finally, let's run varient effect predictions using the v2 annotation set. 
+
+
+
+GATK
+
+
+start=$1
+end=$2
+
+# List all bam files and process them with a zero-based index
+i=0
+for bam in *.gatk.sorted.bam; do
+    # Check if the current index falls within the specified range
+    if (( i >= start && i < end )); then
+        prefix=$(echo "$bam" | cut -d "." -f 1)
+
+        # Check if the output file already exists
+        if [ ! -f "${prefix}.gatk.sorted.rmdup.bam" ]; then
+            picard MarkDuplicates REMOVE_DUPLICATES=true \
+                I="${prefix}.gatk.sorted.bam" \
+                O="${prefix}.gatk.sorted.rmdup.bam" \
+                M="${prefix}.rmdup.txt"
+            samtools index -@ 56 ${prefix}.gatk.sorted.rmdup.bam
+        fi
+    fi
+    ((i++))  # Increment the index
+done
+
+Some mutants have two sequencing datasets deposited. Let's merge those into single bam files. 
+```
+while read lib1 lib2; do
+     samtools merge -@ 56 -o ../${lib1}.gatk.sorted.rmdup.bam ${lib1}.gatk.sorted.rmdup.bam ${lib2}.gatk.sorted.rmdup.bam
+ done < merge.list
+```
+
+We can then run HaplotypeCaller from GATK v4.5.0
+
+start=$1
+end=$2
+
+# List all bam files and process them with a zero-based index
+i=0
+for bam in *.gatk.sorted.rmdup.bam; do
+    # Check if the current index falls within the specified range
+    if (( i >= start && i < end )); then
+        prefix=$(echo "$bam" | cut -d "." -f 1)
+        output=${prefix}.vcf.gz
+        # Check if the output file already exists
+        if [ ! -f "${output}" ]; then
+            samtools index -@ 56 ${bam}
+            gatk HaplotypeCaller -R /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/Reference/Kronos.collapsed.chromosomes.masked.v1.1.broken.fa -I ${bam} -O ${output}
+        fi
+    fi
+    ((i++))  # Increment the index
+done
+
