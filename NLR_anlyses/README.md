@@ -43,3 +43,11 @@ for dir in $(ls -d *); do
     gff3_merge -d ${dir}/${dir}.maker.output/${dir}_master_datastore_index.log -o ${dir}/${dir}.gff3
 done
 ```
+```
+java -jar /global/scratch/users/skyungyong/Software/NLR-Annotator/NLR-Annotator-v2.1b.jar -t 40  -x /global/scratch/users/skyungyong/Software/NLR-Annotator/src/mot.txt -y /global/scratch/users/skyungyong/Software/NLR-Annotator/src/store.txt -i  Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa -o NLRannotator.out -g NLRannotator.gff3
+```
+
+Finally, collect all annotations
+ls
+Kronos.v1.0.all.gff3  Kronos.v2.0.gff3  v1_abinitio.gff3 #braker/ginger/funannotate annotations used for EVM
+less ../Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa | grep ">" | cut -d ">" -f 2 | sort -u > coordinates.list
