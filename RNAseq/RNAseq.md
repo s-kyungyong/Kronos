@@ -84,3 +84,11 @@ for bam in *Aligned.sortedByCoord.out.bam; do
     rm ${prefix}.unique_reads.txt
 done
 ```
+
+
+for bam in $(ls *.UniqPrimqry.bam); do
+        prefix=$(echo $bam | cut -d "." -f 1 )
+        output=${prefix}.featurecounts
+        featureCounts -a /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/Kronos.v2.0.gtf -o ${output} -Q 20 --primary -p -C -T 28 --largestOverlap --fracOverlap 0.1 ${bam}
+
+done
