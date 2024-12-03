@@ -65,24 +65,40 @@ for pair1 in $(ls ../../wheat_RNAseq/VanGessel_all_100bp/*.filtered.fastq); do
 
 Using samtools v1.20, extract primary alignments. We define unique alignments as an alignment without two or more equivalent best score. 
 ```
-for bam in *Aligned.sortedByCoord.out.bam; do
-    # Define output file names
-    out1=$(echo $bam | sed 's/.bam/.primary.bam/g')
-    out2=$(echo $bam | sed 's/.bam/.primaryUniq.bam/g')
-    prefix=$(echo $bam | cut -d "." -f 1)
-    
-    # Step 1: Filter primary alignments
-    samtools view -@ 40 -F 260 -o ${out1} ${bam}
-    
-    # Step 2: Count alignments per read and extract unique ones
-    samtools view -@ 40 -O SAM ${out1} | awk '{counts[$1]++} END {for (read in counts) if (counts[read] == 1) print read}' > ${prefix}.unique_reads.txt
-    
-    # Step 3: Extract unique reads into a new BAM file
-    samtools view -@ 40 -h -O SAM ${out1} | grep -E '^@|($(grep -Ff ${prefix}.unique_reads.txt))' | samtools view -@ 40 -b > ${out2}
-    
-    # Optional: Clean up intermediate files
-    rm ${prefix}.unique_reads.txt
-done
+samtools flagstats SRR12969761.Aligned.sortedByCoord.out.UniqPrimary.bam
+47715226 + 0 in total (QC-passed reads + QC-failed reads)
+47715226 + 0 primary
+0 + 0 secondary
+0 + 0 supplementary
+0 + 0 duplicates
+0 + 0 primary duplicates
+47715226 + 0 mapped (100.00% : N/A)
+47715226 + 0 primary mapped (100.00% : N/A)
+47715226 + 0 paired in sequencing
+23857613 + 0 read1
+23857613 + 0 read2
+47715226 + 0 properly paired (100.00% : N/A)
+47715226 + 0 with itself and mate mapped
+0 + 0 singletons (0.00% : N/A)
+0 + 0 with mate mapped to a different chr
+0 + 0 with mate mapped to a different chr (mapQ>=5)
+(snp) [skyungyong@n0166 ChenY_all_150bp]$ samtools flagstats SRR12969761.Aligned.sortedByCoord.out.bam
+52029741 + 0 in total (QC-passed reads + QC-failed reads)
+51742335 + 0 primary
+287406 + 0 secondary
+0 + 0 supplementary
+0 + 0 duplicates
+0 + 0 primary duplicates
+52029741 + 0 mapped (100.00% : N/A)
+51742335 + 0 primary mapped (100.00% : N/A)
+51742335 + 0 paired in sequencing
+25871178 + 0 read1
+25871157 + 0 read2
+51742312 + 0 properly paired (100.00% : N/A)
+51742312 + 0 with itself and mate mapped
+23 + 0 singletons (0.00% : N/A)
+0 + 0 with mate mapped to a different chr
+0 + 0 with mate mapped to a different chr (mapQ>=5)
 ```
 
 
@@ -92,3 +108,8 @@ for bam in $(ls *.UniqPrimqry.bam); do
         featureCounts -a /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/Kronos.v2.0.gtf -o ${output} -Q 20 --primary -p -C -T 28 --largestOverlap --fracOverlap 0.1 ${bam}
 
 done
+
+
+
+
+
