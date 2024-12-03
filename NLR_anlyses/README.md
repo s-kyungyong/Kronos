@@ -58,4 +58,7 @@ python recoordinate_gff3.py Kronos.v2.0.gff3
 python recoordinate_gff3.py v1_abinitio.gff3
 cat Kronos.v1.0.all.recoordinated.gff3 Kronos.v2.0.recoordinated.gff3 v1_abinitio.r
 ecoordinated.gff3  > all_models.recoordinated.gff3
-agat_sp_fix_cds_phases.pl --gff all_models.recoordinated.gff3 -f ../Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa -o all_models.recoordinated.fixed.gff3
+
+perl Apollo/bin/prepare-refseqs.pl --fasta 1A.fa --out .
+for feature in {augustus,snap,maker,KRNv1.0,KRNv2.0,v1Annot}; do perl Apollo/bin/flatfile-to-json.pl --trackLabel ${feature} --type mRNA --className mRNA --out . --gff 1A.gff3; done
+
