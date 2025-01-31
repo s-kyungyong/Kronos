@@ -7,7 +7,7 @@
 #SBATCH --cpus-per-task=56
 #SBATH --qos=minium_htc4_normal
 #SBATCH --time=72:00:00
-minimap2 -x asm20 -t 56 Sohab_cornell_assembly.fna Chinese_spring_1A.fa > minimap_K/CS_1A.out.paf
+minimap2 -x asm20 -t 56 /global/scratch/users/jiaqitang0422/Tomato/10.Kronos_QC/split_kronos/Kronos.v1.1_1A.fa /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/Chinese_spring_1A.fa > minimap_K/CS_1A.out.paf
 ```
 ```
 #!/bin/bash
@@ -18,7 +18,7 @@ minimap2 -x asm20 -t 56 Sohab_cornell_assembly.fna Chinese_spring_1A.fa > minima
 #SBATCH --cpus-per-task=56
 #SBATH --qos=minium_htc4_normal
 #SBATCH --time=72:00:00
-minimap2 -x asm20 -t 56 Sohab_cornell_assembly.fna Svevo.v1_1A.fna > minimap_K/SV_1A.out.paf
+minimap2 -x asm20 -t 56 Sohab_cornell_assembly.fna /global/scratch/users/jiaqitang0422/Kronos/Svevo.v1/Svevo.v1_1A.fna > minimap_K/SV_1A.out.paf
 ```
 ```
 #!/bin/bash
