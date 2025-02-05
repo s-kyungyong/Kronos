@@ -43,6 +43,10 @@ fastp --in1 ${accession}_1.fastq --in2 ${accession}_2.fastq --out1 ${accession}.
 ### 4. Read Alignment
 Reads are aligned to the broken Kronos genome using bwa v0.7.18-r1243-dirty:
 ```
+#information about how the genome was broken can be found
+#https://github.com/krasileva-group/Kronos_EDR
+bwa index Kronos Kronos.collapsed.chromosomes.masked.v1.1.broken.fa
+
 # ${x} is either 1 or 2 for R1 and R2 in the paired-end library
 bwa aln -t ${Numthreads} ${reference_dir}/Kronos -f ${accession}.${x}.sai ${accession}.${x}.filtered.fq
 bwa sampe -N 10 -n 10 -f ${accession}.sam ${reference_dir}/Kronos ${accession}.1.sai ${accession}.2.sai ${accession}.1.filtered.fq ${accession}.2.filtered.fq
@@ -60,14 +64,13 @@ picard MarkDuplicates REMOVE_DUPLICATES=true I=${accession}.sorted.bam O=${acces
 ```
 
 ### 6. Merging Redundant Libraries
-Some mutants have multiple sequencing datasets. these are merged into a single BAM file:
+Some mutants have multiple sequencing datasets. these are merged into a single BAM file. By this step, we have 1,440 bam files ready to be processed with the MAPS pipeline. 
 ```
 while read mutant lib1 lib2; do
      samtools merge -@ 56 -o ../sorted.rmdup.bam_files/${lib1}.sorted.rmdup.bam ${lib1}.sorted.rmdup.bam ${lib2}.sorted.rmdup.bam
  done < merge.list
 ```
 
-By this step, we have 1,440 bam files ready to be processed with the MAPS pipeline. 
 
 ### 7. Preparing for MAPS Pipeline
 
