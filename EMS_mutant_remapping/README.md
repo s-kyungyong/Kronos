@@ -73,13 +73,6 @@ while read mutant lib1 lib2; do
  done < merge.list
 ```
 
-### 7A. Rescuing Multi-mapped Reads
-Multi-mapped reads are rescued. We also produce outputs that contain 'unique-only'. For these outputs, these steps are skipped, and multi-mapped reads are excluded.
-```
-for *.bam; do
-    python /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/wheat_tilling_pub/postprocessing/multi_map/multi-map-corrector-V1.6.py -i (< samtools view -@56 ${bam}) -l broken_chr.length.list
-```
-
 ### 7A. Preparing for MAPS Pipeline
 Mutants were sequenced in batches of 8 mutants per preparation and 3 batches per sequencing run, though some variations exist. To keep each batch together for MAPS processing, we create separate folders based on MAPS_groups.list:
 
@@ -95,8 +88,7 @@ cat MAPS_groups.list | while read line; do
 done
 ```
 
-### 8A. Running the MAPS Pipeline
-
+### 8A. Running the GATK Pipeline
 For each folder, we will run [the MAPS pipeline](https://github.com/DubcovskyLab/wheat_tilling_pub). First, generate mpileup outputs.
 ```
 python ./wheat_tilling_pub/maps_pipeline/beta-run-mpileup.py \
@@ -164,7 +156,11 @@ Then, convert the SRR accessions to proper Kronos mutant names and the tsv files
 ```
 ls *.tsv | while read line; do python reformat_maps2_tsv.py $line ; done
 ls *.reformatted.tsv | while read line; bash ./wheat_tilling_pub/postprocessing/residual_heterogeneity/generate_RH.sh $line chr.length.list; done
+```
 
+Separate regions with residual hetrogenity.
+```
+#the outputs from this step will be the main ones. 
 mkdir no_RH
 mv *No_RH.maps* No_RH/ && cd No_RH/
 bash wheat_tilling_pub/postprocessing/vcf_modifications/fixMAPSOutputAndMakeVCF.sh
@@ -174,11 +170,42 @@ mv *RH_only* RH/ && cd RH
 bash ./wheat_tilling_pub/postprocessing/vcf_modifications/fixMAPSOutputAndMakeVCF.sh
 ```
 
-Find the paramters that maximize the number of EMS-type substitutions while maintaining EMS mutation rates > 98%. Then, generate the final outputs by collecting mutations detected using those parameters.
+Find the least stringent threashold yielding ≥ 98% EMS rates. The mutations called from this threashold will be high-confidence. In the remaining three thresholds, the two most stringent ones are for medium- and low-confidence mutation calls. If no threshold yielded ≥ 98% EMS rates, high, medium and low threasholds are: HetMinCov5HomMinCov3, HetMinCov4HomMinCov3 and HetMinCov3HomMinCov2.
+Then, generate the final outputs by collecting mutations detected using those parameters.
 ```
+#run this within the No_RH folder.
 python summarize_vcf.py
-python ../final_vcf.py combined.mapspart2.Lib20HetMinPer15HetMinCovVariableHomMinCovVariable.reformatted.corrected.10kb_bins.RH.byContig.MI.No_RH.maps.vcf No_RH.maps.vcf
-python ../final_vcf.py combined.mapspart2.Lib20HetMinPer15HetMinCovVariableHomMinCovVariable.reformatted.corrected.10kb_bins.RH.byContig.MI.RH_only.maps.vcf RH_only.maps.vcf
+```
+
+### 10A. Rescuing Multi-mapped Reads
+Multi-mapped reads are rescued. We also produce outputs that contain 'unique-only'. For these outputs, these steps are skipped, and multi-mapped reads are excluded.
+```
+#!/bin/bash
+
+index=$1
+folder="MAPS-${index}"
+
+cd "$folder" || exit
+
+for bam in *.bam; do
+    prefix="${bam%.bam}"
+
+    # Convert BAM to SAM
+    samtools view -@56 -h "${bam}" > "${prefix}.sam"
+
+    # Extract header
+    samtools view -H "${prefix}.sam" > header.sam
+
+    # Run multi-map corrector
+    python /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/wheat_tilling_pub/postprocessing/multi_map/multi-map-corrector-V1.6.py -i "${prefix}.sam" -l ../broken_chr.length.list > "${prefix}.rescued.sam"
+
+    # Merge header and body, then convert to BAM
+    cat header.sam "${prefix}.rescued.sam" | samtools view -@ 56 -b -o "${prefix}.rescued.bam"
+
+    # Clean up temporary files
+    rm "${prefix}.sam" "${prefix}.rescued.sam" header.sam
+done
+
 ```
 
 java -jar /global/scratch/users/skyungyong/Software/snpEff/snpEff.jar eff -v Kronosv2 combined.mapspart2.Lib20HetMinPer15HetMinCovVariableHomMinCovVariable.reformatted.corrected.10kb_bins.RH.byContig.MI.No_RH.maps.vcf > 
