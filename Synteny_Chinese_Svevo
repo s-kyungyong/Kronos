@@ -6,7 +6,7 @@
 #SBATCH --nodes=1
 #SBATH --qos=minium_htc4_normal
 #SBATCH --time=72:00:00
-minimap2 -f100 -x asm20 -t 8 /global/scratch/users/jiaqitang0422/Tomato/10.Kronos_QC/split_kronos/Kronos.v1.1_1B.fa /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/Chinese_spring_1B.fa -o minimap_K.CS_1B.out.paf
+minimap2 -f100 -x asm20 -t 8 /global/scratch/users/jiaqitang0422/Tomato/10.Kronos_QC/split_kronos/Kronos.v1.1_7A.fa /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/Chinese_spring_7A.fa -o minimap_K.CS_7A.out.paf
 ```
 ```
 #!/bin/bash
@@ -16,7 +16,7 @@ minimap2 -f100 -x asm20 -t 8 /global/scratch/users/jiaqitang0422/Tomato/10.Krono
 #SBATCH --nodes=1
 #SBATH --qos=minium_htc4_normal
 #SBATCH --time=72:00:00
-minimap2 -f100 -x asm20 -t 8 /global/scratch/users/jiaqitang0422/Tomato/10.Kronos_QC/split_kronos/Kronos.v1.1_1A.fa /global/scratch/users/jiaqitang0422/Kronos/Svevo.v1/Svevo.v1_1B.fna -o minimap_K.SV_1A.out.paf
+minimap2 -f100 -x asm20 -t 8 /global/scratch/users/jiaqitang0422/Tomato/10.Kronos_QC/split_kronos/Kronos.v1.1_7A.fa /global/scratch/users/jiaqitang0422/Kronos/Svevo.v1/Svevo.v1_7A.fna -o minimap_K.SV_7A.out.paf
 ```
 ```
 #!/bin/bash
