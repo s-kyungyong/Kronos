@@ -6,7 +6,7 @@
 #SBATCH --nodes=1
 #SBATH --qos=minium_htc4_normal
 #SBATCH --time=72:00:00
-minimap2 -f100 -x asm20 -t 8 /global/scratch/users/jiaqitang0422/Tomato/10.Kronos_QC/split_kronos/Kronos.v1.1_7A.fa /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/Chinese_spring_7A.fa -o minimap_K.CS_7A.out.paf
+minimap2 -f100 -x asm20 -t 8 /global/scratch/users/jiaqitang0422/Tomato/10.Kronos_QC/split_kronos/Kronos.v1.1_7B.fa /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/Chinese_spring_7B.fa -o minimap_K.CS_7B.out.paf
 ```
 ```
 #!/bin/bash
@@ -16,7 +16,7 @@ minimap2 -f100 -x asm20 -t 8 /global/scratch/users/jiaqitang0422/Tomato/10.Krono
 #SBATCH --nodes=1
 #SBATH --qos=minium_htc4_normal
 #SBATCH --time=72:00:00
-minimap2 -f100 -x asm20 -t 8 /global/scratch/users/jiaqitang0422/Tomato/10.Kronos_QC/split_kronos/Kronos.v1.1_7A.fa /global/scratch/users/jiaqitang0422/Kronos/Svevo.v1/Svevo.v1_7A.fna -o minimap_K.SV_7A.out.paf
+minimap2 -f100 -x asm20 -t 8 /global/scratch/users/jiaqitang0422/Tomato/10.Kronos_QC/split_kronos/Kronos.v1.1_3B.fa /global/scratch/users/jiaqitang0422/Kronos/Svevo.v1/Svevo.v1_3B.fna -o minimap_K.SV_3B.out.paf
 ```
 ```
 #!/bin/bash
@@ -29,13 +29,22 @@ minimap2 -f100 -x asm20 -t 8 /global/scratch/users/jiaqitang0422/Tomato/10.Krono
 #SBATCH --time=72:00:00
 minimap2 -f100 -x asm20 -t 56 Sohab_cornell_assembly.fna SH.haplotype-1.final.scaffolds.fa > minimap_hap1_cornell.out.paf
 ```
-- Progress Track:
-+----------+------------+-----------+---------------+--------------------+-------+---------+-----------+
-|  Job ID  |    Name    |  Account  |     Nodes     |        QOS         | Time  |  State  |  Reason   |
-+----------+------------+-----------+---------------+--------------------+-------+---------+-----------+
-| 23450295 | 1A_K.SV.sh | co_minium | 1x savio4_htc | minium_htc4_normal | 0:00  | PENDING | Resources |
-| 23450456 | 1B_K.CS.sh | co_minium | 1x savio4_htc | minium_htc4_normal | 0:00  | PENDING | Priority  |
-| 23445999 |    bash    | co_minium | 1x savio4_htc | minium_htc4_normal | 57:27 | RUNNING |           |
-| 23449929 | 1B_K.SV.sh | co_minium | 1x savio4_htc | minium_htc4_normal | 1:53  | RUNNING |           |
-+----------+------------+-----------+---------------+--------------------+-------+---------+-----------+
+- Synteny generation:
+
+python synteny_plot.py minimap_K.CS_7A.out.paf 7A 7A
+python synteny_plot.py minimap_K.SV_7B.out.paf LT934124.1 7B
+scp jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/LT* /Users/r_upercut/Downloads/test
+
+"I have a task for you. I now have a fast file called "Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa", and this file looks like this ">1A_2600127-2634529
+TTGGCATGTCTAATTGAAGGAGCTGACTGCTAAAAAAATTGAATGAGCCGTGTGTTTTTCTCAGGCGAATTGGGTTAGTCATGGGTTCCCAGGGGCATTGCTCCATGTTGCTCGATTAGTCACTGTCTGTTGCATGCTCAACCAGCTGTTTAGTGTTTGCTTTCCATTTTTTTATAGAGGAATTAGGGGTATGAACTGATTGAATAGGCCAATGTGCATGCACCAA...
+>1A_7144666-7177894
+tgcttgcaaagtttcatcatggaattacattcatggaatttgtcagaaaaataaaataaaattagcactccaaactgtttttgagaataacttttgtgaagcattgtatttgtttcctttgccacgtcgcccatgaatttcattctgtgatgaaactttgcaagaaatcaaaacatttgccaTATATAAAAGCATCTTCAACAGTGTCCATTTCTCCTAAAACTACC...
+>1A_7229636-7290159
+ctgacgttgagtaggcagataggccgaaattgttcaattctcacggcatctattttcttaggcaacaacgttatcgttccaaaattaagttggaacagctgcaagtgtcccgagaacaaatcatggaacatcggcatcaggtcccctttgataatatgccaacacttcttgtaaaactcagccgggaaaccatccggccccggagcctta...
+>1A_8465878-8499976
+aacaagagacagtaaaaaaggtttacgcagggtcttaatctaaaaagaatcctttaggacgggtccctactgcacgtctgcgcctgtgtctccgttgtgtcgtatcctggacgggcgtcgcacgacattcatctgtaaaagagaggaactgagttgaaaacgggtcgtgccgaaaaaagtttaaaataaacaaagtataaaatatataa...
+>1A_8513644-8547934
+attcgtgaatctaataaaatatcaatgaaattttggaaaatactcaaaaaaaattccgtgagtttcattttttgccctattttaaaaaatcatcgattcaaaaagtgttcatgaattctaaaactactcatgtattcggtaaatgttcatcaatttttttttgtgaattttagaaaatgcccaatttttttaaaatgattgtcgattcagaaagctgtt...
+". The name of every scaffolds follows the pattern {1A} which is the name of the chrosome the sequence is on, and the second part {7144666-7177894} which is the position of the sequence on that chrosome. There are 14 chromosomes starting with 1A, 1B, 2A, 2B, 3A, 3B, 4A, 4B, and all the way to 7A and 7B. For each chromosome,
+For each chromsome, create a dictionary storing the name of the chromsome as key and the starting point and the ending point  I want you to create a dictionary "
 
