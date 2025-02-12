@@ -317,3 +317,39 @@ for vcf in Kronos*.vcf; do
 done
 ```
 
+
+
+
+# Promoter capture sequencing data remapping 
+
+The analysis of promoter-capture sequencing data was done nearly identically with the exome capture data analysis. Thus, only the workflow different from the previous one is recorded. 
+
+
+### 2. Downloading Sequencing Data
+The sequencing data were directly obtained from [Zhang et al.](https://www.pnas.org/doi/10.1073/pnas.2306494120) who generated the data. The exceptions were accessions included in the following repositories, which were downloaded through the same workflow. 
+```
+biosample SAMN46714602 (SRA: SRS24009474)
+biosample SAMN46547906 (SRA: SRS23982952)
+biosample SAMN46547933 (SRA: SRS23982976)
+```
+
+### 3. Quality Control and Filtering
+Most of the data we received were already trimmed, but a small subset was not. These reads were trimmed with trimmomatic v0.39. 
+
+
+Numthreads=40
+reference_dir=/global/scratch/projects/vector_kvklab/KS-Kronos_remapping/Reference
+bwa aln -t ${Numthreads} ${reference_dir}/Kronos -f ${accession}.${x}.sai ${accession}.${x}.filtered.fq
+bwa sampe -N 10 -n 10 -f ${accession}.sam ${reference_dir}/Kronos ${accession}.1.sai ${accession}.2.sai ${accession}.1.filtered.fq ${accession}.2.filtered.fq
+
+### 3. Quality Control and Filtering
+
+Reads are filtered using fastp v0.23.4 to remove low-quality reads:
+```
+for fq in *R1_*; do
+    p1=$fq
+    p2=$(echo $p1 | sed 's/R1/R2/g')
+    prefix=$(echo $p1 | cut -d "_" -f 3)
+    fastp --in1 ${p1} --in2 ${p2} --out1 ${prefix}.1.filtered.fq --out2 ${prefix}.2.filtered.fq --thread 16 -q 20
+done
+```
