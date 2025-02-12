@@ -88,7 +88,7 @@ cat MAPS_groups.list | while read line; do
 done
 ```
 
-### 8A. Running the GATK Pipeline
+### 8A. Running the MAPS Pipeline
 For each folder, we will run [the MAPS pipeline](https://github.com/DubcovskyLab/wheat_tilling_pub). First, generate mpileup outputs.
 ```
 python ./wheat_tilling_pub/maps_pipeline/beta-run-mpileup.py \
@@ -144,7 +144,7 @@ for pair in "2,3" "3,4" "3,5" "4,6"; do
 done
 ```
 
-### 9A. Final Processing
+### 9A. Vcf Conversion and Residual Hetrogenity Filtering
 Once all folders were processed, all outputs were merged together. Make sure that all 1,440 library data is present here. 
 ```
 for tsv in MAPS-1/MAPS_output/*.tsv; do
@@ -170,34 +170,42 @@ mv *RH_only* RH/ && cd RH
 bash ./wheat_tilling_pub/postprocessing/vcf_modifications/fixMAPSOutputAndMakeVCF.sh
 ```
 
-Find the least stringent threashold yielding ≥ 98% EMS rates. The mutations called from this threashold will be high-confidence. In the remaining three thresholds, the two most stringent ones are for medium- and low-confidence mutation calls. If no threshold yielded ≥ 98% EMS rates, high, medium and low threasholds are: HetMinCov5HomMinCov3, HetMinCov4HomMinCov3 and HetMinCov3HomMinCov2.
-Then, generate the final outputs by collecting mutations detected using those parameters.
+### 10A. Parameter Search
+The MAPS outputs were generated with four pairs of HomMinCov and HetMinCov, HetMinCov3HomMinCov2, HetMinCov4HomMinCov3, HetMinCov5HomMinCov3 and HetMinCov6HomMinCov4 from the least to most stringency. Each parameter will be analyzed to select high, medium and low confidence thresholds. There are two major criteria. 
+
+If any of the thresholds yielded ≥ 98% EMS rates, the following criteria are applied. The selection of the least stringent parameter with ≥ 98% EMS rates was initially introduced by [Zhang et al.](https://www.pnas.org/doi/10.1073/pnas.2306494120). Most mutations are picked up by the high confidence threshold, and small numbers are added by medium and low confidence parameters. 
+```
+High confidence: the least stringent threshold yielding ≥ 98% EMS rates
+Medium confidence: the least stringent threshold yielding ≥ 97% EMS rates among the remainning three, N/A otherwise
+Low confidence: the least stringent threshold yielding ≥ 95% EMS rates among the remainning three, N/A otherwise
+```
+
+If none of the thresholds yielded ≥ 98% EMS rates, pre-defined confidence levels will be used as [Krasileva et al.,](https://www.pnas.org/doi/10.1073/pnas.1619268114).
+```
+High confidence: HetMinCov5HomMinCov3
+Medium confidence: HetMinCov4HomMinCov3
+Low confidence: HetMinCov3HomMinCov2
+```
+
+Summarize the statistics and select the parameters. This will create Mutations. summary
 ```
 #run this within the No_RH folder.
 python summarize_vcf.py
 ```
 
-### 10A. Rescuing Multi-mapped Reads
-Multi-mapped reads are rescued. We also produce outputs that contain 'unique-only'. For these outputs, these steps are skipped, and multi-mapped reads are excluded.
+### 11A. Rescuing Multi-mapped Reads
+
+Almost everything is ready. We finally need to rescue multi-mapped reads. This step goes back to Step 6A and requires *.sorted.rmdup.bam files. Multi-mapped reads are rescored, so that any meaningful mutations can be picked up by the MAPS pipeline. 
 ```
-#!/bin/bash
-
-index=$1
-folder="MAPS-${index}"
-
-cd "$folder" || exit
-
-for bam in *.bam; do
+for bam in *.sorted.rmdup.bam; do
     prefix="${bam%.bam}"
 
-    # Convert BAM to SAM
+    # Convert BAM to SAM and extract header
     samtools view -@56 -h "${bam}" > "${prefix}.sam"
-
-    # Extract header
     samtools view -H "${prefix}.sam" > header.sam
 
     # Run multi-map corrector
-    python /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/wheat_tilling_pub/postprocessing/multi_map/multi-map-corrector-V1.6.py -i "${prefix}.sam" -l ../broken_chr.length.list > "${prefix}.rescued.sam"
+    python ./wheat_tilling_pub/postprocessing/multi_map/multi-map-corrector-V1.6.py -i "${prefix}.sam" -l broken_chr.length.list > "${prefix}.rescued.sam"
 
     # Merge header and body, then convert to BAM
     cat header.sam "${prefix}.rescued.sam" | samtools view -@ 56 -b -o "${prefix}.rescued.bam"
@@ -205,20 +213,60 @@ for bam in *.bam; do
     # Clean up temporary files
     rm "${prefix}.sam" "${prefix}.rescued.sam" header.sam
 done
-
 ```
 
-java -jar /global/scratch/users/skyungyong/Software/snpEff/snpEff.jar eff -v Kronosv2 combined.mapspart2.Lib20HetMinPer15HetMinCovVariableHomMinCovVariable.reformatted.corrected.10kb_bins.RH.byContig.MI.No_RH.maps.vcf > 
-combined.mapspart2.Lib20HetMinPer15HetMinCovVariableHomMinCovVariable.reformatted.corrected.10kb_bins.RH.byContig.MI.No_RH.maps.snpeff.vcf
-java -jar /global/scratch/users/skyungyong/Software/snpEff/snpEff.jar eff -v Kronosv2 combined.mapspart2.Lib20HetMinPer15HetMinCovVariableHomMinCovVariable.reformatted.corrected.10kb_bins.RH.byContig.MI.RH_only.maps.vcf > combined.mapspart2.Lib20HetMinPer15HetMinCovVariableHomMinCovVariable.reformatted.corrected.10kb_bins.RH.byContig.MI.RH_only.maps.snpeff.vcf
-Finally, let's run varient effect predictions using the v2 annotation set. 
+Once these files are generated, the entire MAPS pipeline from 8A to 9A is rerun for them. 
+
+### 12A. Finalization
+
+All outputs are concatnated into four final outputs.
+```
+# Excluding genomic regtions with residual hetrogenity. Indels only 
+Kronos_v1.1.Exom-capture.corrected.deduped.10kb_bins.RH.byContig.MI.No_RH.maps.indels.snpeff.vcf
+# Excluding genomic regtions with residual hetrogenity. Substitutions only ------- This is our primary output 
+Kronos_v1.1.Exom-capture.corrected.deduped.10kb_bins.RH.byContig.MI.No_RH.maps.substitutions.snpeff.vcf
+# Only genomic regtions with residual hetrogenity. Indels only 
+Kronos_v1.1.Exom-capture.corrected.deduped.10kb_bins.RH.byContig.MI.RH_only.maps.indels.snpeff.vcf
+# Only genomic regtions with residual hetrogenity. Substitutions only 
+Kronos_v1.1.Exom-capture.corrected.deduped.10kb_bins.RH.byContig.MI.RH_only.maps.substitutions.snpeff.vcf
+```
+
+Within these vcf files, the following fields will be included. Our primary mutations are labeled with Substitution/False/High/Any threshold/Unique. 
+```
+Type={Substiution/Indel}: This indicates whether called mutations are substitutions or indels. 
+RH={True/False}: This indicates whether called mutations come from regions associated with residual hetrogenity.  
+Confidence={High/Medium/Low}: This indicates the confidence level of called mutations.
+Threshold=HetMinCov{x}HomMinCov{y}: This indicates parameters used to call the mutations. 
+Mapping={Unique/Multi}: This indicates whether called mutations come from uniquely mapped or multi-mapped reads. 
+```
+
+With the folders structured as following:
+```
+ls TSVs #uniquely mapped reads
+No_RH  RH_only
+
+ls TSVs-Multi #multi-mapped reads
+No_RH  RH_only
+```
+Run the script
+```
+python finalize_vcf.py
+```
+
+Finally, snpEff is run to add variant effect prediction outputs. This is based on the annotation v2. 
+```
+for vcf in *.vcf:
+    prefix="${vcf%.vcf}"
+    java -jar /global/scratch/users/skyungyong/Software/snpEff/snpEff.jar eff -v Kronosv2 ${vcf} > ${prefix}.snpeff.vcf
+done
+```
 
 
 
-## B. The MAPS pipeline
+## B. The GATK pipeline
 
 ### 4B. Read Alignment
-Reads are aligned to the broken Kronos genome using bwa v0.7.18-r1243-dirty:
+Reads are aligned to the broken Kronos genome using bwa mem v0.7.18-r1243-dirty:
 ```
 #information about how the genome was broken can be found
 #https://github.com/krasileva-group/Kronos_EDR
@@ -269,9 +317,3 @@ for vcf in Kronos*.vcf; do
 done
 ```
 
-
-## Outputs
-
-```
-${mutant}.gatk.exome.snpeff.vcf: Exome-capture data processed with the GATK pipeline
-```
