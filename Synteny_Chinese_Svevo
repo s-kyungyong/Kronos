@@ -35,7 +35,7 @@ python synteny_plot.py minimap_K.CS_7A.out.paf 7A 7A
 python synteny_plot.py minimap_K.SV_7B.out.paf LT934124.1 7B
 scp jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/LT* /Users/r_upercut/Downloads/test
 
-"I have a task for you. I now have a fast file called "Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa", and this file looks like this ">1A_2600127-2634529
+"I have a task for you. You need to write a Python script that I can use on the cluster to create a new fasta file based on the given fasta file. I now have a fast file called "Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa", and this file looks like this ">1A_2600127-2634529
 TTGGCATGTCTAATTGAAGGAGCTGACTGCTAAAAAAATTGAATGAGCCGTGTGTTTTTCTCAGGCGAATTGGGTTAGTCATGGGTTCCCAGGGGCATTGCTCCATGTTGCTCGATTAGTCACTGTCTGTTGCATGCTCAACCAGCTGTTTAGTGTTTGCTTTCCATTTTTTTATAGAGGAATTAGGGGTATGAACTGATTGAATAGGCCAATGTGCATGCACCAA...
 >1A_7144666-7177894
 tgcttgcaaagtttcatcatggaattacattcatggaatttgtcagaaaaataaaataaaattagcactccaaactgtttttgagaataacttttgtgaagcattgtatttgtttcctttgccacgtcgcccatgaatttcattctgtgatgaaactttgcaagaaatcaaaacatttgccaTATATAAAAGCATCTTCAACAGTGTCCATTTCTCCTAAAACTACC...
@@ -45,6 +45,57 @@ ctgacgttgagtaggcagataggccgaaattgttcaattctcacggcatctattttcttaggcaacaacgttatcgttcc
 aacaagagacagtaaaaaaggtttacgcagggtcttaatctaaaaagaatcctttaggacgggtccctactgcacgtctgcgcctgtgtctccgttgtgtcgtatcctggacgggcgtcgcacgacattcatctgtaaaagagaggaactgagttgaaaacgggtcgtgccgaaaaaagtttaaaataaacaaagtataaaatatataa...
 >1A_8513644-8547934
 attcgtgaatctaataaaatatcaatgaaattttggaaaatactcaaaaaaaattccgtgagtttcattttttgccctattttaaaaaatcatcgattcaaaaagtgttcatgaattctaaaactactcatgtattcggtaaatgttcatcaatttttttttgtgaattttagaaaatgcccaatttttttaaaatgattgtcgattcagaaagctgtt...
-". The name of every scaffolds follows the pattern {1A} which is the name of the chrosome the sequence is on, and the second part {7144666-7177894} which is the position of the sequence on that chrosome. There are 14 chromosomes starting with 1A, 1B, 2A, 2B, 3A, 3B, 4A, 4B, and all the way to 7A and 7B. For each chromosome,
-For each chromsome, create a dictionary storing the name of the chromsome as key and the starting point and the ending point  I want you to create a dictionary "
+". The name of every scaffold follows the pattern {1A} which is the name of the chromosome the sequence is on, and the second part {7144666-7177894} which is the position of the segment sequence on that chromosome (recorded as {starting point}-{end point}). There are 14 chromosomes starting with 1A, 1B, 2A, 2B, 3A, 3B, 4A, 4B, and all the way to 7A and 7B. For each chromosome,
+For each chromosome, create a dictionary storing the name of the chromosome as the key, and every segment (this means that the value is a list of tuples of the starting point and the ending point of each segment. Using these 14 intermediate dictionaries, I want you to merge overlapping segments into 1 segment with the new starting position and the ending position. 
+If there are multiple overlapping segments, please merge all of them into 1 segment. After you get the position for new segments, you need to write a fasta file to record the segment name in {chromosome name}_{new starting position}-{new end position} and their sequence as well. You might have to parse the original fasta file to do this. Name the final output fasta file "New_Kronos_loci.fa""
 
+```
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in Chinese_spring_1B.fa -out 1B -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in Chinese_spring_2A.fa -out 1A -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in Chinese_spring_1A.fa -out 1A -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in Svevo.v1_1A.fna -out 1A -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in Svevo.v1_1B.fna -out 1B -dbtype 'nucl'
+
+#!/bin/bash
+#SBATCH --account=co_minium
+#SBATCH --partition=savio4_htc
+#SBATCH --mem=512000
+#SBATCH --exclusive
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=56
+#SBATCH --qos=minium_htc4_normal
+#SBATCH --time=72:00:00
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/1A.fa -db ./1A -outfmt "6 std qlen slen" -out 2nd.K.CS.1A.blast.out -max_hsps 20 -evalue 1e-10 -num_threads 56
+
+#!/bin/bash
+#SBATCH --account=co_minium
+#SBATCH --partition=savio4_htc
+#SBATCH --exclusive
+#SBATCH --nodes=1
+#SBATH --qos=minium_htc4_normal
+#SBATCH --time=72:00:00
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/2A.fa -db ./2A -outfmt "6 std qlen slen" -out K.CS.2A.blast.out -max_hsps 20 -evalue 1e-10
+```
+```
+#!/bin/bash
+#SBATCH --account=co_minium
+#SBATCH --partition=savio4_htc
+#SBATCH --exclusive
+#SBATCH --nodes=1
+#SBATCH --qos=minium_htc4_normal
+#SBATCH --time=72:00:00
+python synteny_blast.py /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/K.CS.1A.blast.out 1A_6144666-19273033 1A --start 1 --end 13128367 --hstart 6144666 --hend 19273033 --alignment_length 2800 --resize_param 1000000
+
+#!/bin/bash
+#SBATCH --account=co_minium
+#SBATCH --partition=savio4_htc
+#SBATCH --exclusive
+#SBATCH --nodes=1
+#SBATCH --qos=minium_htc4_normal
+#SBATCH --time=72:00:00
+python synteny_blast.py /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/K.SV.1A.blast.out 1A_6144666-19273033 1A --start 1 --end 13128367 --hstart 6144666 --hend 19273033 --alignment_length 2800 --resize_param 1000000
+
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query 04B_06B_11B.fa -db ./NLR_synteny/db_filtered_chilense -outfmt "6 std qlen slen" -out hap1_VS_chilense.blast.out -evalue 1e-4 -num_threads 56
+
+scp jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Tomato/8.final_V2_genome/06/1A_6144666-19273033_vs_1A.local.1-13128367.png /Users/r_upercut/Downloads/test/blast
+1A_6144666-19273033_vs_1A.local.1-13128367.png
