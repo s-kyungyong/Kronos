@@ -8,6 +8,11 @@
 #SBATCH --time=72:00:00
 minimap2 -f100 -x asm20 -t 8 /global/scratch/users/jiaqitang0422/Tomato/10.Kronos_QC/split_kronos/Kronos.v1.1_7B.fa /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/Chinese_spring_7B.fa -o minimap_K.CS_7B.out.paf
 ```
+**MInimap2 reference(target fa) comes first, and then is the query fa
+```
+(base) [jiaqitang0422@n0180 Kronos]$ minimap2 --help
+Usage: minimap2 [options] <target.fa>|<target.idx> [query.fa] [...]
+```
 ```
 #!/bin/bash
 #SBATCH --account=co_minium
@@ -89,13 +94,150 @@ python synteny_blast.py /global/scratch/users/jiaqitang0422/Kronos/Chinese_sprin
 #!/bin/bash
 #SBATCH --account=co_minium
 #SBATCH --partition=savio4_htc
+#SBATCH --mem=512000
 #SBATCH --exclusive
 #SBATCH --nodes=1
+#SBATCH --cpus-per-task=56
 #SBATCH --qos=minium_htc4_normal
 #SBATCH --time=72:00:00
+python test_blast_vertical_synteny.py K.CS.1A.blast.out 1A_6144666-19273033 1A 
+python synteny_blast.py my_blast_output.txt "1A_6144666-19273033" "2A_50000-150000"
+
+
+
 python synteny_blast.py /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/K.SV.1A.blast.out 1A_6144666-19273033 1A --start 1 --end 13128367 --hstart 6144666 --hend 19273033 --alignment_length 2800 --resize_param 1000000
 
 /global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query 04B_06B_11B.fa -db ./NLR_synteny/db_filtered_chilense -outfmt "6 std qlen slen" -out hap1_VS_chilense.blast.out -evalue 1e-4 -num_threads 56
 
-scp jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Tomato/8.final_V2_genome/06/1A_6144666-19273033_vs_1A.local.1-13128367.png /Users/r_upercut/Downloads/test/blast
+scp jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/1A_6144666-19273033_vs_1A.synteny.png /Users/r_upercut/Downloads/test/blast
 1A_6144666-19273033_vs_1A.local.1-13128367.png
+```
+
+- SCript for vertical line function added to the synteny_blast.fa file
+```
+# -*- coding: utf-8 -*-
+"""
+Visualizing Synteny Plots for BLAST Output (Tabular Format 6) with Loci Annotations
+"""
+
+import argparse
+import matplotlib.pyplot as plt
+import re
+from Bio import SeqIO
+
+def resize(num, param):
+    """Scale a number by a resize parameter."""
+    return int(num) / param
+
+def parse_loci(loci_fasta):
+    """
+    Parses loci from the fasta file and stores them by chromosome.
+    
+    Args:
+        loci_fasta (str): Path to the loci fasta file.
+
+    Returns:
+        dict: A dictionary mapping chromosomes to a list of (start, end) tuples.
+    """
+    loci = {}
+
+    for record in SeqIO.parse(loci_fasta, "fasta"):
+        match = re.match(r"(\w+)_(\d+)-(\d+)", record.id)
+        if match:
+            chrom, start, end = match.groups()
+            start, end = int(start), int(end)
+            if chrom not in loci:
+                loci[chrom] = []
+            loci[chrom].append((start, end))
+
+    return loci
+
+# Initialize the parser
+parser = argparse.ArgumentParser(description='Generate a synteny plot from BLAST output with loci annotations.')
+parser.add_argument('blast_file', help='Path to the BLAST output file.')
+parser.add_argument('query', help='Query sequence name (e.g., "1A_6144666-19273033").')
+parser.add_argument('hit', help='Hit sequence name for comparison.')
+parser.add_argument('--loci_fasta', default="/global/scratch/users/jiaqitang0422/Kronos/Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa",
+                    help='Path to the loci fasta file.')
+parser.add_argument('--alignment_length', type=int, default=7000, help='Minimum alignment length to be processed.')
+parser.add_argument('--resize_param', type=int, default=1000000, help='Parameter to resize the plot (in Mb).')
+
+# Parse arguments
+args = parser.parse_args()
+
+# Extract query chromosome, start, and end
+query_match = re.match(r"(\w+)_(\d+)-(\d+)", args.query)
+if not query_match:
+    raise ValueError("Query name must follow the format {chromosome}_{start}-{end}")
+
+query_chrom, query_start, query_end = query_match.groups()
+query_start, query_end = int(query_start), int(query_end)
+
+# Normalize start and end for plotting (start at 1)
+adjusted_start = 1
+adjusted_end = query_end - query_start + 1
+
+# Lists to store coordinates
+start_x, start_y, end_x, end_y = [], [], [], []
+
+# Read BLAST file and extract relevant alignments
+with open(args.blast_file, 'r') as file:
+    for line in file:
+        items = line.split()
+
+        # Extract BLASTn fields
+        qseqid = items[0]    # Query sequence ID
+        sseqid = items[1]    # Subject sequence ID
+        length = int(items[3])    # Alignment length
+        qstart = int(items[6])    # Query start
+        qend = int(items[7])      # Query end
+        sstart = int(items[8])    # Subject start
+        send = int(items[9])      # Subject end
+
+        # Check if alignment is within the query range and meets length threshold
+        if qseqid == args.query and sseqid == args.hit and length >= args.alignment_length:
+            # Normalize query coordinates for plotting
+            qstart_adj = qstart - query_start + 1
+            qend_adj = qend - query_start + 1
+
+            start_x.append(resize(qstart_adj, args.resize_param))
+            end_x.append(resize(qend_adj, args.resize_param))
+            start_y.append(resize(sstart, args.resize_param))
+            end_y.append(resize(send, args.resize_param))
+
+# Load loci
+loci = parse_loci(args.loci_fasta)
+
+# Plot with matplotlib
+fig, ax = plt.subplots()
+
+# Set x and y limits based on adjusted query and hit coordinates
+ax.set_xlim(resize(adjusted_start, args.resize_param), resize(adjusted_end, args.resize_param))
+ax.set_ylim(resize(adjusted_start, args.resize_param), resize(adjusted_end, args.resize_param))
+
+# Plot synteny lines
+for sx, sy, ex, ey in zip(start_x, start_y, end_x, end_y):
+    ax.plot([sx, ex], [sy, ey], color='k')
+
+# Plot loci as vertical green lines
+if query_chrom in loci:
+    for locus_start, locus_end in loci[query_chrom]:
+        if query_start <= locus_start <= query_end:
+            locus_adj_start = locus_start - query_start + 1
+            ax.axvline(x=resize(locus_adj_start, args.resize_param), color='g', linestyle='--', linewidth=1)
+
+        if query_start <= locus_end <= query_end:
+            locus_adj_end = locus_end - query_start + 1
+            ax.axvline(x=resize(locus_adj_end, args.resize_param), color='g', linestyle='--', linewidth=1)
+
+# Customize plot
+ax.set_xlabel(f'{query_chrom} ({query_start}-{query_end} bp)')
+ax.set_ylabel(f'{args.hit} (Mb)')
+
+# Save the plot
+output_dir = '/global/scratch/users/jiaqitang0422/Kronos/Chinese_spring'
+plt.savefig(f'{output_dir}/{args.query}_vs_{args.hit}.synteny.png', format='png')
+
+print("Plot successfully saved!")
+
+```
