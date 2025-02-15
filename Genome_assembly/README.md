@@ -35,7 +35,7 @@ Note that the genome acessible through the NCBI does not have **Un** sequences. 
 
 #### HiFi Reads
 
-We obtained HiFi reads from Revio as BAM files. In this step, BAM files are converted into FASTQ format, and reads are filtered to remove potential contaminants.
+We obtained about 50X HiFi reads from Revio as BAM files. In this step, BAM files are converted into FASTQ format, and reads are filtered to remove potential contaminants.
 ```
 ls -lha m84066_2305*
 -rwxr-xr-x 1 skyungyong ucb  45G Jun 12 20:07 m84066_230503_201048_s2.hifi_reads.default.bam
@@ -53,20 +53,16 @@ ls -lha m84066_2305*
 ```
 
 Convert the bam files into a single fasta file with bam2fastq v3.0.0.
-
 ```
 reads=$(ls *.default.bam)
 bam2fastq -o Kronos.HiFi -j 52 $reads
 ```
 
-While HiFi reads are generally clean, adapter contamination can occasionally occur. HiFiAdapterFilt is used to remove reads with adapter sequences. This step is not necessary.
+While HiFi reads are generally clean, adapter contamination can occasionally occur. HiFiAdapterFilt is used to remove reads with adapter sequences. This step is not necessary. As can be seen from the statistics below, possible contaminants are extremely rare. 
 ```
 HiFiAdapterFilt/hifiadapterfilt.sh -p Kronos -t 54
-```
 
-As can be seen from the statistics below, possible contaminants are extremely rare. 
-
-```
+#check the statistics
 cat Kronos.HiFi.stats
 Started on Wed Jun 14 21:12:00 PDT 2023
 For the Kronos.HiFi dataset:
