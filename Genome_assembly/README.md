@@ -199,26 +199,13 @@ cat Kronos.p_ctg.fa Kronos.a_ctg.fa > Kronos.draft.fa
 ```
 
 
-## Scaffolding and assessment
+## Scaffolding and Assessment
 
-Now, we will use our Hi-C data to scaffold the contigs. We will follow [this Omni-C protocol](https://omni-c.readthedocs.io/en/latest/index.html) for mapping and use yahs for scaffolding. 
-
-```
-samtools --version
-samtools 1.15.1
-Using htslib 1.16
-
-bwa
-Version: 0.7.17-r1188
-
-pairtools --version
-pairtools, version 1.0.2
-
-yahs --version
-1.2a.2
-```
+Now, we scaffold contigs with our Hi-C data. We follow [this Omni-C protocol](https://omni-c.readthedocs.io/en/latest/index.html) for mapping and use yahs for scaffolding. 
 
 ```
+#samtools #v1.15.1, bwa v0.7.17-r1188, pairtools v1.0.2, yahs v1.2a.2
+#index
 samtools faidx Kronos.draft.fa
 bwa index Kronos.draft.fa
 
@@ -234,10 +221,11 @@ pairtools sort --tmpdir=./tmp --nproc 56 | pairtools dedup --nproc-in 56 \
 --nproc-out 56 --output-pairs mapped.pairs --output-sam - |samtools view -bS -@56 | \
 samtools sort -@56 -o mapped.PT.bam ; samtools index mapped.PT.bam
 
+#run yahs
 yahs -o YaHS -e GATC,GANTC,CTNAG,TTAA Kronos.draft.fa mapped.PT.bam
 ```
 
-We can quickly check the length of the scaffolds. We expect 14 largest scaffolds (7 chromosomes x AB). 
+Let's check the scaffold lengths. We expect 14 largest scaffolds (7 chromosomes from A and B subgenomes). 
 ```
 python -c "from Bio import SeqIO; print('\n'.join([f'{record.id} {round(len(record.seq)/1000000, 3)} Mb' for record in SeqIO.parse('YaHS_scaffolds_final.fa', 'fasta')]))" | sort -r -nk 2 | head -n 20
 
@@ -262,36 +250,23 @@ scaffold_18 2.63 Mb
 scaffold_19 2.481 Mb
 scaffold_20 2.432 Mb
 ```
-It looks like the largest 14 scaffolds may be the chromosomes!
+It looks like the largest 14 scaffolds are the chromosomes! The other anchored sequences are all smaller than 4 Mb. 
 
 Let's generate a contact map and visualize through JuiceBox.
 ```
-/global/scratch/users/skyungyong/Software/yahs/juicer pre -a -o out_JBAT YaHS.bin YaHS_scaffolds_final.agp Kronos.draft.fa.fai >out_JBAT.log 2>&1
+./yahs/juicer pre -a -o out_JBAT YaHS.bin YaHS_scaffolds_final.agp Kronos.draft.fa.fai > out_JBAT.log 2>&1
 java -jar juicer_tools.1.9.9_jcuda.0.8.jar pre out_JBAT.txt out_JBAT.hic <(cat out_JBAT.log  | grep PRE_C_SIZE | awk '{print $2" "$3}')
 ```
-The two outputs, out_JBAT.hic and out_JBAT.assembly, can be loaded into [Juicebox](https://github.com/aidenlab/Juicebox/wiki/Download). Set the scale as below:
+
+The two outputs, out_JBAT.hic and out_JBAT.assembly, can be loaded into [Juicebox](https://github.com/aidenlab/Juicebox/wiki/Download). Set the scale as below. We did not observe any significant abnormality, so we did not manually change anything.
 ```
 grep 'scale factor' out_JBAT.log
 [I::main_pre] scale factor: 8
 ```
 
-For visualization, we will use the following setups:
-```
-Show: Log(Observed+1)
-Normalization: Balanced
-Color Range: 0-13-19 (for the entire assembly)
-```
-
-```
-juicer pre YaHS.bin YaHS_scaffolds_final.agp Kronos.draft.fa.fai | sort -k2,2d -k6,6d -T ./ --parallel=30 -S256G | awk 'NF' > alignments_sorted.txt
-python -c "from Bio import SeqIO; print('\n'.join([f'{record.id}\t{len(record.seq)}' for record in SeqIO.parse('YaHS_scaffolds_final.fa', 'fasta')]))"  > scaf.length
-java -jar juicer_tools.1.9.9_jcuda.0.8.jar pre alignments_sorted.txt out.hic scaf.length
-```
-We did not observe any abnormal features from the contact map and are happy to move on!
-
 ## Scaffolding renaming
 
-We will remove chloroplast and mitocondiral genomes into separate files and reassign the scaffold names. For the plasmids, we will download these two accessions from the NCBI. The wheat reference genome can be downloaded from [EnsemblPlants](https://plants.ensembl.org/Triticum_aestivum/Info/Index).
+Remove chloroplast and mitocondiral genomes into separate files and reassign the scaffold names. For the plasmids, we will download these two accessions from the NCBI below. The wheat reference genome can be downloaded from [EnsemblPlants](https://plants.ensembl.org/Triticum_aestivum/Info/Index).
 ```
 Triticum aestivum chloroplast, complete genome: NC_002762.1
 Triticum aestivum cultivar Chinese Yumai mitochondrion, complete genome: NC_036024.1
@@ -307,7 +282,7 @@ python break_fa.py Triticum_aestivum.IWGSC.dna.toplevel.fa
 We can then run minimap v2.24-r1122. This step took > 72 hours. It is recommended to split the query and submit multiple jobs.
 ```
 cat NC_002762.1.fasta NC_036024.1.fasta > Triticum_aestivum.plasmids.fa
-minimap2 -x asm5 -t 52 ../Triticum_aestivum.IWGSC.dna.toplevel.broken.fa YaHS_scaffolds_final.broken.fa > minimap.ref.paf
+minimap2 -x asm5 -t 52 Triticum_aestivum.IWGSC.dna.toplevel.broken.fa YaHS_scaffolds_final.broken.fa > minimap.ref.paf
 sort -k1,1 -k3,3n minimap.ref.paf > minimap.ref.sorted.paf
 minimap2 -x asm5 -t 52 ../Triticum_aestivum.plasmids.fa YaHS_scaffolds_final.fa > minimap.plasmid.paf
 sort -k1,1 -k3,3n minimap.plasmid.paf > minimap.plasmid.sorted.paf
@@ -318,6 +293,8 @@ Run the following script to reassign the scaffold names and separate plasmid DNA
 python process_scaffolds.py minimap.plasmid.sorted.paf minimap.ref.sorted.paf YaHS_scaffolds_final.fa Kronos.collapsed
 ```
 
+This step creates the Kronos reference v1.0, with the following statistics. 
+
 | Chromosomes  | 1A | 1B | 2A | 2B | 3A | 3B | 4A | 4B | 5A | 5B | 6A | 6B | 7A | 7B | Un | 
 |----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|
 | scaffold ID  | 14  | 11 | 3 | 2 | 6 | 1 | 4 | 12 | 10 | 9 | 13 | 8 | 7 | 5 | - | 
@@ -326,18 +303,6 @@ python process_scaffolds.py minimap.plasmid.sorted.paf minimap.ref.sorted.paf Ya
 | unambiguous base pairs | 600439581| 708826986| 795812989| 828523133| 759124428| 864131987| 767852317| 699678356| 720275659| 731131626| 624298173| 733579245| 753471566| 766006795| 210519344 |
 
 
-51,529,289 base pairs where separated as chloroplast, and 8,923,050 as mitochondria. 
+In the version 1.1, chromosomes 1B, 2A, 2B, 3A, 3B, 5A, 6A and 6B are flipped to make their orientations consistent with the Chinese Spring genome. 
 
-
-minimap2 -x asm5 -t 20 ../../Triticum_aestivum.plasmids.fa Kronos.draft.fa > min
-imap.plasmid.paf
-sort -k1,1 -k3,3n minimap.plasmid.paf > minimap.plasmid.sorted.paf
-python ../process_scaffolds.py ../minimap.plasmid.sorted.paf None Kronos.draft.fa Kronos.contigs
-quast -t 20 --fast Kronos.contigs.genomic.fa
-
-
-Repeat annotation: temp
-singularity exec -B $(pwd):$(pwd) /global/scratch/users/skyungyong/Software/EDTA.sif EDTA.pl --genome /global/scratch/users/skyungyong/Kronos/5.Annotations/Final/Kronos.collapsed.chromosomes.masked.v1.1.fa --species others --step all --sensitive 1 --anno 1 --evaluate 1 --threads 56 --cds Kronos.v2.0.cds.fa --rmlib
-
-./tRNAscan-SE_installed/bin/tRNAscan-SE -E -o tRNAscan-SE.out -f tRNAscan-SE.ss -s tRNAscan-SE.iso -m tRNAscan-SE.stats -c ./tRNAscan-SE_installed/bin/tRNAscan-SE.conf ../Final/Kronos.collapsed.chromosomes.v1.1.fa
 
