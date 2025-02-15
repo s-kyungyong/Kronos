@@ -156,7 +156,7 @@ hifi=Kronos.HiFi.filt.fastq.gz
 hifiasm -l0 -t 54 -o l0-hic $hifi
 ```
 
-Evaluate the assembly statistics with QUAST and compleasm v0.2.2
+Evaluate the assembly statistics with QUAST and compleasm v0.2.2.
 
 ```
 #convert gfa to fasta files
