@@ -33,10 +33,9 @@ Note that the genome acessible through the NCBI does not have **Un** sequences. 
 
 ### 1. Quality Control
 
-#### HiFi reads
+#### HiFi Reads
 
-We have the following HiFi reads as bam files from Revio. In this step, the bamfiles are converted into a fastq file, and the reads are filtered. 
-
+We obtained HiFi reads from Revio as BAM files. In this step, BAM files are converted into FASTQ format, and reads are filtered to remove potential contaminants.
 ```
 ls -lha m84066_2305*
 -rwxr-xr-x 1 skyungyong ucb  45G Jun 12 20:07 m84066_230503_201048_s2.hifi_reads.default.bam
@@ -53,27 +52,16 @@ ls -lha m84066_2305*
 -rwxr-xr-x 1 skyungyong ucb  69M Jun 13 04:38 m84066_230523_181907_s2.hifi_reads.default.bam.pbi
 ```
 
-Convert the bam files into a single fasta file with bam2fastq.
+Convert the bam files into a single fasta file with bam2fastq v3.0.0.
 
-```
-bam2fastq --version
-bam2fastq 3.0.0 (commit v3.0.0)
-
-Using:
-  pbbam     : 2.3.0 (commit v2.3.0-3-g502c299)
-  pbcopper  : 2.2.0 (commit v2.2.0-9-gde47bd7)
-  boost     : 1.77
-  htslib    : 1.15
-  zlib      : 1.2.11
-```
 ```
 reads=$(ls *.default.bam)
 bam2fastq -o Kronos.HiFi -j 52 $reads
 ```
 
-Filter the reads with hifiadapterfilt. This step is not necessary. Often, the HiFi reads come out pretty clean. However, we occasionally had cases in other species where not-so-clean HiFi reads resulted in adapters contained inside the contigs. We thus included this step for the quality control. 
+While HiFi reads are generally clean, adapter contamination can occasionally occur. HiFiAdapterFilt is used to remove reads with adapter sequences. This step is not necessary.
 ```
-/HiFiAdapterFilt/hifiadapterfilt.sh -p Kronos -t 54
+HiFiAdapterFilt/hifiadapterfilt.sh -p Kronos -t 54
 ```
 
 As can be seen from the statistics below, possible contaminants are extremely rare. 
@@ -89,7 +77,7 @@ Number of adapter contaminated ccs reads: 13 (3.30025e-05% of total)
 Number of ccs reads retained: 39390892 (100% of total)
 ```
 
-#### Hi-C data
+#### Hi-C Data
 
 We have the following paired-end libraries from the Hi-C protocol. 
 
@@ -103,56 +91,18 @@ ls -lha  KVK-KRONOS-*/*.fastq.gz
 -rwxr-xr-x 1 skyungyong ucb 62G Jul 26 12:01 KVK-KRONOS-HIC2-1067017/kvk-kronos-hic2-1067017_S3HiC_R2.fastq.gz
 ```
 
-We use fastp to filter the reads. 
+We use fastp v0.23.2 for quality control, enabling automatic adapter detection and polyG trimming. Rreads with < 20 quality scores or < 50 bp are discarded.
 
 ```
-fastp --version
-fastp 0.23.2
-
-fastqc -version
-FastQC v0.12.1
-```
-
-We will allow auto-detection of the adapters (--detect_adapter_for_pe) and trim polyG trimming (-g). The reads that have less than 20 quality score and are shorter than 50 nucleotides will be removed.
-
-```
-for folder in $(ls -d  KVK-KRONOS-*)
-  do
-
-  date
-  echo STARTED: $folder
-  cd $folder
-
-  read1=$(ls *_R1*.fastq.gz)
-  read2=$(ls *_R2*.fastq.gz)
-
-  out1=$(ls *_R1*.fastq.gz | sed 's/fastq.gz/trimmed.fq.gz/g')
-  out2=$(ls *_R2*.fastq.gz | sed 's/fastq.gz/trimmed.fq.gz/g')
-
-  fastp --thread 54 -g --detect_adapter_for_pe -q 20 -l 50 --in1 $read1 --in2 $read2 --out1 $out1 --out2 $out2 -h bssh1.html &> bssh1.log
-  fastqc -t 54 $out1 $out2
-
-  date
-  echo DONE: $folder
-  cd ..
-
-done
+fastp --thread 54 -g --detect_adapter_for_pe -q 20 -l 50 --in1 $read1 --in2 $read2 --out1 $out1 --out2 $out2 -h bssh1.html &> bssh1.log
+fastqc -t 54 $out1 $out2
 ```
 
 ----------
 
-## Pre-assembly assessment
+## Pre-assembly Assessment
 
-Kronos is an allotetraploid species (AABB). In the field, Kronos rarely out-crosses. We therefore think that the heterozygosity should be extremely low or residual, and we aim to generate collapsed haplotypes (AB). An available Durum wheat genome ([Svevo](https://www.nature.com/articles/s41588-019-0381-3)) is 10.45G in size. We also roughly estimate that each haplotype will be 5-6G in size, totalling up to 10-12G for the collapsed haplotypes. We will evaluate our assumptions with GenomeScope. 
-
-```
-jellyfish --version
-jellyfish 2.2.10
-
-genomescope2 --version
-GenomeScope 2.0
-```
-
+Kronos is an allotetraploid wheat (AABB) with high homozygosity due to self-pollination. An available Durum wheat genome ([Svevo](https://www.nature.com/articles/s41588-019-0381-3)) is 10.45G in size. We also roughly estimate that the Kronos genome would be similar in size. To confirm this, we use GenomeScope v2.0 along with jellyfish v2.2.10.
 ```
 jellyfish count -C -m 21 -s 50000000000 -t 20 Kronos.HiFi.fastq -o kmer_counts.jf
 jellyfish histo -h 5000000 -t 20 kmer_counts.jf > reads.histo
@@ -161,18 +111,8 @@ genomescope2 -p 4 -i reads.histo -o genomescope --verbose
 
 We can also perform similar analysis for Svevo. We first downloaded the paired-end short reads from the NCBI, filtered them and evaluated k-mer. 
 ```
-fasterq-dump-orig.2.11.2 --version
-fasterq-dump-orig.2.11.2 : 2.11.2
-
-trim_galore --version
-version 0.6.6
-
-cutadapt --version
-3.7
-```
-
-```
 cat Svevo_SRA.list | while read accession; do fasterq-dump-orig.2.11.2 -e 40 -t ./tmp $accession; done
+#use trim_galore v0.6.6 and cutadapt v3.7
 ls *.fastq | cut -d "_" -f 1 | sort -u |  while read accession; do trim_galore --illumina -j 8 --paired $accession\_1.fastq $accession\_2.fastq ; done
 
 jellyfish count -C -m 21 -s 50000000000 -t 56 *.fq -o svevo.kmer_counts.jf
@@ -197,8 +137,6 @@ This is the GenomeScope statistics.
 |Model Fit                 |    28.7973%       |   89.812% | 26.1724%    |      82.8801% |
 |Read Error Rate            |   0.0707465%     |   0.0707465% | 0.190909%    |     0.190909% |
 
-The statistics looks quite similar!
-
 
 We can compare our Kronos statistics to the GenomeScope result for the hexaploid wheat in [this paper](https://www.nature.com/articles/s41467-020-14998-3). The data is in Fig. S21. Here, the genome size is esimated as haplotype size x ploidy. Although this isn't technically correct, it seems to give the right estimate. See the discussion [here](https://github.com/schatzlab/genomescope/issues/107).
 
@@ -212,9 +150,9 @@ We can compare our Kronos statistics to the GenomeScope result for the hexaploid
 | err (%) | 0.0707 | 0.191 | 0.506 |
 | dup | 0.654 | 2.67 | 0.836 | 
 
-The statistics looks fairly similar. I believe that just like other reference wheat genomes, we can generate collapsed haplotypes (AB) for our Kronos genome. 
+All the statistics look fairly similar. I believe that just like other reference wheat genomes, we can generate collapsed haplotypes (AB) for our Kronos genome. 
 
-## Genome assembly and assessment
+## Genome Assembly
 
 Genome assembly is done with hifiasm. Because the residual heterozygosity is low, and we aim to generate collapsed haplotypes (AB), we will only use the HiFi reads at the assembly stage.
 
