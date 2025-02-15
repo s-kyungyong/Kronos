@@ -221,7 +221,7 @@ samtools sort -@56 -o mapped.PT.bam ; samtools index mapped.PT.bam
 yahs -o YaHS -e GATC,GANTC,CTNAG,TTAA Kronos.draft.fa mapped.PT.bam
 ```
 
-Let's check the scaffold lengths. We expect 14 largest scaffolds (7 chromosomes from A and B subgenomes). 
+Let's check the scaffold lengths. We expect 14 largest scaffolds to correspond to 7 chromosomes from A and B subgenomes. 
 ```
 python -c "from Bio import SeqIO; print('\n'.join([f'{record.id} {round(len(record.seq)/1000000, 3)} Mb' for record in SeqIO.parse('YaHS_scaffolds_final.fa', 'fasta')]))" | sort -r -nk 2 | head -n 20
 
@@ -248,14 +248,11 @@ scaffold_20 2.432 Mb
 ```
 It looks like the largest 14 scaffolds are the chromosomes! The other anchored sequences are all smaller than 4 Mb. 
 
-Let's generate a contact map and visualize through JuiceBox.
+Let's generate a contact map and visualize through JuiceBox. The two outputs, out_JBAT.hic and out_JBAT.assembly, can be loaded into [Juicebox](https://github.com/aidenlab/Juicebox/wiki/Download). Set the scale as below. We did not observe any significant abnormality, so we did not manually change anything.
 ```
 ./yahs/juicer pre -a -o out_JBAT YaHS.bin YaHS_scaffolds_final.agp Kronos.draft.fa.fai > out_JBAT.log 2>&1
 java -jar juicer_tools.1.9.9_jcuda.0.8.jar pre out_JBAT.txt out_JBAT.hic <(cat out_JBAT.log  | grep PRE_C_SIZE | awk '{print $2" "$3}')
-```
 
-The two outputs, out_JBAT.hic and out_JBAT.assembly, can be loaded into [Juicebox](https://github.com/aidenlab/Juicebox/wiki/Download). Set the scale as below. We did not observe any significant abnormality, so we did not manually change anything.
-```
 grep 'scale factor' out_JBAT.log
 [I::main_pre] scale factor: 8
 ```
