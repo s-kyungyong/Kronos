@@ -1,7 +1,7 @@
 # Genome assembly
 
 ## Data availability 
-Sequencing data deposted in the NCBI under the BioProject assession, PRJNA1213727. The following runs include: 
+Sequencing data were deposted in the NCBI under the BioProject assession, PRJNA1213727. The following runs include: 
 ```
 SRR32063042: HiFi reads
 SRR32063043: PacBio sequencing data
