@@ -1,6 +1,37 @@
-## Genome assembly
+# Genome assembly
 
-### Quality control
+## Data availability 
+Sequencing data deposted in the NCBI under the BioProject assession, PRJNA1213727. The following runs include: 
+```
+SRR32063042: HiFi reads
+SRR32063043: PacBio sequencing data
+SRR32063044: Hi-C sequencing data
+```
+
+The Kronos reference genome can be assessed through the NCBI and Zenodo. In v1.1, the following chromosomes are reversed and complemented: 1B, 2A, 2B, 3A, 3B, 5A, 6A and 6B. This adjustment was made to ensure the alignment (orientation) of the chromosome arms remains consistent with that of the Chinese Spring reference genome. Unless specified, all analyses were performed on the v1.1 genome. 
+```
+https://zenodo.org/records/10215402: the Kronos reference genome v1.0
+https://zenodo.org/records/11106422: the Kronos reference genome v1.1
+: the Kronos reference genome v1.1
+```
+
+Note that the genome acessible through the NCBI does not have **Un** sequences. Furthermore, the following genome regions were hard-masked due to some similarity to mitochondria.
+```
+2A	795820389	239269473..239297248
+2B	828541533	290778354..290821184
+2B	828541533	290821385..290871421
+3B	864152387	598683503..598723947
+3B	864152387	598724148..598754566
+4A	767865717	738117070..738151875
+5B	731153026	206904209..206929881
+6B	733599645	394727123..394769363
+6B	733599645	394769564..394869826
+7B	766026795	742909075..742941679
+```
+
+## Genome Assembly and Scaffolding
+
+### 1. Quality Control
 
 #### HiFi reads
 
