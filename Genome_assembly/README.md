@@ -154,34 +154,27 @@ All the statistics look fairly similar. I believe that just like other reference
 
 ## Genome Assembly
 
-Genome assembly is done with hifiasm. Because the residual heterozygosity is low, and we aim to generate collapsed haplotypes (AB), we will only use the HiFi reads at the assembly stage.
-
-```
-hifiasm --version
-0.19.5-r587
-```
-
+Genome assembly is done with hifiasm v0.19.5-r587. Because the residual heterozygosity is low, and we aim to generate collapsed haplotypes (AB), we will only use the HiFi reads at the assembly stage. This took 61 hours and 615 Gb of a peak memory.
 ```
 hifi=Kronos.HiFi.filt.fastq.gz
 hifiasm -l0 -t 54 -o l0-hic $hifi
 ```
 
-This is the very last line of the log. It took about 61 hours with 54 CPUs and a peak memory of 615 GB. 
-```
-[M::main] Real time: 218150.098 sec; CPU: 9384831.006 sec; Peak RSS: 615.502 GB
-```
-
-We can quickly look at the assembly statistics with QUAST and compleasm. 
+Evaluate the assembly statistics with QUAST and compleasm v0.2.2
 
 ```
+#convert gfa to fasta files
 awk '/^S/{print ">"$2"\n"$3}' l0.bp.p_ctg.gfa | fold > Kronos.p_ctg.fa
 awk '/^S/{print ">"$2"\n"$3}' l0.bp.a_ctg.gfa | fold > Kronos.a_ctg.fa
+
+#run quest
 quast.py --fast -t 20 -o quast Kronos.p_ctg.fa Kronos.a_ctg.fa
 
+#run compleasm against poales_odb10
 VERSION=0.2.2
 export SINGULARITY_CACHEDIR=/global/scratch/users/skyungyong/temp
 singularity exec docker://huangnengcsu/compleasm:v${VERSION} compleasm run -l poales_odb10 -t 20 -o p_busco -a Kronos.p_ctg.fa
- exec docker://huangnengcsu/compleasm:v${VERSION} compleasm run -l poales_odb10 -t 20 -o a_busco -a Kronos.a_ctg.fa
+exec docker://huangnengcsu/compleasm:v${VERSION} compleasm run -l poales_odb10 -t 20 -o a_busco -a Kronos.a_ctg.fa
 ```
 
 Here is the statistics. 
@@ -204,10 +197,6 @@ The associate contigs (a_ctg) include a lot of fragments that are potentially no
 ```
 cat Kronos.p_ctg.fa Kronos.a_ctg.fa > Kronos.draft.fa
 ```
-
-Some may be interested in haplotypes, so we can also generate haplotype-resolved assemblies with the HiFi and HiC data together. However, as we focus on the collapsed genome, I will record the pipeline [here](https://github.com/s-kyungyong/Kronos/blob/main/Haplotypes/README.md).
-
-
 
 
 ## Scaffolding and assessment
