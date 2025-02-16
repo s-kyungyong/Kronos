@@ -37,8 +37,8 @@ minimap2 -f100 -x asm20 -t 56 Sohab_cornell_assembly.fna SH.haplotype-1.final.sc
 - Synteny generation:
 
 python synteny_plot.py minimap_K.CS_7A.out.paf 7A 7A
-python synteny_plot.py minimap_K.SV_7B.out.paf LT934124.1 7B
-scp jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/LT* /Users/r_upercut/Downloads/test
+python synteny_plot.py minimap_K.SV_1A.out.paf LT934111.1 1A
+scp jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/LT934111.1_vs_1A.global.svg /Users/r_upercut/Downloads/blast
 
 "I have a task for you. You need to write a Python script that I can use on the cluster to create a new fasta file based on the given fasta file. I now have a fast file called "Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa", and this file looks like this ">1A_2600127-2634529
 TTGGCATGTCTAATTGAAGGAGCTGACTGCTAAAAAAATTGAATGAGCCGTGTGTTTTTCTCAGGCGAATTGGGTTAGTCATGGGTTCCCAGGGGCATTGCTCCATGTTGCTCGATTAGTCACTGTCTGTTGCATGCTCAACCAGCTGTTTAGTGTTTGCTTTCCATTTTTTTATAGAGGAATTAGGGGTATGAACTGATTGAATAGGCCAATGTGCATGCACCAA...
@@ -56,10 +56,19 @@ If there are multiple overlapping segments, please merge all of them into 1 segm
 
 ```
 /global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in Chinese_spring_1B.fa -out 1B -dbtype 'nucl'
-/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in Chinese_spring_2A.fa -out 1A -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in Chinese_spring_2B.fa -out 2B -dbtype 'nucl'
 /global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in Chinese_spring_1A.fa -out 1A -dbtype 'nucl'
-/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in Svevo.v1_1A.fna -out 1A -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in Svevo.v1_2A.fna -out 2A -dbtype 'nucl'
 /global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in Svevo.v1_1B.fna -out 1B -dbtype 'nucl'
+
+#!/bin/bash
+#SBATCH --account=co_minium
+#SBATCH --partition=savio4_htc
+#SBATCH --exclusive
+#SBATCH --nodes=1
+#SBATCH --qos=minium_htc4_normal
+#SBATCH --time=72:00:00
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/2B.fa -db ./2B -outfmt "6 std qlen slen" -out K.CS.2B.blast.out -evalue 1e-6 
 
 #!/bin/bash
 #SBATCH --account=co_minium
@@ -70,16 +79,7 @@ If there are multiple overlapping segments, please merge all of them into 1 segm
 #SBATCH --cpus-per-task=56
 #SBATCH --qos=minium_htc4_normal
 #SBATCH --time=72:00:00
-/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/1A.fa -db ./1A -outfmt "6 std qlen slen" -out 2nd.K.CS.1A.blast.out -max_hsps 20 -evalue 1e-10 -num_threads 56
-
-#!/bin/bash
-#SBATCH --account=co_minium
-#SBATCH --partition=savio4_htc
-#SBATCH --exclusive
-#SBATCH --nodes=1
-#SBATH --qos=minium_htc4_normal
-#SBATCH --time=72:00:00
-/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/2A.fa -db ./2A -outfmt "6 std qlen slen" -out K.CS.2A.blast.out -max_hsps 20 -evalue 1e-10
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/2A.fa -db ./2A -outfmt "6 std qlen slen" -out K.SV.2A.blast.out -evalue 1e-6 -threads 56
 ```
 ```
 #!/bin/bash
