@@ -28,7 +28,7 @@ Due to some incompatibility between OpenMPI in our computer cluster and MAKER, e
 ```
 #separate genome
 mkdir split_genome
-grep ">" Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa cut -d ">" -f 2 | \
+grep ">" Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa | cut -d ">" -f 2 | \
 while read tig; do
   mkdir split_genome/${tig}
   awk -v seq=$tig -v RS=">" '$1 == seq {print RS $0; exit}' \
