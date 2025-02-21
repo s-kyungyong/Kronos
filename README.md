@@ -1,6 +1,12 @@
 # Kronos Genomics
 
-This repository describes the computational pipelines we used to build and analyze our Kronos genome (*Triticum durum* cv Kronos). Please, refer to [out preprint]() for more information.
+This repository describes the computational pipelines we used to build and analyze our Kronos genome (*Triticum durum* cv Kronos). Please, refer to [out preprint: ]() for more information.
+
+Our genome and annotations have been incoporated into multiple databases, which allows visualization of genes and mutations and sequence search. Please, use the databases listed below:
+
+[GrainGenes](https://wheat.pw.usda.gov/GG3/genome_browser)
+[Plant Ensembl]()
+[Dubcovsky Lab](https://dubcovskylab.ucdavis.edu/)
 
 
 ## Data Availability
@@ -21,16 +27,20 @@ https://zenodo.org/records/10215402: the Kronos reference genome v1.0
 : the Kronos reference genome v1.1
 ```
 
-## Genome Annotations. 
-The Kronos reference genome annotations can be assessed through the NCBI and Zenodo.
+### Genome Annotations 
+The Kronos reference genome annotations can be assessed through the NCBI and Zenodo. Our approaches to generate genome annotations v1.0 and v2.0 can be assessed through [Genome_annotations](https://github.com/s-kyungyong/Kronos/tree/main/Genome_annotation).
 ```
-: the Kronos reference genome v2.0** This is the genome annotation we used for our analysis and other databases are hosting. 
+: the Kronos reference genome v2.1** This is the genome annotation we used for our analysis and other databases are hosting. 
 https://zenodo.org/records/11106422: the Kronos reference genome v2.0
 https://zenodo.org/records/14853918: the Kronos reference genome annotation v1.0
 : the Kronos reference genome annotation v2.0
 ```
 
-### Quality control
+Manually curated NLRs are included in the annotation v2.1, updating some existing annotations of v2.0, as recorded in [NLR_analyses](https://github.com/s-kyungyong/Kronos/tree/main/NLR_anlyses). The sequences and labels for NLRs can be accessed through fasta files uploaded in Zenodo. 
+```
+: the Kronos reference genome v2.1** This is the genome annotation we used for our analysis and other databases are hosting.
+
+```
 
 #### HiFi reads
 
