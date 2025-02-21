@@ -1,12 +1,15 @@
-# Kronos Genomics
+# *Triticum turgidum* var 'Kronos'
 
 This repository describes the computational pipelines we used to build and analyze our Kronos genome (*Triticum durum* cv Kronos). Please, refer to [out preprint: ]() for more information.
 
 Our genome and annotations have been incoporated into multiple databases, which allows visualization of genes and mutations and sequence search. Please, use the databases listed below:
 
-[GrainGenes](https://wheat.pw.usda.gov/GG3/genome_browser)
-[Plant Ensembl]()
-[Dubcovsky Lab](https://dubcovskylab.ucdavis.edu/)
+[GrainGenes](https://wheat.pw.usda.gov/GG3/genome_browser)  
+
+[Plant Ensembl]()  
+
+[Dubcovsky Lab](https://dubcovskylab.ucdavis.edu/)  
+
 
 
 ## Data Availability
