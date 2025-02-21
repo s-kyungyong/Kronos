@@ -1,8 +1,34 @@
 # Kronos Genomics
 
-This repository describes the computational pipelines we used to build and analyze our Kronos genome (*Triticum durum* cv Kronos). Kronos is an allotetraploid (AABB).
+This repository describes the computational pipelines we used to build and analyze our Kronos genome (*Triticum durum* cv Kronos). Please, refer to [out preprint]() for more information.
 
-## Genome assembly
+
+## Data Availability
+
+### Sequencing Data
+Sequencing data were deposted in the NCBI under the BioProject assession, PRJNA1213727. The following runs include: 
+```
+SRR32063042: HiFi reads
+SRR32063043: PacBio sequencing data
+SRR32063044: Hi-C sequencing data
+```
+
+### Genome Assemblies
+The Kronos reference genome can be assessed through the NCBI and Zenodo. To learn more about how these genomes were generated, please refer to [Genome_assembly](https://github.com/s-kyungyong/Kronos/tree/main/Genome_assembly).
+```
+https://zenodo.org/records/11106422: the Kronos reference genome v1.1** This is the genome we used for our analysis and other databases are hosting. 
+https://zenodo.org/records/10215402: the Kronos reference genome v1.0
+: the Kronos reference genome v1.1
+```
+
+## Genome Annotations. 
+The Kronos reference genome annotations can be assessed through the NCBI and Zenodo.
+```
+: the Kronos reference genome v2.0** This is the genome annotation we used for our analysis and other databases are hosting. 
+https://zenodo.org/records/11106422: the Kronos reference genome v2.0
+https://zenodo.org/records/14853918: the Kronos reference genome annotation v1.0
+: the Kronos reference genome annotation v2.0
+```
 
 ### Quality control
 
