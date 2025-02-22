@@ -22,10 +22,10 @@ Our genome and annotations have been incoporated into multiple databases, which 
 
 Most of the datasets can be accessed through [Zenodo: Chromosome-level genome assembly of Triticum turgidum var 'Kronos'](https://zenodo.org/records/10215402). This repository includes **4** versions, each of which hosts different datasets. Please, use the information below to nevigate the datasets. 
 
-| version                                   | Contents |  |
+| version                                   | Contents | Comments |
 |-------------------------------------------|---------|-----------|
 | [1](https://zenodo.org/records/10215402)  | Genome assembly v1.0  |  |
-| [2](https://zenodo.org/records/11106422)  | Genome assembly v1.1 and Annotation v1.0 |  |
+| [2](https://zenodo.org/records/11106422)  | **Genome assembly v1.1** and Annotation v1.0 | Final genome assembly  |
 | [3](https://zenodo.org/records/14189805)  | Genome annotation v2.0  |  |
 | [4](https://zenodo.org/records/14853918)  | Exome-capture sequencing data remapped for 1,440 Kronos EMS mutants v1.0 |
 
@@ -35,11 +35,12 @@ Most of the datasets can be accessed through [Zenodo: Chromosome-level genome as
 For clarity, here are the final versions of our datasets
 
 ```
-Genome assembly:  v1.2   Zenodo: #This version is identical to v1.1 but incoporates updated repeat annotations. Thus, soft-masked regions may differ between the two versions
-Genome annoation: v2.1   Zenodo: #This is nearly identicial to v2.0 but includes manually curated NLRs. Some v2.0 annotaions were updated.
-Exome capture:    v1.1   Zenodo: #This is identical to v1.0, but the variant effect prediction was performed on the v2.1 annotation instead of v2.0
-promoter capture: v1.0   Zenodo:
-NLR annotation:   v2.1   Zenodo: #This is included in the v2.1 annotation
+Genome assembly:   v1.1   Zenodo:11106422
+Genome annoation:  v2.1   Zenodo:         #This is nearly identicial to v2.0 but includes manually curated NLRs. Some v2.0 annotaions were updated.
+Repeat annotation: v1.0
+Exome capture:     v1.1   Zenodo:         #This is identical to v1.0, but the variant effect prediction was performed on the v2.1 annotation instead of v2.0
+promoter capture:  v1.0   Zenodo:
+NLR annotation:    v2.1   Zenodo:         #This is included in the v2.1 annotation
 
 ```
 
