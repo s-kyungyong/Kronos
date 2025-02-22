@@ -35,11 +35,11 @@ Most of the datasets can be accessed through [Zenodo: Chromosome-level genome as
 For clarity, here are the final versions of our datasets
 
 ```
-Genome assembly:  v1.2   #This version is identical to v1.1 but incoporates updated repeat annotations. Thus, soft-masked regions may differ between the two versions
-Genome annoation: v2.1   #This is nearly identicial to v2.0 but includes manually curated NLRs. Some v2.0 annotaions were updated.
-Exome capture:    v1.1   #This is identical to v1.0, but the variant effect prediction was performed on the v2.1 annotation instead of v2.0
-promoter capture: v1.0
-NLR annotation:   v2.1   #This is included in the v2.1 annotation
+Genome assembly:  v1.2   Zenodo: #This version is identical to v1.1 but incoporates updated repeat annotations. Thus, soft-masked regions may differ between the two versions
+Genome annoation: v2.1   Zenodo: #This is nearly identicial to v2.0 but includes manually curated NLRs. Some v2.0 annotaions were updated.
+Exome capture:    v1.1   Zenodo: #This is identical to v1.0, but the variant effect prediction was performed on the v2.1 annotation instead of v2.0
+promoter capture: v1.0   Zenodo:
+NLR annotation:   v2.1   Zenodo: #This is included in the v2.1 annotation
 
 ```
 
