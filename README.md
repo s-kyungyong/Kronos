@@ -8,7 +8,7 @@ This repository describes the computational pipelines we used to build and analy
 ---
 ## Databases
 
-Our genome and annotations have been incoporated into multiple databases, which allows visualization of genes and mutations and sequence search. Please, use the databases listed below:
+Our genome and annotations have been incoporated into multiple databases, which allow visualization of genes and mutations and sequence search. Please, use the databases listed below:
 
 [GrainGenes](https://wheat.pw.usda.gov/GG3/genome_browser)  
 
