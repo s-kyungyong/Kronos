@@ -1,8 +1,11 @@
 # *Triticum turgidum* var 'Kronos'
 
+
+##Preprint
 This repository describes the computational pipelines we used to build and analyze our Kronos genome (*Triticum durum* cv Kronos). Please, refer to [out preprint: ]() for more information. 
 
 ---
+##Databases
 Our genome and annotations have been incoporated into multiple databases, which allows visualization of genes and mutations and sequence search. Please, use the databases listed below:
 
 [GrainGenes](https://wheat.pw.usda.gov/GG3/genome_browser)  
@@ -13,6 +16,7 @@ Our genome and annotations have been incoporated into multiple databases, which 
 
 
 ---
+##Data Sharing
 Most of the datasets can be accessed through [Zenodo: Chromosome-level genome assembly of Triticum turgidum var 'Kronos'](https://zenodo.org/records/10215402). This repository includes **4** versions, each of which hosts different datasets. Please, use the information below to nevigate the datasets. 
 
 | version                                   | Contents |  |
@@ -24,7 +28,7 @@ Most of the datasets can be accessed through [Zenodo: Chromosome-level genome as
 
 
 ---
-## Final versions
+## Final Versions
 
 
 
