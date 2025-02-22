@@ -27,14 +27,21 @@ Most of the datasets can be accessed through [Zenodo: Chromosome-level genome as
 | [1](https://zenodo.org/records/10215402)  | Genome assembly v1.0  |  |
 | [2](https://zenodo.org/records/11106422)  | Genome assembly v1.1 and Annotation v1.0 |  |
 | [3](https://zenodo.org/records/14189805)  | Genome annotation v2.0  |  |
-| [4](https://zenodo.org/records/14853918)  | Exome-capture sequencing data remapped for 1,440 Kronos EMS mutants |
+| [4](https://zenodo.org/records/14853918)  | Exome-capture sequencing data remapped for 1,440 Kronos EMS mutants v1.0 |
 
 
 ---
 ## Final Versions
+For clarity, here are the final versions of our datasets
 
+```
+Genome assembly:  v1.2   #This version is identical to v1.1 but incoporates updated repeat annotations. Thus, soft-masked regions may differ between the two versions
+Genome annoation: v2.1   #This is nearly identicial to v2.0 but includes manually curated NLRs. Some v2.0 annotaions were updated.
+Exome capture:    v1.1   #This is identical to v1.0, but the variant effect prediction was performed on the v2.1 annotation instead of v2.0
+promoter capture: v1.0
+NLR annotation:   v2.1   #This is included in the v2.1 annotation
 
-
+```
 
 
 ## Data Availability
