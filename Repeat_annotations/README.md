@@ -41,7 +41,7 @@ Now, let's run EDTA.
 ```
 singularity exec -B $(pwd) EDTA.sif EDTA.pl --genome Kronos.collapsed.chromosomes.masked.v1.1.fa --species others --step all \
                     --cds Kronos.v2.0.cds.filtered.fa --curatedlib trep-db_complete_Rel-19.triticum.filtered.fa \
-                    --rmlib confident_TE.cons.fa.classified.filtered.fa --sensitive 1 --annot 1 \
+                    --rmlib confident_TE.cons.fa.classified.filtered.fa --sensitive 1 --anno 1 \
                     --evaluate 1 --threads 56
 ```
 
