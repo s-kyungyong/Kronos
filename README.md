@@ -15,6 +15,13 @@ Our genome and annotations have been incoporated into multiple databases, which 
 ---
 Most of the datasets can be accessed through [Zenodo: Chromosome-level genome assembly of Triticum turgidum var 'Kronos'](https://zenodo.org/records/10215402). This repository includes **4** versions, each of which hosts different datasets. Please, use the information below to nevigate the datasets. 
 
+| version                                   | Contents |  |
+|-------------------------------------------|---------|-----------|
+| [1](https://zenodo.org/records/10215402)  | Genome assembly v1.0  |  |
+| [2](https://zenodo.org/records/11106422)  | Genome assembly v1.1 and Annotation v1.0 |  |
+| [3](https://zenodo.org/records/14189805)  | Genome annotation v2.0  |  |
+| [4](https://zenodo.org/records/14853918)  | Exome-capture sequencing data remapped for 1,440 Kronos EMS mutants |
+
 
 
 ## Data Availability
