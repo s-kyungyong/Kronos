@@ -45,3 +45,4 @@ singularity exec -B $(pwd) EDTA.sif EDTA.pl --genome Kronos.collapsed.chromosome
                     --evaluate 1 --threads 56
 ```
 
+started Fri Feb 21 19:13:21 PST 2025
