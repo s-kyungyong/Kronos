@@ -66,7 +66,7 @@ Kronos.v2.0.gff3      #version 2.0 annotation: available through Zenodo
 v1_abinitio.gff3      #includes annotations from BRAKER, Ginger and Funannotate produced as part of the version 1 annotation
 ```
 
-The coordinates in these GFF files need to be adjusted. 
+The coordinates in these GFF files need to be adjusted from the whole genome to the NLR-loci
 ```
 less Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa | grep ">" | cut -d ">" -f 2 | sort -u > coordinates.list 
 python recoordinate_gff3.py Kronos.v1.0.all.gff3
@@ -76,6 +76,35 @@ cat Kronos.v1.0.all.recoordinated.gff3 Kronos.v2.0.recoordinated.gff3 v1_abiniti
 ```
 
 ### 4. Transcriptome Evidence
+Not all NLRs are well expressed. When they are, however, the transcriptome evidence can be useuful. Especially, when exon-intron structures are complicated, or when there are integrated domains nearby, this evidence can help improve the annotation. Let's generate this evidene track.
+
+```
+#align transcriptome data from Kronos to the putative NLR loci 
+while read -r read1 read2; do
+    # Extract the prefix from the first read filename
+    prefix=$(basename "$read1" | cut -d "_" -f 1)
+
+    # Run STAR with the specified parameters
+    STAR --runThreadN 56 \
+        --genomeDir GenomeDir \
+        --readFilesIn "$read1" "$read2" \
+        --outSAMtype BAM SortedByCoordinate \
+        --outFilterMultimapNmax 3 \
+        --outFilterMismatchNoverReadLmax 0.04 \
+        --outFileNamePrefix "${prefix}." \
+        --readFilesCommand zcat
+done < reads.list
+
+#merge all bam files
+for bam in *.bam; do
+        samtools view -F 260 -q 20 -@ 56 -b ${bam} > ${bam}.filtered.bam
+done
+samtools merge -@ 56 merged.bam *.filtered.bam
+samtools index -@ 56 merged.bam
+
+#collapse the bam file to a bigwig file.
+bamCoverage -b merged.bam -o output.bigwig --binSize 10 --normalizeUsing CPM
+```
 
 
 ### 4. Manual curation
