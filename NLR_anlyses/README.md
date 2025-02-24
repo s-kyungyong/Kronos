@@ -4,7 +4,7 @@
 ## NLR Curation
 
 ### 1. NLR Loci Isolation
-The Kronos genome is large, and for manual curation, NLR loci need to be first extracted from the genome. Locate the region of genomes in which NB-ARC domains are detected, with 15,000 flanking sequences from both ends. These steps will generate an output named *Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa*. We later learned that some divergent NB-ARC domains in Kronos cannot be properly detected by this approach and additionally incoporated NLR-Annotator (step 5). Bringing NLR-Annotator early in this step can enhance the accuracy of loci detection.  
+The Kronos genome is large, and for manual curation, NLR loci need to be first extracted from the genome. Locate the region of genomes in which NB-ARC domains are detected, with 15,000 flanking sequences from both ends. These steps will generate an output named *Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa*. We later learned that some divergent NB-ARC domains in Kronos cannot be properly detected by this approach and additionally incoporated NLR-Annotator (step 7). Bringing NLR-Annotator early in this step can enhance the accuracy of loci detection.  
 
 ```
 # Identify open reading frames (ORFs)
@@ -113,6 +113,7 @@ samtools index -@ 56 merged.bam
 bamCoverage -b merged.bam -o output.bigwig --binSize 10 --normalizeUsing CPM
 ```
 
+### 5
 
 ### 4. Manual curation
 
@@ -123,6 +124,7 @@ for feature in {augustus,snap,maker,KRNv1.0,KRNv2.0,v1Annot}; do perl Apollo/bin
 
 After the initial curation, we run out first QC. In this step, we ensure that all putative NLR loci are detected and annotated. 
 
+```
 java -jar /global/scratch/users/skyungyong/Software/NLR-Annotator/NLR-Annotator-v2.1b.jar -t 40 -x /global/scratch/users/skyungyong/Software/NLR-Annotator/src/mot.txt -y /global/scratch/users/skyungyong/Software/NLR-Annotator/src/store.txt -i  /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/Kronos.collapsed.chromosomes.masked.v1.1.fa -o NLRannotator.whole-genome.out -g NLRannotator.whole-genome.gff3
-
+```
 
