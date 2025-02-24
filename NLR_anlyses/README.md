@@ -1,9 +1,5 @@
 # NLR Curation and Analyses
 
-## NLR Curation
-
-### 1. NLR Loci Isolation
-# NLR Curation and Analyses
 
 ## NLR Curation
 
