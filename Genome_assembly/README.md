@@ -28,6 +28,7 @@ Note that the genome acessible through the NCBI does not have **Un** sequences. 
 6B	733599645	394769564..394869826
 7B	766026795	742909075..742941679
 ```
+---
 
 ## Genome Assembly and Scaffolding
 
@@ -96,7 +97,7 @@ fastqc -t 54 $out1 $out2
 
 ----------
 
-## Pre-assembly Assessment
+## 2. Pre-assembly Assessment
 
 Kronos is an allotetraploid wheat (AABB) with high homozygosity due to self-pollination. An available Durum wheat genome ([Svevo](https://www.nature.com/articles/s41588-019-0381-3)) is 10.45G in size. We also roughly estimate that the Kronos genome would be similar in size. To confirm this, we use GenomeScope v2.0 along with jellyfish v2.2.10.
 ```
@@ -148,7 +149,9 @@ We can compare our Kronos statistics to the GenomeScope result for the hexaploid
 
 All the statistics look fairly similar. I believe that just like other reference wheat genomes, we can generate collapsed haplotypes (AB) for our Kronos genome. 
 
-## Genome Assembly
+---
+
+## 3. Genome Assembly
 
 Genome assembly is done with hifiasm v0.19.5-r587. Because the residual heterozygosity is low, and we aim to generate collapsed haplotypes (AB), we will only use the HiFi reads at the assembly stage. This took 61 hours and 615 Gb of a peak memory.
 ```
@@ -194,8 +197,9 @@ The associate contigs (a_ctg) include a lot of fragments that are potentially no
 cat Kronos.p_ctg.fa Kronos.a_ctg.fa > Kronos.draft.fa
 ```
 
+---
 
-## Scaffolding and Assessment
+## 4. Scaffolding and Assessment
 
 Now, we scaffold contigs with our Hi-C data. We follow [this Omni-C protocol](https://omni-c.readthedocs.io/en/latest/index.html) for mapping and use yahs for scaffolding. 
 
@@ -257,7 +261,9 @@ grep 'scale factor' out_JBAT.log
 [I::main_pre] scale factor: 8
 ```
 
-## Scaffolding renaming
+---
+
+## 5. Scaffolding renaming
 
 Remove chloroplast and mitocondiral genomes into separate files and reassign the scaffold names. For the plasmids, we will download these two accessions from the NCBI below. The wheat reference genome can be downloaded from [EnsemblPlants](https://plants.ensembl.org/Triticum_aestivum/Info/Index).
 ```
