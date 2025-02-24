@@ -305,3 +305,24 @@ This step creates the Kronos reference v1.0, with the following statistics.
 In the version 1.1, chromosomes 1B, 2A, 2B, 3A, 3B, 5A, 6A and 6B are flipped to make their orientations consistent with the Chinese Spring genome. 
 
 
+---
+
+## 6. Syntenic analyses
+
+The Kronos reference genome was compared to Svevo and Chinese Spring (IWGSC), which were downloaded from Plant Ensembl. For global synteny, the similarity search was performed using minimap v2.28-r1209.
+```
+#for svevo
+minimap2 --eqx -f 0.01 -K4g -t 30 -x asm5 Kronos.collapsed.chromosomes.masked.v1.1.fa Triticum_turgidum.Svevo.v1.dna.toplevel.fa -o Kronos_vs_Svevo.eqx_asm5.paf
+#for chinese spring
+minimap2 --eqx -f 0.01 -K4g -t 30 -x asm5 Kronos.collapsed.chromosomes.masked.v1.1.fa Triticum_aestivum.IWGSC.dna.toplevel.fa -o Kronos_vs_CS.eqx_asm5.paf
+```
+
+Structural variants were detecte using syri v1.7.0.
+```
+syri -r  /global/scratch/users/skyungyong/Kronos/5.Annotations/Final/Final_Final_for_release/Kronos.collapsed.chromosomes.masked.v1.1.fa -q Triticum_turgidum.Svevo.v1.dna.toplevel.fa -c Kronos_vs_Svevo.eqx_asm5.paf -F P -k --prefix Kronos_vs_Svevo
+```
+
+For local synteny, BLAST v2.15.0 was used.
+```
+blastn -query {target.fa} -db {hit.db} -outfmt "6 std qlen slen" -out {query_target.blast.out} -evalue 1e-6 
+```
