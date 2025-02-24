@@ -79,6 +79,11 @@ cat Kronos.v1.0.all.recoordinated.gff3 Kronos.v2.0.recoordinated.gff3 v1_abiniti
 Not all NLRs are well expressed. When they are, however, the transcriptome evidence can be useuful. Especially, when exon-intron structures are complicated, or when there are integrated domains nearby, this evidence can help improve the annotation. Let's generate this evidene track.
 
 ```
+#index
+STAR --runMode genomeGenerate \
+     --genomeFastaFiles *Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa \
+     --genomeDir GenomeDir
+
 #align transcriptome data from Kronos to the putative NLR loci 
 while read -r read1 read2; do
     # Extract the prefix from the first read filename
