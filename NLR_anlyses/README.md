@@ -18,14 +18,14 @@ python crop_genome.py orfs.against.NBARC.out Kronos.collapsed.chromosomes.masked
 ```
 
 ### 2. Initial Annotations
-Initial gene models are needed to faciliate curation. Typically, if NLRs do not have any mutations that disrupt their gene structures (e.g. framshift mutations or mutations in splicing sites), evidence-based annotators and even ab initio annotators can correctly predict their gene structures (most of the time). Gene structures will be predicted with MAKER v3.01.03. For protein evidence, NLR sequences for 18 Poaceae species were collected from [this repository](https://zenodo.org/records/13627395) and 415 reference NLRs from [RefPlantNLR](https://zenodo.org/records/3936022). For EST evidence, the transcripts assemembled by Stringtie with short-reads (v1) and long-reads (v2 annotations) were used. The two ab initio parameters obtained in the v1 annotation were used: Augustus from BRAKER and SANP from GINGER. 
+Initial gene models are needed to faciliate curation. Typically, if NLRs do not have any mutations that disrupt their gene structures (e.g. framshift mutations or mutations in splicing sites), evidence-based annotators and even ab initio annotators can correctly predict their gene structures (most of the time). Gene structures will be predicted with MAKER v3.01.03. For protein evidence, NLR sequences for 18 Poaceae species were collected from [this repository](https://zenodo.org/records/13627395) and 415 reference NLRs from [RefPlantNLR](https://zenodo.org/records/3936022). For EST evidence, the transcripts assemembled by Stringtie with short-reads (v1.0 annotation) and long-reads (v2.0 annotation) were used. The two ab initio parameters obtained in the v1 annotation were used: Augustus from BRAKER and SANP from GINGER. 
 
 Default control files from MAKER will be used. In **maker_opts.ctl**, some parameters were modified as below. 
 ```
 est=est.fa                        #this is from the annotation step (de novo + mapping)
 protein=proteins.fa               #reference NLR sequences
-snaphmm=Kronos.hmm                #paramters trained as part of ginger 
-augustus_species=Kronos_collapsed #parameters trained as part of braker
+snaphmm=Kronos.hmm                #paramters trained as part of ginger, v1.0 annotation
+augustus_species=Kronos_collapsed #parameters trained as part of braker, v1.0 annotation
 ```
 
 Due to some incompatibility between OpenMPI in our computer cluster and MAKER, each contig will be separated into a file and MAKER will run in parallel. 
