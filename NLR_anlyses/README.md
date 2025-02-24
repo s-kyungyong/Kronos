@@ -22,8 +22,8 @@ Initial gene models are needed to faciliate curation. Typically, if NLRs do not 
 
 Default control files from MAKER will be used. In **maker_opts.ctl**, some parameters were modified as below. 
 ```
-est=est.fa                        #this is from the annotation step (de novo + mapping)
-protein=proteins.fa               #reference NLR sequences
+est=est.fa                        #est evidence
+protein=proteins.fa               #protein evidence
 snaphmm=Kronos.hmm                #paramters trained as part of ginger, v1.0 annotation
 augustus_species=Kronos_collapsed #parameters trained as part of braker, v1.0 annotation
 ```
