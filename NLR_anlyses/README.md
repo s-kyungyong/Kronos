@@ -99,6 +99,8 @@ done < reads.list
 for bam in *.bam; do
         samtools view -F 260 -q 20 -@ 56 -b ${bam} > ${bam}.filtered.bam
 done
+
+#merge and sort
 samtools merge -@ 56 merged.bam *.filtered.bam
 samtools index -@ 56 merged.bam
 
