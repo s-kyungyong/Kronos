@@ -111,7 +111,7 @@ python synteny_blast.py /global/scratch/users/jiaqitang0422/Kronos/Chinese_sprin
 
 /global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query 04B_06B_11B.fa -db ./NLR_synteny/db_filtered_chilense -outfmt "6 std qlen slen" -out hap1_VS_chilense.blast.out -evalue 1e-4 -num_threads 56
 
-scp jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/1A_6144666-19273033_vs_1A.synteny.png /Users/r_upercut/Downloads/test/blast
+scp jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/1B_1-16279279_vs_1B_0-36279279.synteny.png /Users/r_upercut/Downloads/test/blast
 1A_6144666-19273033_vs_1A.local.1-13128367.png
 ```
 
@@ -371,4 +371,145 @@ plt.savefig(f'{output_dir}/{args.query}_vs_{args.hit}.synteny.png', format='png'
 
 print("Plot successfully saved!")
 ```
+
+- Segmented run for the blast file
+1. python prepare_blast.py New_Krnons_loci.fa Svevo.v1_1A.fna = Query FASTA: 001_K_1A_6144666_19273033.fa
+Hit FASTA: 001_SV_1A_0_39273033.fa
+BLAST DB: 001_SV_1A_0_39273033
+SLURM script: run_blast_SV_6144666_19273033.sh
+
+2. python prepare_blast.py New_Krnons_loci.fa Svevo.v1_1B.fna
+Query FASTA: 001_K_1B_1_16279279.fa
+Hit FASTA: 001_SV_1B_0_36279279.fa
+BLAST DB: 001_SV_1B_0_36279279
+SLURM script: run_blast_SV_1_16279279.sh
+
+3. python prepare_blast.py New_Krnons_loci.fa Svevo.v1_2A.fna
+Query FASTA: 001_K_2A_10797061_18441796.fa
+Hit FASTA: 001_SV_2A_0_38441796.fa
+BLAST DB: 001_SV_2A_0_38441796
+SLURM script: run_blast_SV_10797061_18441796.sh
+
+4. python prepare_blast.py New_Krnons_loci.fa Svevo.v1_2B.fna
+Query FASTA: 001_K_2B_812819653_821568195.fa
+Hit FASTA: 001_SV_2B_792819653_841568195.fa
+BLAST DB: 001_SV_2B_792819653_841568195
+SLURM script: run_blast_SV_812819653_821568195.sh
+
+5. Svevo.v1_3A.fna
+Query FASTA: 001_K_3A_709479001_714785400.fa
+Hit FASTA: 001_SV_3A_689479001_734785400.fa
+BLAST DB: 001_SV_3A_689479001_734785400
+SLURM script: run_blast_SV_709479001_714785400.sh
+
+6. Svevo.v1_3B.fna
+Query FASTA: 001_K_3B_61893014_70588348.fa
+Hit FASTA: 001_SV_3B_41893014_90588348.fa
+BLAST DB: 001_SV_3B_41893014_90588348
+SLURM script: run_blast_SV_61893014_70588348.sh
+
+7. Svevo.v1_4A.fna
+Query FASTA: 001_K_4A_742788751_767865717.fa
+Hit FASTA: 001_SV_4A_722788751_787865717.fa
+BLAST DB: 001_SV_4A_722788751_787865717
+SLURM script: run_blast_SV_742788751_767865717.sh
+
+8. Svevo.v1_4B.fna
+Query FASTA: 001_K_4B_2287435_9190132.fa
+Hit FASTA: 001_SV_4B_0_29190132.fa
+BLAST DB: 001_SV_4B_0_29190132
+SLURM script: run_blast_SV_2287435_9190132.sh
+
+9 Svevo.v1_5A.fna
+Query FASTA: 001_K_5A_18226803_23832148.fa
+Hit FASTA: 001_SV_5A_0_43832148.fa
+BLAST DB: 001_SV_5A_0_43832148
+SLURM script: run_blast_SV_18226803_23832148.sh
+
+10. Svevo.v1_5B.fna
+Query FASTA: 001_K_5B_25087707_37743160.fa
+Hit FASTA: 001_SV_5B_5087707_57743160.fa
+BLAST DB: 001_SV_5B_5087707_57743160
+SLURM script: run_blast_SV_25087707_37743160.sh
+
+11. Svevo.v1_6A.fna 
+Query FASTA: 001_K_6A_610739952_621701839.fa
+Hit FASTA: 001_SV_6A_590739952_641701839.fa
+BLAST DB: 001_SV_6A_590739952_641701839
+SLURM script: run_blast_SV_610739952_621701839.sh
+
+12. Svevo.v1_6B.fna 
+Query FASTA: 001_K_6B_52322263_60605353.fa
+Hit FASTA: 001_SV_6B_32322263_80605353.fa
+BLAST DB: 001_SV_6B_32322263_80605353
+SLURM script: run_blast_SV_52322263_60605353.sh
+
+13. Svevo.v1_7A.fna 
+Query FASTA: 001_K_7A_1_11887879.fa
+Hit FASTA: 001_SV_7A_0_31887879.fa
+BLAST DB: 001_SV_7A_0_31887879
+SLURM script: run_blast_SV_1_11887879.sh
+
+14. Svevo.v1_7B.fna 
+Query FASTA: 001_K_7B_749873542_765942456.fa
+Hit FASTA: 001_SV_7B_729873542_785942456.fa
+BLAST DB: 001_SV_7B_729873542_785942456
+SLURM script: run_blast_SV_749873542_765942456.sh
+
+- Chinese Spring segmented blast run with largest overlapped loci
+1. Chinese_spring_2B.fa
+Query FASTA: 001_K_2B_812819653_821568195.fa
+Hit FASTA: 001_CS_2B_792819653_841568195.fa
+BLAST DB: 001_CS_2B_792819653_841568195
+SLURM script: run_blast_CS_812819653_821568195.sh
+2. Chinese_spring_3A.fa
+Query FASTA: 001_K_3A_709479001_714785400.fa
+Hit FASTA: 001_CS_3A_689479001_734785400.fa
+BLAST DB: 001_CS_3A_689479001_734785400
+SLURM script: run_blast_CS_709479001_714785400.sh
+3. Chinese_spring_3B.fa
+Query FASTA: 001_K_3B_61893014_70588348.fa
+Hit FASTA: 001_CS_3B_41893014_90588348.fa
+BLAST DB: 001_CS_3B_41893014_90588348
+SLURM script: run_blast_CS_61893014_70588348.sh
+4. Chinese_spring_4A.fa
+Query FASTA: 001_K_4A_742788751_767865717.fa
+Hit FASTA: 001_CS_4A_722788751_787865717.fa
+BLAST DB: 001_CS_4A_722788751_787865717
+SLURM script: run_blast_CS_742788751_767865717.sh
+5. Chinese_spring_4B.fa
+Query FASTA: 001_K_4B_2287435_9190132.fa
+Hit FASTA: 001_CS_4B_0_29190132.fa
+BLAST DB: 001_CS_4B_0_29190132
+SLURM script: run_blast_CS_2287435_9190132.sh
+6. Chinese_spring_5A.fa
+Query FASTA: 001_K_5A_18226803_23832148.fa
+Hit FASTA: 001_CS_5A_0_43832148.fa
+BLAST DB: 001_CS_5A_0_43832148
+SLURM script: run_blast_CS_18226803_23832148.sh
+7. Chinese_spring_5B.fa
+Query FASTA: 001_K_5B_25087707_37743160.fa
+Hit FASTA: 001_CS_5B_5087707_57743160.fa
+BLAST DB: 001_CS_5B_5087707_57743160
+SLURM script: run_blast_CS_25087707_37743160.sh
+8. Chinese_spring_6A.fa
+Query FASTA: 001_K_6A_610739952_621701839.fa
+Hit FASTA: 001_CS_6A_590739952_641701839.fa
+BLAST DB: 001_CS_6A_590739952_641701839
+SLURM script: run_blast_CS_610739952_621701839.sh
+9. Chinese_spring_6B.fa
+Query FASTA: 001_K_6B_52322263_60605353.fa
+Hit FASTA: 001_CS_6B_32322263_80605353.fa
+BLAST DB: 001_CS_6B_32322263_80605353
+SLURM script: run_blast_CS_52322263_60605353.sh
+10. Chinese_spring_7A.fa
+Query FASTA: 001_K_7A_1_11887879.fa
+Hit FASTA: 001_CS_7A_0_31887879.fa
+BLAST DB: 001_CS_7A_0_31887879
+SLURM script: run_blast_CS_1_11887879.sh
+11. Chinese_spring_7B.fa
+Query FASTA: 001_K_7B_749873542_765942456.fa
+Hit FASTA: 001_CS_7B_729873542_785942456.fa
+BLAST DB: 001_CS_7B_729873542_785942456
+SLURM script: run_blast_CS_749873542_765942456.sh
 
