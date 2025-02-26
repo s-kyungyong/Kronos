@@ -35,7 +35,7 @@ minimap2 -f100 -x asm20 -t 8 /global/scratch/users/jiaqitang0422/Tomato/10.Krono
 minimap2 -f100 -x asm20 -t 56 Sohab_cornell_assembly.fna SH.haplotype-1.final.scaffolds.fa > minimap_hap1_cornell.out.paf
 ```
 - Synteny generation:
-
+LT934114.1
 python synteny_plot.py minimap_K.CS_7B.out.paf 7B 7B
 python synteny_plot.py minimap_K.SV_1B.out.paf LT934112.1 1B
 scp jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/LT934111.1_vs_1A.global.svg /Users/r_upercut/Downloads/test/minimap2
@@ -59,7 +59,17 @@ If there are multiple overlapping segments, please merge all of them into 1 segm
 /global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in Chinese_spring_2B.fa -out 2B -dbtype 'nucl'
 /global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in Chinese_spring_1A.fa -out 1A -dbtype 'nucl'
 /global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in Svevo.v1_2A.fna -out 2A -dbtype 'nucl'
-/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in Svevo.v1_1B.fna -out 1B -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in 001_SV_2B_730000000_763000000.fa -out 001_SV_2B_730000000_763000000 -dbtype 'nucl'
+
+#!/bin/bash
+#SBATCH --account=co_minium
+#SBATCH --partition=savio4_htc
+#SBATCH --exclusive
+#SBATCH --nodes=1
+#SBATCH --qos=minium_htc4_normal
+#SBATCH --time=72:00:00
+
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query 001_K_2B_812819653_821568195.fa -db ./001_SV_2B_730000000_763000000 -outfmt "6 std qlen slen" -out K.SV_812819653_821568195.blast.out -evalue 1e-6
 
 #!/bin/bash
 #SBATCH --account=co_minium
@@ -513,3 +523,40 @@ Hit FASTA: 001_CS_7B_729873542_785942456.fa
 BLAST DB: 001_CS_7B_729873542_785942456
 SLURM script: run_blast_CS_749873542_765942456.sh
 
+```
+  836  python blast_vertical_synteny.py K.CS_10797061_18441796.blast.out
+  837  head -n 1 K.CS_1_11887879.blast.out
+  838  python blast_vertical_synteny.py K.CS_10797061_18441796.blast.out 7A_1-11887879 7A_0-31887879
+  839  head -n 1 K.CS_1_11887879.blast.out
+  840  ls
+  841  rm 7A_1-11887879_vs_7A_0-31887879.synteny.png
+  842  head -n 1 K.CS_10797061_18441796.blast.out
+  843  python blast_vertical_synteny.py K.CS_10797061_18441796.blast.out 2A_10797061-18441796 2A_0-38441796
+  844  head -n 1 K.CS_1_11887879.blast.out
+  845  python blast_vertical_synteny.py K.CS_1_11887879.blast.out 7A_1-11887879 7A_0-31887879
+  846  head -n 1 K.CS_18226803_23832148.blast.out
+  847  python blast_vertical_synteny.py K.CS_18226803_23832148.blast.out 5A_18226803-23832148 5A_0-43832148
+  848  head -n 1 K.CS_2287435_9190132.blast.out 
+  849  python blast_vertical_synteny.py K.CS_2287435_9190132.blast.out  4B_2287435-9190132 4B_0-29190132
+  850  head -n 1 K.CS_25087707_37743160.blast.out 
+  851  python blast_vertical_synteny.py K.CS_25087707_37743160.blast.out 5B_25087707-37743160 5B_5087707-57743160
+  852  head -n 1 K.CS_52322263_60605353.blast.out 
+  853  python blast_vertical_synteny.py K.CS_52322263_60605353.blast.out 6B_52322263-60605353 6B_32322263-80605353
+  854  head -n 1 K.CS_610739952_621701839.blast.out
+  855  python blast_vertical_synteny.py K.CS_610739952_621701839.blast.out 6A_610739952-621701839 6A_590739952-641701839
+  856  head -n 1 K.CS_6144666_19273033.blast.out
+  857  python blast_vertical_synteny.py K.CS_6144666_19273033.blast.out 1A_6144666-19273033 1A_0-39273033
+  858  head -n 1 K.CS_61893014_70588348.blast.out
+  859  python blast_vertical_synteny.py K.CS_61893014_70588348.blast.out 3B_61893014-70588348 3B_41893014-90588348
+  860  head -n 1 K.CS_709479001_714785400.blast.out
+  861  python blast_vertical_synteny.py K.CS_709479001_714785400.blast.out 3A_709479001-714785400 3A_689479001-734785400
+  862  head -n 1 K.CS_742788751_767865717.blast.out
+  863  python blast_vertical_synteny.py K.CS_742788751_767865717.blast.out 4A_742788751-767865717 4A_722788751-787865717
+  864  head -n 1 K.CS_749873542_765942456.blast.out
+  865  python blast_vertical_synteny.py K.CS_749873542_765942456.blast.out 7B_749873542-765942456 7B_729873542-785942456
+  866  head -n 1 K.CS_812819653_821568195.blast.out
+  867  python blast_vertical_synteny.py K.CS_812819653_821568195.blast.out 2B_812819653-821568195 2B_792819653-841568195
+  868  ls
+  869  ls -lh *png
+
+```
