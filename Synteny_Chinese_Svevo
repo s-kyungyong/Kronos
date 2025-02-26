@@ -559,4 +559,32 @@ SLURM script: run_blast_CS_749873542_765942456.sh
   868  ls
   869  ls -lh *png
 
+  871  cd Svevo.v1/
+  872  ls
+  873  head -n 1 K.SV_10797061_18441796.blast.out
+  874  python blast_vertical_synteny.py K.SV_10797061_18441796.blast.out 2A_10797061-18441796 2A_0-38441796
+  875  head -n 1 K.SV_1_11887879.blast.out
+  876  python blast_vertical_synteny.py 7A_1-11887879 7A_0-31887879
+  877  python blast_vertical_synteny.py  K.SV_1_11887879.blast.out 7A_1-11887879 7A_0-31887879 
+  878  head -n 1 K.SV_1_16279279.blast.out
+  879  python blast_vertical_synteny.py K.SV_1_16279279.blast.out 1B_1-16279279 1B_0-36279279
+  880  head -n 1 K.SV_18226803_23832148.blast.out
+  881  python blast_vertical_synteny.py K.SV_18226803_23832148.blast.out 5A_18226803-23832148 5A_0-43832148
+  882  head -n 1 K.SV_2287435_9190132.blast.out
+  883  python blast_vertical_synteny.py K.SV_2287435_9190132.blast.out 4B_2287435-9190132 4B_0-29190132
+  884  head -n 1 K.SV_25087707_37743160.blast.out
+  885  python blast_vertical_synteny.py K.SV_25087707_37743160.blast.out 5B_25087707-37743160 5B_5087707-57743160
+  886  head -n 1 K.SV_52322263_60605353.blast.out
+  887  python blast_vertical_synteny.py K.SV_52322263_60605353.blast.out 6B_52322263-60605353 6B_32322263-80605353
+  888  head -n 1 K.SV_610739952_621701839.blast.out
+  889  python blast_vertical_synteny.py K.SV_610739952_621701839.blast.out 6A_610739952-621701839 6A_590739952-641701839
+  890  head -n 1 K.SV_6144666_19273033.blast.out
+  891  python blast_vertical_synteny.py K.SV_6144666_19273033.blast.out 1A_6144666-19273033 1A_0-39273033
+  892  head -n 1 K.SV_61893014_70588348.blast.out
+  893  python blast_vertical_synteny.py K.SV_61893014_70588348.blast.out 3B_61893014-70588348 3B_41893014-90588348
+  894  head -n 1 K.SV_709479001_714785400.blast.out
+  895  python blast_vertical_synteny.py K.SV_709479001_714785400.blast.out 3A_709479001-714785400 3A_689479001-734785400
+  896  head -n 1 K.SV_742788751_767865717.blast.out
+  897  python blast K.SV_742788751_767865717.blast.out 4A_742788751-767865717 4A_722788751-787865717
+
 ```
