@@ -115,6 +115,9 @@ python blast_vertical_synteny.py 2nd.K.CS.1A.blast.out 1A_6144666-19273033 1A --
 python test_blast_vertical_synteny.py K.CS.1A.blast.out 1A_6144666-19273033 1A 
 python synteny_blast.py my_blast_output.txt "1A_6144666-19273033" "2A_50000-150000"
 
+python 
+scp jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/genome_paf_synteny/CS/1A_vs_1A.global.svg /Users/r_upercut/Downloads/test/blast
+
 
 
 python synteny_blast.py /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/K.SV.1A.blast.out 1A_8144666-19273033 1A --start 1 --end 13128367 --hstart 6144666 --hend 19273033 --alignment_length 2800 --resize_param 1000000
@@ -258,7 +261,6 @@ print("Plot successfully saved!")
 """
 Visualizing Synteny Plots for BLAST Output (Tabular Format 6) with Loci Annotations.
 """
-
 import argparse
 import matplotlib.pyplot as plt
 import re
@@ -299,7 +301,7 @@ parser.add_argument('query', help='Query sequence name (e.g., "1A_6144666-192730
 parser.add_argument('hit', help='Hit sequence name for comparison.')
 parser.add_argument('--loci_fasta', default="../Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa",
                     help='Path to the loci fasta file.')
-parser.add_argument('--alignment_length', type=int, default=5000, help='Minimum alignment length to be processed.')
+parser.add_argument('--alignment_length', type=int, default=10000, help='Minimum alignment length to be processed.')
 parser.add_argument('--resize_param', type=int, default=1000000, help='Parameter to resize the plot (in Mb).')
 parser.add_argument('--hstart', type=int, help='Starting coordinate for the hit (Y-axis).')
 parser.add_argument('--hend', type=int, help='Ending coordinate for the hit (Y-axis).')
@@ -562,29 +564,41 @@ SLURM script: run_blast_CS_749873542_765942456.sh
   871  cd Svevo.v1/
   872  ls
   873  head -n 1 K.SV_10797061_18441796.blast.out
-  874  python blast_vertical_synteny.py K.SV_10797061_18441796.blast.out 2A_10797061-18441796 2A_0-38441796
+  874  python blast_vertical_synteny.py K.SV_10797061_18441796.blast.out 2A_10797061-18441796 2A_0-38441796 --hstart 7000000 --hend 17000000
   875  head -n 1 K.SV_1_11887879.blast.out
   876  python blast_vertical_synteny.py 7A_1-11887879 7A_0-31887879
-  877  python blast_vertical_synteny.py  K.SV_1_11887879.blast.out 7A_1-11887879 7A_0-31887879 
+  877  python blast_vertical_synteny.py  K.SV_1_11887879.blast.out 7A_1-11887879 7A_0-31887879 --hstart 0 --hend 13000000
   878  head -n 1 K.SV_1_16279279.blast.out
   879  python blast_vertical_synteny.py K.SV_1_16279279.blast.out 1B_1-16279279 1B_0-36279279
   880  head -n 1 K.SV_18226803_23832148.blast.out
   881  python blast_vertical_synteny.py K.SV_18226803_23832148.blast.out 5A_18226803-23832148 5A_0-43832148
   882  head -n 1 K.SV_2287435_9190132.blast.out
-  883  python blast_vertical_synteny.py K.SV_2287435_9190132.blast.out 4B_2287435-9190132 4B_0-29190132
+  883  python blast_vertical_synteny.py K.SV_2287435_9190132.blast.out 4B_2287435-9190132 4B_0-29190132 
   884  head -n 1 K.SV_25087707_37743160.blast.out
-  885  python blast_vertical_synteny.py K.SV_25087707_37743160.blast.out 5B_25087707-37743160 5B_5087707-57743160
+  885  python blast_vertical_synteny.py K.SV_25087707_37743160.blast.out 5B_25087707-37743160 5B_5087707-57743160 --hstart 1 --hend 12000000
   886  head -n 1 K.SV_52322263_60605353.blast.out
-  887  python blast_vertical_synteny.py K.SV_52322263_60605353.blast.out 6B_52322263-60605353 6B_32322263-80605353
+  887  python blast_vertical_synteny.py K.SV_52322263_60605353.blast.out 6B_52322263-60605353 6B_32322263-80605353 --hstart 11000000 --hend 2100000
   888  head -n 1 K.SV_610739952_621701839.blast.out
-  889  python blast_vertical_synteny.py K.SV_610739952_621701839.blast.out 6A_610739952-621701839 6A_590739952-641701839
+  889  python blast_vertical_synteny.py K.SV_610739952_621701839.blast.out 6A_610739952-621701839 6A_590739952-641701839 --hstart 16000000 --hend 26000000
   890  head -n 1 K.SV_6144666_19273033.blast.out
   891  python blast_vertical_synteny.py K.SV_6144666_19273033.blast.out 1A_6144666-19273033 1A_0-39273033
   892  head -n 1 K.SV_61893014_70588348.blast.out
-  893  python blast_vertical_synteny.py K.SV_61893014_70588348.blast.out 3B_61893014-70588348 3B_41893014-90588348
+  893  python blast_vertical_synteny.py K.SV_61893014_70588348.blast.out 3B_61893014-70588348 3B_41893014-90588348 --hstart 12000000 --hend 22000000
   894  head -n 1 K.SV_709479001_714785400.blast.out
-  895  python blast_vertical_synteny.py K.SV_709479001_714785400.blast.out 3A_709479001-714785400 3A_689479001-734785400
+  895  python blast_vertical_synteny.py K.SV_709479001_714785400.blast.out 3A_709479001-714785400 3A_689479001-734785400 --hstart 20000000 --hend 25000000
   896  head -n 1 K.SV_742788751_767865717.blast.out
-  897  python blast K.SV_742788751_767865717.blast.out 4A_742788751-767865717 4A_722788751-787865717
+  897  python blast K.SV_742788751_767865717.blast.out 4A_742788751-767865717 4A_722788751-787865717 --hstart 1 --hend 16000000
 
 ```
+scp "jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/png_SV*.png" /Users/r_upercut/Downloads/test/SV_freg/edits
+scp jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/Svevo.v1/3B_61893014-70588348_vs_3B_41893014-90588348.synteny.png /Users/r_upercut/Downloads/test/SV_freg/edits
+(base) [jiaqitang0422@n0184 Chinese_spring]$ python blast_vertical_synteny.py K.CS_812819653_821568195.blast.out 2B_812819653-821568195 2B_792819653-841568195 --hstart 1 --hend 700000000
+Plot successfully saved!
+(base) [jiaqitang0422@n0184 Chinese_spring]$ python blast_vertical_synteny.py K.CS_709479001_714785400.blast.out 3A_709479001-714785400 3A_689479001-734785400 --hstart 20000000 --hend 25000000
+Plot successfully saved!
+(base) [jiaqitang0422@n0184 Chinese_spring]$ python blast_vertical_synteny.py K.CS_2287435_9190132.blast.out  4B_2287435-9190132 4B_0-29190132 --hstart 1000000 --hend 8000000
+Plot successfully saved!
+(base) [jiaqitang0422@n0184 Chinese_spring]$ python blast_vertical_synteny.py K.CS_18226803_23832148.blast.out 5A_18226803-23832148 5A_0-43832148 --hstart 16000000 --hend 21500000
+Plot successfully saved!
+(base) [jiaqitang0422@n0184 Chinese_spring]$ python blast_vertical_synteny.py K.CS_25087707_37743160.blast.out 5B_25087707-37743160 5B_5087707-57743160 --hstart 1 --hend 12000000
+Plot successfully saved!
