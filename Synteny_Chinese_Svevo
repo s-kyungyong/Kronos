@@ -591,6 +591,8 @@ SLURM script: run_blast_CS_749873542_765942456.sh
 
 ```
 scp "jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/png_SV*.png" /Users/r_upercut/Downloads/test/SV_freg/edits
+scp "jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/genome_paf_synteny/CS/*.svg" /Users/r_upercut/Downloads/test/new_global
+
 scp jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/Svevo.v1/3B_61893014-70588348_vs_3B_41893014-90588348.synteny.png /Users/r_upercut/Downloads/test/SV_freg/edits
 (base) [jiaqitang0422@n0184 Chinese_spring]$ python blast_vertical_synteny.py K.CS_812819653_821568195.blast.out 2B_812819653-821568195 2B_792819653-841568195 --hstart 1 --hend 700000000
 Plot successfully saved!
@@ -602,3 +604,101 @@ Plot successfully saved!
 Plot successfully saved!
 (base) [jiaqitang0422@n0184 Chinese_spring]$ python blast_vertical_synteny.py K.CS_25087707_37743160.blast.out 5B_25087707-37743160 5B_5087707-57743160 --hstart 1 --hend 12000000
 Plot successfully saved!
+
+- Minimap global swapped X/Y axis and its matches python script
+```
+# -*- coding: utf-8 -*-
+"""
+Visualizing Synteny Plots
+"""
+
+import argparse
+import matplotlib.pyplot as plt
+
+def resize(num, param):
+    """Scale a number by a resize parameter."""
+    return [int(num) / param]
+
+# Initialize the parser
+parser = argparse.ArgumentParser(description='Read a PAF file from minimap and produce a synteny plot in SVG format.')
+parser.add_argument('paf', help='The path to a PAF file from minimap.')
+parser.add_argument('query', help='The sequence name for a query to be visualized.')
+parser.add_argument('hit', help='The sequence name for a hit to be compared to.')
+parser.add_argument('--start', type=int, default=0, help='Starting coordinate of a query to be visualized. Default is 0.')
+parser.add_argument('--end', type=int, default=None, help='Ending coordinate of a query to be visualized. Default is the last position of the query.')
+parser.add_argument('--hstart', type=int, default=None, help='Starting coordinate of a hit to be visualized. Defaults to query start.')
+parser.add_argument('--hend', type=int, default=None, help='Ending coordinate of a hit to be visualized. Defaults to query end.')
+parser.add_argument('--alignment_length', type=int, default=5000, help='Minimum alignment length to be processed. Default is 50,000.')
+parser.add_argument('--agp', default=None, help='agp file containing scaffolding information')
+
+# Parse arguments
+args = parser.parse_args()
+
+# Determine figure type
+fig_type = 'global' if args.start == 0 and args.end is None else f'local.{args.start}-{args.end}'
+
+# Default values
+alignment_type = "tp:A:P"
+quality = 30
+resize_param = 1000000  # Mb
+
+# Lists to store coordinates
+start_x, start_y, end_x, end_y = [], [], [], []
+
+# Process each line
+with open(args.paf, 'r') as file:
+    for line in file:
+        items = line.split()
+        q, h = items[0], items[5]
+
+        if q == args.query and h == args.hit:
+            if args.end is None:
+                args.end = int(items[1])
+                args.hend = int(items[6])
+
+            start_y += resize(items[2], resize_param)  # Swapped x and y
+            end_y += resize(items[3], resize_param)  # Swapped x and y
+
+            if items[4] == "+":
+                start_x += resize(items[7], resize_param)  # Swapped x and y
+                end_x += resize(items[8], resize_param)  # Swapped x and y
+            else:
+                start_x += resize(items[8], resize_param)  # Swapped x and y
+                end_x += resize(items[7], resize_param)  # Swapped x and y
+
+# Process a agp file if provided
+vline = []
+if not args.agp == None:
+  for line in open(args.agp, 'r'):
+    items = line.split('\t')
+    if items[0] == args.query and items[6] == 'scaffold':
+      vline.append( (int(items[1]) + 49) / resize_param )
+
+# Set hit coordinates to follow query if not provided
+if args.hstart is None: args.hstart = args.start
+if args.hend is None: args.hend = args.end
+
+# Plot with matplotlib
+fig, ax = plt.subplots()
+
+ax.set_xlim(args.hstart / resize_param, args.hend / resize_param)  # Swapped x and y
+ax.set_ylim(args.start / resize_param, args.end / resize_param)  # Swapped x and y
+
+# Plot each start and end point with lines connecting them
+for sx, sy, ex, ey in zip(start_x, start_y, end_x, end_y):
+    ax.plot([sx, ex], [sy, ey], color='k')
+
+# Plot vertical lines
+if len(vline) >= 1:
+  plt.vlines(x=vline, ymin=args.start / resize_param, ymax=args.end / resize_param, color='g')  # Swapped x and y
+
+# Customize plot
+ax.set_xlabel(f'{args.hit} (Mb)')  # Swapped x and y labels
+ax.set_ylabel(f'{args.hit} (Mb)')  # Changed y-axis label to match x-axis
+ax.grid(True)
+
+# Save and show the plot
+plt.savefig(f'{args.query}_vs_{args.hit}.{fig_type}.svg', format='svg')
+
+
+```
