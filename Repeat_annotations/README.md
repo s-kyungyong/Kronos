@@ -1,6 +1,6 @@
 # Repeat Annotation
 
-### Repeat Identification with HiTE
+## Repeat Identification with HiTE
 Repeative elements annotated in the Kronos reference genome v1.0 and v1.1 are predicted by [HiTE](https://github.com/CSU-KangHu/HiTE) v3.0.0. 
 ```
 singularity run HiTE.sif python main.py --genome Kronos.collapsed.chromosomes.fa \
@@ -8,7 +8,7 @@ singularity run HiTE.sif python main.py --genome Kronos.collapsed.chromosomes.fa
      --plant 1 --classified 1 --domain 1 --recover 1 --debug 1
 ```
 
-### Repeat Annotations with EDTA
+## Repeat Annotations with EDTA
 The next version repeat annotation is produced by EDTA v2.2.2. Some input files need to be prepared. 
 
 ### Annotated TREP Databases 
@@ -37,8 +37,19 @@ diamond blastx -d Kronos.v2.0.pep.dmnd --out trep-db_complete_Rel-19.triticum.fi
 python filter_cds.py
 ```
 
-Now, let's run EDTA. 
+Now, let's run EDTA. EDTA has a really long runtime as discussed [here](https://github.com/oushujun/EDTA/issues/61). Let's divde and conquer. For LTR, LINE, SINE and helitron:
 ```
+#target is eitheir ltr, line, sine or helitron 
+EDTA_raw.pl --genome Kronos.collapsed.chromosomes.masked.v1.1.fa --species others --type ${target} -t 40 --overwrite 0 --rmlib confident_TE.cons.fa.classified.filtered.fa
+```
+
+TIR prediction is extremely slow, we will need to split genome and run EDTA individually to speed this process up. 
+```
+#target is each chromosome: 1A, 1B ... 7A, 7B, and Un
+EDTA_raw.pl --genome Kronos.v1.1.${target}.fa --species others --type tir -t 20 --overwrite 0 --rmlib ../confident_TE.cons.fa.classified.filtered.fa
+```
+
+
 singularity exec -B $(pwd) EDTA.sif EDTA.pl --genome Kronos.collapsed.chromosomes.masked.v1.1.fa --species others --step all \
                     --cds Kronos.v2.0.cds.filtered.fa --curatedlib trep-db_complete_Rel-19.triticum.filtered.fa \
                     --rmlib confident_TE.cons.fa.classified.filtered.fa --sensitive 1 --anno 1 \
