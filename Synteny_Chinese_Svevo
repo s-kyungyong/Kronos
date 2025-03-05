@@ -591,7 +591,7 @@ SLURM script: run_blast_CS_749873542_765942456.sh
 
 ```
 scp "jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/png_SV*.png" /Users/r_upercut/Downloads/test/SV_freg/edits
-scp "jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/genome_paf_synteny/CS/*.svg" /Users/r_upercut/Downloads/test/new_global
+scp "jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/genome_paf_synteny/SV/*.svg" /Users/r_upercut/Downloads/test/new_global/SV
 
 scp jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/Svevo.v1/3B_61893014-70588348_vs_3B_41893014-90588348.synteny.png /Users/r_upercut/Downloads/test/SV_freg/edits
 (base) [jiaqitang0422@n0184 Chinese_spring]$ python blast_vertical_synteny.py K.CS_812819653_821568195.blast.out 2B_812819653-821568195 2B_792819653-841568195 --hstart 1 --hend 700000000
