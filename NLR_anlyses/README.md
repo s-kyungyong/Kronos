@@ -128,3 +128,36 @@ After the initial curation, we run out first QC. In this step, we ensure that al
 java -jar /global/scratch/users/skyungyong/Software/NLR-Annotator/NLR-Annotator-v2.1b.jar -t 40 -x /global/scratch/users/skyungyong/Software/NLR-Annotator/src/mot.txt -y /global/scratch/users/skyungyong/Software/NLR-Annotator/src/store.txt -i  /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/Kronos.collapsed.chromosomes.masked.v1.1.fa -o NLRannotator.whole-genome.out -g NLRannotator.whole-genome.gff3
 ```
 
+
+NLR prediction in other wheat species
+
+ gffread -x Kronos_all.3rd_QC.cds.fa -g ../../../5.Annotations/Final/Final_Final_for_release/Kronos.collapsed.chromosomes.masked.v1.1.fa ../Kronos_all.3rd_QC.reformatted.with_rescues.fixed.coordinate_fixed.gff3
+
+ seqkit grep -f <(awk '$2 == "High" {print $1".1"}' /global/scratch/projects/vector_kvklab/KS-Kronos_Final_datasets/03.NLRs/03.Final_NLR_datasets/NLR_confidence.list) ../final.test.cds.fa > Kronos_hc.cds.fa
+[INFO] 1027 patterns loaded from file
+(ginger) [skyungyong@n0168 Finals-augustus_trainning]$ seqkit grep -f <(awk '$2 == "High" {print $1".1"}' /global/scratch/projects/vector_kvklab/KS-Kronos_Final_datasets/03.NLRs/03.Final_NLR_datasets/NLR_confidence.list) ../final.test.pep.fa > Kronos_hc.pep.fa
+
+cd-hit -c 0.9 -i Kronos_all.3rd_QC.cds.high-conf.fa -o Kronos_all.3rd_QC.cds.high-conf.cd-hit.c_0.9.fa -T 30
+
+# 827 NLRs.
+grep ">"
+Kronos_all.3rd_QC.cds.high-conf.cd-hit.c_0.9.fa | sed 's/>//g' >
+ geneIDs.list
+
+gffread -T --ids geneIDs.list ../Kronos_all.3rd_QC.reformatted.with_rescues.fixed.coordinate_fixed.gff3 > 827_hc_nlrs.gtf
+
+
+perl gff2gbSmallDNA.pl 827_hc_nlrs.gtf ${CWD0}/${genome} 1000 first.gb
+    
+perl /global/scratch/users/skyungyong/Software/Augustus-3.3.3/augustus-3.3.3/scripts/gff2gbSmallDNA.pl 827_hc_nlrs.gtf ../../../5.Annotations/Final/Final_Final_for_release/Kronos.collapsed.chromosomes.masked.v1.1.fa 1000 first.gb
+
+etraining --species=generic first.gb > train.err
+    !{params.ETRAINING} --species=generic first.gb 2> train.err
+    fgrep "gene" train.err | cut -f 2 -d " " > bad.etraining-test.lst
+    perl !{params.AUGUSTUS_SCRIPT_DIR}/filterGenesOut_mRNAname.pl bad.etraining-test.lst first.gb > second.gb
+    
+
+ 
+Here, our aim is to define highly variable NLR group within Kronos. Other wheat species may have divergent NLRs, whose the close homologs may be missing in Kronos. These genes may not be correctly predicted. This is OK. These genes will be filtered out anyways, as they will not offer any evolutionary information in the Shannon Entropy analyses of Kronos NLRs. 
+
+
