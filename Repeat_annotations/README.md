@@ -49,7 +49,6 @@ TIR prediction is extremely slow. The runtime for the bread wheat was 4 weeks, a
 EDTA_raw.pl --genome Kronos.v1.1.${target}.fa --species others --type tir -t 20 --overwrite 0 --rmlib ../confident_TE.cons.fa.classified.filtered.fa
 
 #merge all EDTA outputs
-#genome.list contains the location of the split chromosomes
 cat ../genome_split_for_TIR/*.raw/*mod.TIR.intact.raw.fa > Kronos.collapsed.chromosomes.masked.v1.1.fa.mod.TIR.intact.raw.fa
 cat ../genome_split_for_TIR/*.raw/*mod.TIR.intact.raw.bed > Kronos.collapsed.chromosomes.masked.v1.1.fa.mod.TIR.intact.raw.bed
 cat ../genome_split_for_TIR/*.raw/*mod.TIR.intact.raw.gff3 > Kronos.collapsed.chromosomes.masked.v1.1.fa.mod.TIR.intact.raw.gff3
