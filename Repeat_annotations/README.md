@@ -43,17 +43,24 @@ Now, let's run EDTA. EDTA has a really long runtime as discussed [here](https://
 EDTA_raw.pl --genome Kronos.collapsed.chromosomes.masked.v1.1.fa --species others --type ${target} -t 40 --overwrite 0 --rmlib confident_TE.cons.fa.classified.filtered.fa
 ```
 
-TIR prediction is extremely slow, we will need to split genome and run EDTA individually to speed this process up. 
+TIR prediction is extremely slow. The runtime for the bread wheat was 4 weeks, as described [here](https://github.com/oushujun/EDTA/issues/61). We will need to split genome and run EDTA individually to speed this process up, although this may have some effects on TIR detection. 
 ```
 #target is each chromosome: 1A, 1B ... 7A, 7B, and Un
 EDTA_raw.pl --genome Kronos.v1.1.${target}.fa --species others --type tir -t 20 --overwrite 0 --rmlib ../confident_TE.cons.fa.classified.filtered.fa
+
+#merge all EDTA outputs
+#genome.list contains the location of the split chromosomes
+cat ../genome_split_for_TIR/*.raw/*mod.TIR.intact.raw.fa > Kronos.collapsed.chromosomes.masked.v1.1.fa.mod.TIR.intact.raw.fa
+cat ../genome_split_for_TIR/*.raw/*mod.TIR.intact.raw.bed > Kronos.collapsed.chromosomes.masked.v1.1.fa.mod.TIR.intact.raw.bed
+cat ../genome_split_for_TIR/*.raw/*mod.TIR.intact.raw.gff3 > Kronos.collapsed.chromosomes.masked.v1.1.fa.mod.TIR.intact.raw.gff3
+cat ../genome_split_for_TIR/*.raw/*mod.TIR.intact.raw.fa.anno.list > Kronos.collapsed.chromosomes.masked.v1.1.fa.mod.TIR.intact.raw.fa.anno.list
 ```
 
-
-singularity exec -B $(pwd) EDTA.sif EDTA.pl --genome Kronos.collapsed.chromosomes.masked.v1.1.fa --species others --step all \
-                    --cds Kronos.v2.0.cds.filtered.fa --curatedlib trep-db_complete_Rel-19.triticum.filtered.fa \
-                    --rmlib confident_TE.cons.fa.classified.filtered.fa --sensitive 1 --anno 1 \
-                    --evaluate 1 --threads 56
+Finish EDTA.
+```
+EDTA.pl --genome Kronos.collapsed.chromosomes.masked.v1.1.fa --species others --step filter \
+        --cds Kronos.v2.0.cds.filtered.fa --curatedlib trep-db_complete_Rel-19.triticum.filtered.fa \
+        --rmlib confident_TE.cons.fa.classified.filtered.fa --sensitive 1 --anno 1 \
+        --evaluate 1 --overwrite 0 --threads 56
 ```
 
-started Fri Feb 21 19:13:21 PST 2025
