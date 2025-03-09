@@ -1,6 +1,9 @@
 # Repeat Annotation
+## Method
+Repetitive elements were initially annotated with HiTE v3.0.0 (Hu et al., 2024) and used to soft-mask the reference genomes v1.0 and v1.1. After generating the reference annotation v2.0, we re-annotated repetitive elements with EDTA v2.2.2 (Ou et al., 2019). To enhance repeat prediction and classification, complete and consensus repeats for Triticum were retrieved from the TREP database and included as curated libraries (Schlagenhauf and Wicker et al., 2016). Additionally, classified repeats from HiTE were integrated as RepeatModeler libraries. To prevent over-masking, the coding sequences of the v2.0 annotations were also provided. 
+---
 
-## Repeat Identification with HiTE
+## 1. Repeat Identification with HiTE
 Repeative elements annotated in the Kronos reference genome v1.0 and v1.1 are predicted by [HiTE](https://github.com/CSU-KangHu/HiTE) v3.0.0. 
 ```
 singularity run HiTE.sif python main.py --genome Kronos.collapsed.chromosomes.fa \
@@ -8,7 +11,7 @@ singularity run HiTE.sif python main.py --genome Kronos.collapsed.chromosomes.fa
      --plant 1 --classified 1 --domain 1 --recover 1 --debug 1
 ```
 
-## Repeat Annotations with EDTA
+## 2. Repeat Annotations with EDTA
 The next version repeat annotation is produced by EDTA v2.2.2. Some input files need to be prepared. 
 
 ### Annotated TREP Databases 
@@ -18,8 +21,7 @@ wget https://trep-db.uzh.ch/downloads/trep-db_complete_Rel-19.fasta.gz
 gunzip trep-db_complete_Rel-19.fasta.gz
 python filter_trep.py #this creates trep-db_complete_Rel-19.triticum.filtered.fa
 
-#add telomeric repeats
-#to the file
+#add telomeric repeats to the file
 >Generic_telomere#telomere/telomere 
 TTTAGGGTTTAGGGTTTAGGGTTTAGGG
 ```
