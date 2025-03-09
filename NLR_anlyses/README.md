@@ -4,7 +4,7 @@
 
 ## Method
 
-**Putative NLR loci detection**: to facilitate targeted NLR curation, we first identified, following a modified version of the previous workflow (Seong et al., 2020). The Kronos genome was translated in six frames, and open reading frames (ORFs) were identified using orfpy v0.0.4 (Singh and Wurtele, 2021). The predicted ORFs were searched for the NBARC domain, using the Hidden Markov Model obtained from PFAM (PF00931) and hmmsearch v3.4 (--domE 1e-4 -E 1e-4) (Eddy 2011; Mistry et al., 2021). While this approach captured the majority of putative NLR loci, some divergent NB-ARC domains remained undetected. To capture these additional loci, we also employed NLR-Annotator v2.0 (Steuernagel et al., 2020). All putative NLR loci detected by either approach were extracted from the Kronos genome with 15,000 flanking sequences on both sides. 
+**Putative NLR loci detection**: to facilitate targeted NLR curation, we first identified, following a modified version of the previous workflow (Seong et al., 2020). The Kronos genome was translated in six frames, and open reading frames (ORFs) were identified using orfpy v0.0.4 (Singh and Wurtele, 2021). The predicted ORFs were searched for the NBARC domain, using the Hidden Markov Model obtained from PFAM (PF00931) and hmmsearch v3.4 (--domE 1e-4 -E 1e-4) (Eddy 2011; Mistry et al., 2021). While this approach captured the majority of putative NLR loci, some divergent NB-ARC domains remained undetected. To capture these additional loci, we also employed NLR-Annotator v2.1b (Steuernagel et al., 2020). All putative NLR loci detected by either approach were extracted from the Kronos genome with 15,000 flanking sequences on both sides. 
 
 **Gene model prediction**: to support manual curation, initial gene models were predicted using MAKER v3.01.03 (Cantarel et al., 2008). Protein evidence was incorporated from NLR sequences of 18 Poaceae species (Toghani and Kamoun, 2024) and 415 reference NLRs from RefPlantNLR (Kourelis et al., 2021). EST evidence was derived from the transcripts assembled by Stringtie from short-read or long-read data, produced to create reference annotations v1.0 and v2.0, respectively. Additionally, two pre-trained ab initio prediction models developed during the version 1 annotation were used: Augustus parameters from BRAKER and SNAP parameters from GINGER. 
 
@@ -19,8 +19,8 @@
 
 ## NLR Curation
 
-### 1. NLR Loci Isolation
-The Kronos genome is large, and for manual curation, NLR loci need to be first extracted from the genome. Locate the region of genomes in which NB-ARC domains are detected, with 15,000 flanking sequences from both ends. These steps will generate an output named *Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa*. We later learned that some divergent NB-ARC domains in Kronos cannot be properly detected by this approach and additionally incoporated NLR-Annotator (step 7). Bringing NLR-Annotator early in this step can enhance the accuracy of loci detection.  
+### 1. Putative NLR loci detection
+The Kronos genome is large, and for manual curation, NLR loci need to be first extracted from the genome. Locate the region of genomes in which NB-ARC domains are detected, with 15,000 flanking sequences from both ends. You may choose to increase the flanking size, as a small number of genes could not be fully contained in this region.
 
 ```
 # Identify open reading frames (ORFs)
@@ -31,9 +31,17 @@ hmmsearch --cpu 56 --domE 1e-4 -E 1e-4 --domtblout orfs.against.NBARC.out PF0093
 
 # Crop genome to NB-ARC-containing loci
 python crop_genome.py orfs.against.NBARC.out Kronos.collapsed.chromosomes.masked.v1.1.fa
+
+#These steps will generate an output named *Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa. 
 ```
 
-### 2. Initial Annotations
+
+We later learned that some divergent NB-ARC domains in Kronos cannot be properly detected by this approach and additionally incoporated NLR-Annotator.
+```
+java -jar NLR-Annotator-v2.1b.jar -t 40 -x ./NLR-Annotator/src/mot.txt -y ./NLR-Annotator/src/store.txt -i Kronos.collapsed.chromosomes.masked.v1.1.fa -o NLRannotator.whole-genome.out -g NLRannotator.whole-genome.gff3
+```
+
+### 2. Gene model prediction
 Initial gene models are needed to faciliate curation. Typically, if NLRs do not have any mutations that disrupt their gene structures (e.g. framshift mutations or mutations in splicing sites), evidence-based annotators and even ab initio annotators can correctly predict their gene structures (most of the time). Gene structures will be predicted with MAKER v3.01.03. For protein evidence, NLR sequences for 18 Poaceae species were collected from [this repository](https://zenodo.org/records/13627395) and 415 reference NLRs from [RefPlantNLR](https://zenodo.org/records/3936022). For EST evidence, the transcripts assemembled by Stringtie with short-reads (v1.0 annotation) and long-reads (v2.0 annotation) were used. The two ab initio parameters obtained in the v1 annotation were used: Augustus from BRAKER and SANP from GINGER. 
 
 Default control files from MAKER will be used. In **maker_opts.ctl**, some parameters were modified as below. 
@@ -73,7 +81,7 @@ done
 cat */*.gff3 > Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.maker_out.gff3
 ```
 
-### 3. Collecting Existing Annotations
+### 3. Additional evidence
 Other than MAKER annotations, intermediate and final annotation files produced during the version 1 and 2 annotations are also included.
 ```
 ls
@@ -91,7 +99,6 @@ python recoordinate_gff3.py v1_abinitio.gff3
 cat Kronos.v1.0.all.recoordinated.gff3 Kronos.v2.0.recoordinated.gff3 v1_abinitio.recoordinated.gff3  > all_models.recoordinated.gff3
 ```
 
-### 4. Transcriptome Evidence
 Not all NLRs are well expressed. When they are, however, the transcriptome evidence can be useuful. Especially, when exon-intron structures are complicated, or when there are integrated domains nearby, this evidence can help improve the annotation. Let's generate this evidene track.
 
 ```
@@ -126,10 +133,9 @@ samtools merge -@ 56 merged.bam *.filtered.bam
 samtools index -@ 56 merged.bam
 
 #collapse the bam file to a bigwig file.
-bamCoverage -b merged.bam -o output.bigwig --binSize 10 --normalizeUsing CPM
+bamCoverage -b merged.bam -o output.bigwig --binSize 1 --normalizeUsing None
 ```
 
-### 5
 
 ### 4. Manual curation
 
