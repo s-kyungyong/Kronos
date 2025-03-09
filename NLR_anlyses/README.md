@@ -131,32 +131,185 @@ java -jar /global/scratch/users/skyungyong/Software/NLR-Annotator/NLR-Annotator-
 
 NLR prediction in other wheat species
 
- gffread -x Kronos_all.3rd_QC.cds.fa -g ../../../5.Annotations/Final/Final_Final_for_release/Kronos.collapsed.chromosomes.masked.v1.1.fa ../Kronos_all.3rd_QC.reformatted.with_rescues.fixed.coordinate_fixed.gff3
+gffread -x Kronos_NLRs.final.cds.fa -g ../../5.Annotations/Final/Final_Final_for_release/Kronos.collapsed.chromosomes.masked.v1.1.fa ../NLR_final_datasets_curation/Kronos_all.NLRs.final.gff3
 
- seqkit grep -f <(awk '$2 == "High" {print $1".1"}' /global/scratch/projects/vector_kvklab/KS-Kronos_Final_datasets/03.NLRs/03.Final_NLR_datasets/NLR_confidence.list) ../final.test.cds.fa > Kronos_hc.cds.fa
-[INFO] 1027 patterns loaded from file
-(ginger) [skyungyong@n0168 Finals-augustus_trainning]$ seqkit grep -f <(awk '$2 == "High" {print $1".1"}' /global/scratch/projects/vector_kvklab/KS-Kronos_Final_datasets/03.NLRs/03.Final_NLR_datasets/NLR_confidence.list) ../final.test.pep.fa > Kronos_hc.pep.fa
+seqkit grep -f <(awk '$2 == "High" {print $1".1"}' /global/scratch/projects/vector_kvklab/KS-Kronos_Final_datasets/03.NLRs/03.Final_NLR_datasets/NLR_confidence.list) Kronos_NLRs.final.cds.fa > Kronos_hc.cds.fa
+cd-hit -c 0.9 -i Kronos_hc.cds.fa -o Kronos_hc.cds.cd-hit.c_0.9.fa -T 30
+grep ">" Kronos_hc.cds.cd-hit.c_0.9.fa | sed 's/>//g' > geneIDs.list #827 nr-NLRs
 
-cd-hit -c 0.9 -i Kronos_all.3rd_QC.cds.high-conf.fa -o Kronos_all.3rd_QC.cds.high-conf.cd-hit.c_0.9.fa -T 30
-
-# 827 NLRs.
-grep ">"
-Kronos_all.3rd_QC.cds.high-conf.cd-hit.c_0.9.fa | sed 's/>//g' >
- geneIDs.list
-
-gffread -T --ids geneIDs.list ../Kronos_all.3rd_QC.reformatted.with_rescues.fixed.coordinate_fixed.gff3 > 827_hc_nlrs.gtf
+gffread -T --ids geneIDs.list ../NLR_final_datasets_curation/Kronos_all.NLRs.final.gff3  > 827_hc_nlrs.gtf
+awk '$3 == "CDS" {print}' 827_hc_nlrs.gtf  > 827_hc_nlrs.cds.gtf
+perl /global/scratch/users/skyungyong/Software/Augustus-3.3.3/augustus-3.3.3/scripts/gff2gbSmallDNA.pl 827_hc_nlrs.cds.gtf ../../5.Annotations/Final/Final_Final_for_release/Kronos.collapsed.chromosomes.masked.v1.1.fa 1000 first.gb
 
 
-perl gff2gbSmallDNA.pl 827_hc_nlrs.gtf ${CWD0}/${genome} 1000 first.gb
-    
-perl /global/scratch/users/skyungyong/Software/Augustus-3.3.3/augustus-3.3.3/scripts/gff2gbSmallDNA.pl 827_hc_nlrs.gtf ../../../5.Annotations/Final/Final_Final_for_release/Kronos.collapsed.chromosomes.masked.v1.1.fa 1000 first.gb
+etraining --species=generic first.gb > train.err #all genes are good; but TrturKRN7A02G026020 got removed from the previous step possibly as this gene is within an intron of another gene. 
+perl /global/scratch/users/skyungyong/Software/Augustus-3.3.3/augustus-3.3.3/scripts/randomSplit.pl first.gb 126 #700 tranning 126 testing 
 
-etraining --species=generic first.gb > train.err
-    !{params.ETRAINING} --species=generic first.gb 2> train.err
-    fgrep "gene" train.err | cut -f 2 -d " " > bad.etraining-test.lst
-    perl !{params.AUGUSTUS_SCRIPT_DIR}/filterGenesOut_mRNAname.pl bad.etraining-test.lst first.gb > second.gb
-    
+# Training 1
+perl /global/scratch/users/skyungyong/Software/Augustus-3.3.3/augustus-3.3.3/scripts/new_species.pl --species=Wheat_NLR #this is in maker environemnt 
+etraining --species=Wheat_NLR first.gb.train 
+	
+augustus --species=Wheat_NLR first.gb.test | tee firsttest.out
+*******      Evaluation of gene prediction     *******
 
+---------------------------------------------\
+                 | sensitivity | specificity |
+---------------------------------------------|
+nucleotide level |       0.985 |       0.972 |
+---------------------------------------------/
+
+----------------------------------------------------------------------------------------------------------\
+           |  #pred |  #anno |      |    FP = false pos. |    FN = false neg. |             |             |
+           | total/ | total/ |   TP |--------------------|--------------------| sensitivity | specificity |
+           | unique | unique |      | part | ovlp | wrng | part | ovlp | wrng |             |             |
+----------------------------------------------------------------------------------------------------------|
+           |        |        |      |                 78 |                 93 |             |             |
+exon level |    325 |    340 |  247 | ------------------ | ------------------ |       0.726 |        0.76 |
+           |    325 |    340 |      |   43 |    2 |   33 |   43 |    3 |   47 |             |             |
+----------------------------------------------------------------------------------------------------------/
+
+----------------------------------------------------------------------------\
+transcript | #pred | #anno |   TP |   FP |   FN | sensitivity | specificity |
+----------------------------------------------------------------------------|
+gene level |   138 |   126 |   74 |   64 |   52 |       0.587 |       0.536 |
+----------------------------------------------------------------------------/
+
+------------------------------------------------------------------------\
+            UTR | total pred | CDS bnd. corr. |   meanDiff | medianDiff |
+------------------------------------------------------------------------|
+            TSS |          4 |              0 |         -1 |         -1 |
+            TTS |          9 |              0 |         -1 |         -1 |
+------------------------------------------------------------------------|
+            UTR | uniq. pred |    unique anno |      sens. |      spec. |
+------------------------------------------------------------------------|
+                |  true positive = 1 bound. exact, 1 bound. <= 20bp off |
+ UTR exon level |          0 |              0 |       -nan |       -nan |
+------------------------------------------------------------------------|
+ UTR base level |          0 |              0 |       -nan |       -nan |
+------------------------------------------------------------------------/
+
+#braker-trained parameters 
+augustus --species=Kronos_collapsed first.gb.test | tee firsttest.out
+*******      Evaluation of gene prediction     *******
+
+---------------------------------------------\
+                 | sensitivity | specificity |
+---------------------------------------------|
+nucleotide level |       0.865 |       0.932 |
+---------------------------------------------/
+
+----------------------------------------------------------------------------------------------------------\
+           |  #pred |  #anno |      |    FP = false pos. |    FN = false neg. |             |             |
+           | total/ | total/ |   TP |--------------------|--------------------| sensitivity | specificity |
+           | unique | unique |      | part | ovlp | wrng | part | ovlp | wrng |             |             |
+----------------------------------------------------------------------------------------------------------|
+           |        |        |      |                352 |                213 |             |             |
+exon level |    479 |    340 |  127 | ------------------ | ------------------ |       0.374 |       0.265 |
+           |    479 |    340 |      |  171 |   75 |  106 |  159 |   20 |   34 |             |             |
+----------------------------------------------------------------------------------------------------------/
+
+----------------------------------------------------------------------------\
+transcript | #pred | #anno |   TP |   FP |   FN | sensitivity | specificity |
+----------------------------------------------------------------------------|
+gene level |   170 |   126 |    0 |  170 |  126 |           0 |           0 |
+----------------------------------------------------------------------------/
+
+------------------------------------------------------------------------\
+            UTR | total pred | CDS bnd. corr. |   meanDiff | medianDiff |
+------------------------------------------------------------------------|
+            TSS |         12 |              0 |         -1 |         -1 |
+            TTS |          7 |              0 |         -1 |         -1 |
+------------------------------------------------------------------------|
+            UTR | uniq. pred |    unique anno |      sens. |      spec. |
+------------------------------------------------------------------------|
+                |  true positive = 1 bound. exact, 1 bound. <= 20bp off |
+ UTR exon level |          0 |              0 |       -nan |       -nan |
+------------------------------------------------------------------------|
+ UTR base level |          0 |              0 |       -nan |       -nan |
+------------------------------------------------------------------------/
+
+
+
+augustus --species=Kronos_manual --AUGUSTUS_CONFIG_PATH=/global/scratch/users/skyungyong/Kronos/5.Annotations/Braker/config first.gb.test | tee firsttest.out
+
+---------------------------------------------\
+                 | sensitivity | specificity |
+---------------------------------------------|
+nucleotide level |       0.851 |       0.935 |
+---------------------------------------------/
+
+----------------------------------------------------------------------------------------------------------\
+           |  #pred |  #anno |      |    FP = false pos. |    FN = false neg. |             |             |
+           | total/ | total/ |   TP |--------------------|--------------------| sensitivity | specificity |
+           | unique | unique |      | part | ovlp | wrng | part | ovlp | wrng |             |             |
+----------------------------------------------------------------------------------------------------------|
+           |        |        |      |                287 |                156 |             |             |
+exon level |    471 |    340 |  184 | ------------------ | ------------------ |       0.541 |       0.391 |
+           |    471 |    340 |      |  158 |   33 |   96 |  120 |    3 |   33 |             |             |
+----------------------------------------------------------------------------------------------------------/
+
+----------------------------------------------------------------------------\
+transcript | #pred | #anno |   TP |   FP |   FN | sensitivity | specificity |
+----------------------------------------------------------------------------|
+gene level |   161 |   126 |   34 |  127 |   92 |        0.27 |       0.211 |
+----------------------------------------------------------------------------/
+
+------------------------------------------------------------------------\
+            UTR | total pred | CDS bnd. corr. |   meanDiff | medianDiff |
+------------------------------------------------------------------------|
+            TSS |         16 |              0 |         -1 |         -1 |
+            TTS |          6 |              0 |         -1 |         -1 |
+------------------------------------------------------------------------|
+            UTR | uniq. pred |    unique anno |      sens. |      spec. |
+------------------------------------------------------------------------|
+                |  true positive = 1 bound. exact, 1 bound. <= 20bp off |
+ UTR exon level |          0 |              0 |       -nan |       -nan |
+------------------------------------------------------------------------|
+ UTR base level |          0 |              0 |       -nan |       -nan |
+------------------------------------------------------------------------/
+
+So the NLR-specific parameters are much better!
+
+optimize_augustus.pl --cpus=40 --kfold=40 --species=Wheat_NLR first.gb.train
+augustus --species=Wheat_NLR first.gb.test | tee firsttest.out
+
+*******      Evaluation of gene prediction     *******
+
+---------------------------------------------\
+                 | sensitivity | specificity |
+---------------------------------------------|
+nucleotide level |       0.984 |        0.97 |
+---------------------------------------------/
+
+----------------------------------------------------------------------------------------------------------\
+           |  #pred |  #anno |      |    FP = false pos. |    FN = false neg. |             |             |
+           | total/ | total/ |   TP |--------------------|--------------------| sensitivity | specificity |
+           | unique | unique |      | part | ovlp | wrng | part | ovlp | wrng |             |             |
+----------------------------------------------------------------------------------------------------------|
+           |        |        |      |                 79 |                 88 |             |             |
+exon level |    331 |    340 |  252 | ------------------ | ------------------ |       0.741 |       0.761 |
+           |    331 |    340 |      |   40 |    2 |   37 |   41 |    2 |   45 |             |             |
+----------------------------------------------------------------------------------------------------------/
+
+----------------------------------------------------------------------------\
+transcript | #pred | #anno |   TP |   FP |   FN | sensitivity | specificity |
+----------------------------------------------------------------------------|
+gene level |   139 |   126 |   76 |   63 |   50 |       0.603 |       0.547 |
+----------------------------------------------------------------------------/
+
+------------------------------------------------------------------------\
+            UTR | total pred | CDS bnd. corr. |   meanDiff | medianDiff |
+------------------------------------------------------------------------|
+            TSS |          4 |              0 |         -1 |         -1 |
+            TTS |          7 |              0 |         -1 |         -1 |
+------------------------------------------------------------------------|
+            UTR | uniq. pred |    unique anno |      sens. |      spec. |
+------------------------------------------------------------------------|
+                |  true positive = 1 bound. exact, 1 bound. <= 20bp off |
+ UTR exon level |          0 |              0 |       -nan |       -nan |
+------------------------------------------------------------------------|
+ UTR base level |          0 |              0 |       -nan |       -nan |
+------------------------------------------------------------------------/
  
 Here, our aim is to define highly variable NLR group within Kronos. Other wheat species may have divergent NLRs, whose the close homologs may be missing in Kronos. These genes may not be correctly predicted. This is OK. These genes will be filtered out anyways, as they will not offer any evolutionary information in the Shannon Entropy analyses of Kronos NLRs. 
 
