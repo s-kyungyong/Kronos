@@ -1,0 +1,40 @@
+Species  Prefix  URL
+Triticum aestivum       IWGSC   https://urgi.versailles.inra.fr/download/iwgsc/IWGSC_RefSeq_Assemblies/v2.1/iwgsc_refseqv2.1_assembly.fa.zip
+Triticum aestivum Arinalrfor    ArinaLrFor      https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/903/993/985/GCA_903993985.1_10wheat_assembly_arinaLrFor/GCA_903993985.1_10wheat_assembly_arinaLrFor_genomic.fna.gz
+Triticum aestivum Cadenza       Cadenza https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/902/810/645/GCA_902810645.1_Triticum_aestivum_Cadenza_EIv1.1/GCA_902810645.1_Triticum_aestivum_Cadenza_EIv1.1_genomic.fna.gz
+Triticum aestivum Claire        Claire  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/902/810/655/GCA_902810655.1_Triticum_aestivum_Claire_EIv1.1/GCA_902810655.1_Triticum_aestivum_Claire_EIv1.1_genomic.fna.gz
+Triticum aestivum Jagger        Jagger  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/903/993/795/GCA_903993795.1_10wheat_assembly_jagger/GCA_903993795.1_10wheat_assembly_jagger_genomic.fna.gz
+Triticum aestivum Julius        Julius  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/903/994/195/GCA_903994195.1_10wheat_assembly_julius/GCA_903994195.1_10wheat_assembly_julius_genomic.fna.gz
+Triticum aestivum Kariega       Kariega https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/910/594/105/GCA_910594105.1_Tae_Kariega_v1/GCA_910594105.1_Tae_Kariega_v1_genomic.fna.gz
+Triticum aestivum Lancer        Lancer  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/903/993/975/GCA_903993975.1_10wheat_assembly_lancer/GCA_903993975.1_10wheat_assembly_lancer_genomic.fna.gz
+Triticum aestivum Landmark      Landmark        https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/903/995/565/GCA_903995565.1_10wheat_assembly_landmark1/GCA_903995565.1_10wheat_assembly_landmark1_genomic.fna.gz
+Triticum aestivum Mace  Mace    https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/903/994/175/GCA_903994175.1_10wheat_assembly_mace/GCA_903994175.1_10wheat_assembly_mace_genomic.fna.gz
+Triticum aestivum Sy Mattis     SYMattis        https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/903/994/185/GCA_903994185.1_10wheat_assembly_sy_mattis/GCA_903994185.1_10wheat_assembly_sy_mattis_genomic.fna.gz
+Triticum aestivum Norin61       Norin61 https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/904/066/035/GCA_904066035.1_10wheat_assembly_norin61/GCA_904066035.1_10wheat_assembly_norin61_genomic.fna.gz
+Triticum aestivum Renan Renan   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/937/894/285/GCA_937894285.1_Triticum_aestivum_Renan_v2.1/GCA_937894285.1_Triticum_aestivum_Renan_v2.1_genomic.fna.gz
+Triticum aestivum Robigus       Robigus https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/902/810/685/GCA_902810685.1_Triticum_aestivum_Robigus_EIv1.1/GCA_902810685.1_Triticum_aestivum_Robigus_EIv1.1_genomic.fna.gz
+Triticum aestivum Stanley       Stanley https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/903/994/155/GCA_903994155.1_10wheat_assembly_stanley/GCA_903994155.1_10wheat_assembly_stanley_genomic.fna.gz
+Triticum aestivum Weebill       Weebill https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/902/810/675/GCA_902810675.1_Triticum_aestivum_weebil_EIv1/GCA_902810675.1_Triticum_aestivum_weebil_EIv1_genomic.fna.gz
+Triticum aestivum PI190962      Spelt   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/903/994/165/GCA_903994165.1_10wheat_assembly_spelt/GCA_903994165.1_10wheat_assembly_spelt_genomic.fna.gz
+Triticum aestivum BJ8   BJ8     https://download.cncb.ac.cn/gwh/Plants/Triticum_aestivum_BJ8_GWHEQTV00000000/GWHEQTV00000000.genome.fasta.gz
+Triticum aestivum MZM   MZM     https://download.cncb.ac.cn/gwh/Plants/Triticum_aestivum_MZM_GWHEQUQ00000000/GWHEQUQ00000000.genome.fasta.gz
+Triticum aestivum XN6028        XN6028  https://download.cncb.ac.cn/gwh/Plants/Triticum_aestivum_XN6028_GWHEQUG00000000/GWHEQUG00000000.genome.fasta.gz
+Triticum aestivum Abo   Abo     https://download.cncb.ac.cn/gwh/Plants/Triticum_aestivum_Abo_GWHEQTT00000000/GWHEQTT00000000.genome.fasta.gz
+Triticum aestivum NC4   NC4     https://download.cncb.ac.cn/gwh/Plants/Triticum_aestivum_NC4_GWHEQUF00000000/GWHEQUF00000000.genome.fasta.gz
+Triticum aestivum YM158 YM158   https://download.cncb.ac.cn/gwh/Plants/Triticum_aestivum_YM158_GWHEQUN00000000/GWHEQUN00000000.genome.fasta.gz
+Triticum aestivum XY6   XY6     https://download.cncb.ac.cn/gwh/Plants/Triticum_aestivum_XY6_GWHEQUM00000000/GWHEQUM00000000.genome.fasta.gz
+Triticum aestivum AMN   AMN     https://download.cncb.ac.cn/gwh/Plants/Triticum_aestivum_AMN_GWHEQUH00000000/GWHEQUH00000000.genome.fasta.gz
+Triticum aestivum JM47  JM47    https://download.cncb.ac.cn/gwh/Plants/Triticum_aestivum_JM47_GWHEQTX00000000/GWHEQTX00000000.genome.fasta.gz
+Triticum aestivum S4185 S4185   https://download.cncb.ac.cn/gwh/Plants/Triticum_aestivum_S4185_GWHEQUL00000000/GWHEQUL00000000.genome.fasta.gz
+Triticum aestivum CM42  CM42    https://download.cncb.ac.cn/gwh/Plants/Triticum_aestivum_CM42_GWHEQTW00000000/GWHEQTW00000000.genome.fasta.gz
+Triticum aestivum JM22  JM22    https://download.cncb.ac.cn/gwh/Plants/Triticum_aestivum_JM22_GWHEQUK00000000/GWHEQUK00000000.genome.fasta.gz
+Triticum aestivum KF11  KF11    https://download.cncb.ac.cn/gwh/Plants/Triticum_aestivum_KF11_GWHEQUJ00000000/GWHEQUJ00000000.genome.fasta.gz
+Triticum aestivum ZM366 ZM366   https://download.cncb.ac.cn/gwh/Plants/Triticum_aestivum_ZM366_GWHEQUB00000000/GWHEQUB00000000.genome.fasta.gz
+Triticum aestivum ZM16  ZM16    https://download.cncb.ac.cn/gwh/Plants/Triticum_aestivum_ZM16_GWHEQUC00000000/GWHEQUC00000000.genome.fasta.gz
+Triticum aestivum ZM22  ZM22    https://download.cncb.ac.cn/gwh/Plants/Triticum_aestivum_ZM22_GWHESRW00000000/GWHESRW00000000.genome.fasta.gz
+Triticum aestivum HD6172        HD6172  https://download.cncb.ac.cn/gwh/Plants/Triticum_aestivum_HD6172_GWHEQUD00000000/GWHEQUD00000000.genome.fasta.gz
+Triticum turgidum subsp. dicoccoides    Dicoccoides     https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/162/155/GCF_002162155.2_WEW_v2.1/GCF_002162155.2_WEW_v2.1_genomic.fna.gz
+Triticum timopheevii    TrTim   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/963/921/465/GCA_963921465.1_WRC_timopheevii_genome_with_organelles/GCA_963921465.1_WRC_timopheevii_genome_with_organelles_genomic.fna.gz
+Triticum turgidum subsp. durum Svevo    Svevo   https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-60/fasta/triticum_turgidum/dna/Triticum_turgidum.Svevo.v1.dna.toplevel.fa.gz
+Triticum urartu TrUra   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/003/073/215/GCF_003073215.2_Tu2.1/GCF_003073215.2_Tu2.1_genomic.fna.gz
+Triticum monococcum     TrMon   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/034/509/565/GCA_034509565.1_PI306540_Tmono/GCA_034509565.1_PI306540_Tmono_genomic.fna.gz
