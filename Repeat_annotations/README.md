@@ -16,7 +16,7 @@ singularity run HiTE.sif python main.py --genome Kronos.collapsed.chromosomes.fa
 ```
 
 ## 2. Repeat Annotations with EDTA
-The next version repeat annotation is produced by EDTA v2.2.2. Some input files need to be prepared. 
+The next version of repeat annotations is produced by EDTA v2.2.2. Some input files need to be prepared. 
 
 ### Annotated TREP Databases 
 Download TREP database and filter out some sequences. We will only use annotations from *Triticum* and exlcudes any unknown classes. The output will be used as --curatedlib.
