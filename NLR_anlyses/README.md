@@ -1,5 +1,21 @@
 # NLR Curation and Analyses
 
+## Data Availability
+
+## Method
+
+**Putative NLR loci detection**: to facilitate targeted NLR curation, we first identified, following a modified version of the previous workflow (Seong et al., 2020). The Kronos genome was translated in six frames, and open reading frames (ORFs) were identified using orfpy v0.0.4 (Singh and Wurtele, 2021). The predicted ORFs were searched for the NBARC domain, using the Hidden Markov Model obtained from PFAM (PF00931) and hmmsearch v3.4 (--domE 1e-4 -E 1e-4) (Eddy 2011; Mistry et al., 2021). While this approach captured the majority of putative NLR loci, some divergent NB-ARC domains remained undetected. To capture these additional loci, we also employed NLR-Annotator v2.0 (Steuernagel et al., 2020). All putative NLR loci detected by either approach were extracted from the Kronos genome with 15,000 flanking sequences on both sides. 
+
+**Gene model prediction**: to support manual curation, initial gene models were predicted using MAKER v3.01.03 (Cantarel et al., 2008). Protein evidence was incorporated from NLR sequences of 18 Poaceae species (Toghani and Kamoun, 2024) and 415 reference NLRs from RefPlantNLR (Kourelis et al., 2021). EST evidence was derived from the transcripts assembled by Stringtie from short-read or long-read data, produced to create reference annotations v1.0 and v2.0, respectively. Additionally, two pre-trained ab initio prediction models developed during the version 1 annotation were used: Augustus parameters from BRAKER and SNAP parameters from GINGER. 
+
+**Additional evidence**: To establish consensus, all intermediate and final gene models produced during reference genome annotations were incorporated. To support splicing site annotations, selected RNA-seq data were mapped to putative NLR loci using STAR v2.7.11b (Dobin et al., 2013), with coverage profiles generated using bamCoverage from deepTools v3.5.5 (Ramírez et al., 2014). To assist domain curation, PFAM domains (v36.0) were predicted using InterProScan v5.68.100 (Jones et al., 2014; Mistry et al., 2021). 
+
+**Manual curation**: All predicted gene models, transcriptomic data, and domain annotations were loaded into Apollo Genome Browser v2.0.6 for manual curation (Dunn et al., 2019). Gene models containing an NB-ARC domain were systematically curated through visual inspection of gene structures and domain architectures. Each gene product was searched against the non-redundant database in The National Center for Biotechnology Information (NCBI) to assess sequence homology. During this process, each gene was assigned two classification labels: intact, partial or interrupted based on domain architecture and integrity, as well as consistent or inconsistent based on homology consistency (Fig. SX).
+
+**Quality control**: In some cases, 30,000 flanking regions were insufficient to capture the full gene structure. To improve annotation accuracy, the draft NLR annotation sets were compared to the reference annotations to identify and rescue more complete gene models. The NLR annotations were loaded into Integrative Genome Browser v2.17.0 for further evaluation (Robinson et al., 2011). During the re-examination of gene models, each gene was assigned a confidence level. Genes with splicing sites supported by transcriptome data were classified as high-confidence. When transcriptome support was absent due to a lack of gene expression, gene models were evaluated based on structural conservation with close homologs in the NCBI database with available transcriptome evidence. Homology was reassessed to confirm that annotated splicing sites were not associated with gaps in pairwise alignments. Genes that contain mutations that disrupted splicing sites, introduced frameshifts, or caused premature termination were classified as low-confidence. Genes without strong supporting evidence but also without contradictions to their annotations were classified as medium-confidence.
+
+---
+
 
 ## NLR Curation
 
@@ -290,4 +306,31 @@ So the NLR-specific parameters are much better!
  
 Here, our aim is to define highly variable NLR group within Kronos. Other wheat species may have divergent NLRs, whose the close homologs may be missing in Kronos. These genes may not be correctly predicted. This is OK. These genes will be filtered out anyways, as they will not offer any evolutionary information in the Shannon Entropy analyses of Kronos NLRs. 
 
+while IFS=$'\t' read -r col1 prefix url; do
+    mkdir -p "$prefix" && cd "$prefix" || continue
+    wget "$url"
+    cd ..
+done < genome.list
 
+```
+for prefix in */; do
+  cd "${prefix}" || exit
+  
+  gz=$(ls *.gz)
+  genome="${gz%.gz}"
+  gunzip "$gz"
+
+  orfipy --procs 20 --bed orfs.bed --pep orfs.aa.fa --max 45000 --ignore-case --partial-3 --partial-5 "${genome}"
+
+  hmmsearch --cpu 20 --domE 1e-4 -E 1e-4 --domtblout orfs.against.NBARC.out \
+      /global/scratch/users/skyungyong/Kronos/NLR_annotations/Pan-NLRome/PF00931.hmm "${genome}_out/orfs.aa.fa"
+
+  java -jar /global/scratch/users/skyungyong/Software/NLR-Annotator/NLR-Annotator-v2.1b.jar \
+      -t 20 -x /global/scratch/users/skyungyong/Software/NLR-Annotator/src/mot.txt \
+      -y /global/scratch/users/skyungyong/Software/NLR-Annotator/src/store.txt \
+      -i "${genome}" -o NLRannotator.whole-genome.out -g NLRannotator.whole-genome.gff3
+  done
+  
+  cd ..
+done
+```
