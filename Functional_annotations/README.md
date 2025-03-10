@@ -23,7 +23,7 @@ SMART annotation: Skip SMART annotations
 Domain annotations are from InterProScan. 
 ```
 nohup docker run --rm \
-    -v ~/Desktop/Software/interproscan-5.61-93.0/data/:/opt/interproscan/data \
+    -v /Users/s.kyungyong/Desktop/Software/interproscan-5.68-100.0/data:/opt/interproscan/data \
     -v $PWD/output:/output \
     -v $PWD:/workspace \
     -v $PWD/temp:/temp \
