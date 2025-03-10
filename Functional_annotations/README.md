@@ -1,5 +1,14 @@
 # Functional Annotations
 
+## Data Availability
+
+## Method
+
+Functional annotations were performed using eggNOG-mapper v2.1.12 and InterProScan v5.68.100 (Cantalapiedra et al., 2021; Jones et al., 2014).
+
+---
+
+
 ## eggNOG-mapper
 
 Functional annotations are from eggNOG-MAPPER v2.1.12. All the parameters were set default, and the sequences were submitted to [the eggNOG-mapper server](http://eggnog-mapper.embl.de/).
