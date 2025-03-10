@@ -1,3 +1,28 @@
+
+
+
+
+Quantification
+
+grep ">" ../Kronos.collapsed.chromosomes.masked.v1.1.fa | cut -d " " -f 1 | cut -d ">" -f 2 > decoys.txt
+gffread -x Kronos.v2.1.transcripts.fa -g ../Kronos.collapsed.chromosomes.masked.v1.1.fa Kronos.v2.1.gff3
+cat Kronos.v2.1.transcripts.fa ../Kronos.collapsed.chromosomes.masked.v1.1.fa > Kronos.gentrome.fa
+
+
+#index genome
+salmon index -t Kronos.gentrome.fa -d decoys.txt -p 30 -i salmon_index
+
+#map and quantify: IU for unstranded paired-end reads
+#provide gtf to aggregate transcript-level counts to gene-level counts
+salmon quant -l IU -1 {read1} -2 {read2} -p {# threads}  -g {gtf} -i salmon_index/ -o salmon.out --validateMappings
+
+
+
+
+
+
+
+
 minimap2 -x asm5 -t 20 ../../Triticum_aestivum.plasmids.fa Kronos.draft.fa > min
 imap.plasmid.paf
 sort -k1,1 -k3,3n minimap.plasmid.paf > minimap.plasmid.sorted.paf
