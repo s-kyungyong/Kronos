@@ -12,7 +12,7 @@ The Kronos reference genome can be assessed through the NCBI and Zenodo. In v1.1
 ```
 https://zenodo.org/records/10215402: the Kronos reference genome v1.0
 https://zenodo.org/records/11106422: the Kronos reference genome v1.1
-: the Kronos reference genome v1.1
+JBLYQA000000000: the Kronos reference genome v1.1
 ```
 
 Note that the genome acessible through the NCBI does not have **Un** sequences. Furthermore, the following genome regions were hard-masked due to some similarity to mitochondria.
@@ -28,6 +28,14 @@ Note that the genome acessible through the NCBI does not have **Un** sequences. 
 6B	733599645	394769564..394869826
 7B	766026795	742909075..742941679
 ```
+
+## Methods
+
+**Genome assessment**: We assessed the genomic characteristics of Kronos using GenomeScope v2.0 (Ranallo-Benavidez et al., 2020). K-mers (21-mers) were analyzed from HiFi reads with Jellyfish v2.2.10 (-C -m 21), and a histogram was generated (-h 5000000) (Marcais et al., 2011). GenomeScope was run on the histogram for tetraploidy (-p 4). For comparison to the Svevo genome, we downloaded paired-end Illumina sequencing data from PRJEB22687, trimmed the reads with trim_galore v0.6.6 and cutadapt v3.7 (--illumina) (Martin, 2011), and repeated the GenomeScope analysis on the filtered reads.
+
+**Genome assembly and pseudomolecule construction**: We used hifiasm v0.19.5-r587 to assemble a haplotype-collapsed (AB) genome (-l0) (Cheng et al., 2021). A small size of associate contigs were concatenated with primary contigs to create an initial assembly. We followed the Omni-C pipeline for scaffolding (https://omni-c.readthedocs.io). The filtered paired-end Hi-C reads were mapped to the initial assembly with bwa v0.7.17-r1188 (-5SP -T0) (Li et al., 2013). With pairtools v1.0.2 (Open2C et al, 2023), ligation pairs were searched from the alignments (--min-mapq 40 --walks-policy 5unique --max-inter-align-gap 30), and PCR and optical duplicates were removed. The filtered alignments were sorted with samtools v1.15.1 (Li et al., 2009) and processed with yahs v1.2a.2 to scaffold the initial assembly (-e GATC, GANTC, CTNAG, TTAA) (Zhou et al., 2023). The Hi-C contact map was generated with juicer v1.9.9 and visualized with Juicebox v2.20.00 (Robinson et al., 2018). The final scaffolds were compared to the reference genome of T. aestivum cv. Chinese Spring (The International Wheat Genome Sequencing Consortium (IWGSC), 2014). Due to their large sizes, all sequences were first fragmented to have a maximum size of 100 Mb, and the Kronos genome sequences were mapped to the reference sequences, as well as complete chloroplast (NC_002762.1) and mitochondrial (NC_036024.1) genomes with minimap v2.24-r1122 (-x asm5) (Heng, 2018). The 14 largest scaffolds were renamed, following the notation of the reference wheat genome. A small number of unassigned contigs were concatenated with 300 N’s and placed together into a single scaffold. Plasmids were separated.
+
+
 ---
 
 ## Genome Assembly and Scaffolding
@@ -97,7 +105,7 @@ fastqc -t 54 $out1 $out2
 
 ----------
 
-## 2. Pre-assembly Assessment
+## 2. Genome assessment
 
 Kronos is an allotetraploid wheat (AABB) with high homozygosity due to self-pollination. An available Durum wheat genome ([Svevo](https://www.nature.com/articles/s41588-019-0381-3)) is 10.45G in size. We also roughly estimate that the Kronos genome would be similar in size. To confirm this, we use GenomeScope v2.0 along with jellyfish v2.2.10.
 ```
