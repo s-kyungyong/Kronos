@@ -21,4 +21,17 @@ SMART annotation: Skip SMART annotations
 ## InterProScan
 
 Domain annotations are from InterProScan. 
-
+```
+nohup docker run --rm \
+    -v ~/Desktop/Software/interproscan-5.61-93.0/data/:/opt/interproscan/data \
+    -v $PWD/output:/output \
+    -v $PWD:/workspace \
+    -v $PWD/temp:/temp \
+    interpro/interproscan:5.68-100.0 \
+    --input /workspace/Kronos.v2.1.pep.fa \
+    --disable-precalc \
+    --output-dir /output \
+    --tempdir /temp \
+    --cpu 48 \
+    --appl FunFam-4.3.0,SFLD-4,Gene3D-4.3.0,SUPERFAMILY-1.75,SMART-9.0,CDD-3.20,PIRSR-2023_05,Pfam-37.0,PIRSF-3.10,NCBIfam-14.0 &
+```
