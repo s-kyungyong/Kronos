@@ -8,7 +8,7 @@ SRR32063043: PacBio sequencing data
 SRR32063044: Hi-C sequencing data
 ```
 
-The Kronos reference genome can be assessed through the NCBI and Zenodo. In v1.1, the following chromosomes are reversed and complemented: 1B, 2A, 2B, 3A, 3B, 5A, 6A and 6B. This adjustment was made to ensure the alignment (orientation) of the chromosome arms remains consistent with that of the Chinese Spring reference genome. Unless specified, all analyses were performed on the v1.1 genome. 
+The Kronos reference genome can be assessed through the NCBI and Zenodo. In v1.1, the following chromosomes are reversed and complemented: 1B, 2A, 2B, 3A, 3B, 5A, 6A and 6B. This adjustment was made to ensure the alignment (orientation) of the chromosomes remains consistent with that of the Chinese Spring reference genome. Unless specified, all analyses were performed on the v1.1 genome. 
 ```
 https://zenodo.org/records/10215402: the Kronos reference genome v1.0
 https://zenodo.org/records/11106422: the Kronos reference genome v1.1
