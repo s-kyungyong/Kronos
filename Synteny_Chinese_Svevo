@@ -702,3 +702,177 @@ plt.savefig(f'{args.query}_vs_{args.hit}.{fig_type}.svg', format='svg')
 
 
 ```
+
+- Blast start/end synteny map
+/global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end
+```
+import sys
+from Bio import SeqIO
+
+def extract_regions(fasta_file, region_size=20000000):
+    """
+    Extracts the first and last 20Mb regions from each chromosome in a given FASTA file.
+    
+    Args:
+        fasta_file (str): Path to the input whole genome FASTA file.
+        region_size (int): The size of the regions to extract (default is 20,000,000 bp).
+    """
+    # Read the genome FASTA file
+    for record in SeqIO.parse(fasta_file, "fasta"):
+        chrom_name = record.id  # Get chromosome name
+        sequence = str(record.seq)  # Convert sequence to string
+        chrom_length = len(sequence)  # Get chromosome length
+        
+        # Extract the start region (first 20Mb)
+        start_seq = sequence[:region_size]
+        start_filename = f"{chrom_name}_start.fa"
+        with open(start_filename, "w") as start_file:
+            start_file.write(f">{chrom_name}_start\n")
+            for i in range(0, len(start_seq), 80):  # Format to 80 bp per line
+                start_file.write(start_seq[i:i+80] + "\n")
+
+        # Extract the end region (last 20Mb)
+        if chrom_length > region_size:
+            end_seq = sequence[-region_size:]
+            end_filename = f"{chrom_name}_end.fa"
+            with open(end_filename, "w") as end_file:
+                end_file.write(f">{chrom_name}_end\n")
+                for i in range(0, len(end_seq), 80):  # Format to 80 bp per line
+                    end_file.write(end_seq[i:i+80] + "\n")
+
+        print(f"✅ Extracted {chrom_name}_start.fa and {chrom_name}_end.fa")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python extract_chromosome_regions.py <whole_genome_fasta>")
+        sys.exit(1)
+
+    fasta_file = sys.argv[1]
+    extract_regions(fasta_file)
+```
+
+Usage: `python extract_chr_start_end.py /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/Chinese_spring_1B.fa 
+✅ Extracted 1B_start.fa and 1B_end.fa`
+Making blast database: /global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in 1A_end.fa -out 1A_end -dbtype 'nucl'
+
+Blast run slurm job:
+```
+#!/bin/bash
+#SBATCH --account=co_minium
+#SBATCH --partition=savio4_htc
+#SBATCH --exclusive
+#SBATCH --nodes=1
+#SBATCH --qos=minium_htc4_normal
+#SBATCH --time=72:00:00
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/7B_end.fa -db ./CS_start_end/7B_end -outfmt "6 std qlen slen" -out K.CS.7B_end.blast.out -evalue 1e-6 
+```
+Blast synteny slurm job:
+```
+#!/bin/bash
+#SBATCH --account=co_minium
+#SBATCH --partition=savio4_htc
+#SBATCH --exclusive
+#SBATCH --nodes=1
+#SBATCH --qos=minium_htc4_normal
+#SBATCH --time=72:00:00
+python synteny_blast.py K.CS.1A_start.blast.out 1A_start 1A_start --alignment_length 10000 --hstart 0 --hend 20000000
+```
+
+
+
+- RIdeogram: Ideogram plot with Kronos, NLR loci visualization through density
+Converting global chromosomes fasta files into karyotype files
+```
+
+import sys
+from Bio import SeqIO
+
+# Check if the correct number of arguments is provided
+if len(sys.argv) != 3:
+    print("Usage: python3 fasta_to_karyotype.py <input_fasta> <output_karyotype>")
+    sys.exit(1)
+
+# Get file paths from command-line arguments
+fasta_file = sys.argv[1]  # Input FASTA file
+output_file = sys.argv[2]  # Output karyotype file
+
+# Open output file for writing
+with open(output_file, "w") as out:
+    out.write("Chr\tStart\tEnd\tCE_start\tCE_end\n")  # Write header
+
+    # Read FASTA file and extract chromosome lengths
+    for record in SeqIO.parse(fasta_file, "fasta"):
+        chrom_name = record.id  # Chromosome name
+        chrom_length = len(record.seq)  # Chromosome length
+        
+        # Assign centromere positions (Estimated: midpoint ± 1%)
+        CE_start = int(0.49 * chrom_length)
+        CE_end = int(0.51 * chrom_length)
+
+        # Write to karyotype file
+        out.write(f"{chrom_name}\t0\t{chrom_length}\t{CE_start}\t{CE_end}\n")
+
+print(f"Karyotype file saved as {output_file}")
+
+```
+Loading karyotype data into the Rideogram
+```
+setwd("/Users/r_upercut/Downloads/test/")
+
+# Set file path
+karyotype_file <- "/Users/r_upercut/Downloads/test/karyotype.txt"
+
+# Read the karyotype file
+karyotype <- read.table(karyotype_file, header = TRUE, sep = "\t")
+
+# Print first few lines to check the structure
+head(karyotype)
+
+# Generate the idiogram (chromosome plot)
+ideogram(karyotype = karyotype, output = "chromosome.svg")
+
+convertSVG("chromosome.svg", device = "png")
+
+
+```
+Function name	Description
+GFFex	Extract information from a GFF3 format genome annotation fill
+ideogram	Map and visualize the genome-wide data on the idiograms
+convertSVG	Convert the output file from the SVG format to the format users chose
+svg2tiff	Convert the output file from the SVG format to the TIFF format
+svg2pdf	Convert the output file from the SVG format to the PDF format
+svg2jpg	Convert the output file from the SVG format to the JPG format
+svg2png	Convert the output file from the SVG format to the PNG format
+
+- Using NLR coordinates (gff3) and confidence list (tsv) to map NLRs loci onto ideogram
+```
+# Load required packages
+library(RIdeogram)
+
+# Set working directory
+setwd("/Users/r_upercut/Downloads/test/ideogram")
+
+# Load karyotype data
+karyotype <- read.table("karyotype.txt", sep = "\t", header = TRUE, stringsAsFactors = FALSE)
+
+# Extract NLR loci from GFF3 files using GFFex (Treat as Gene Density)
+high_medium_nlr_density <- GFFex(input = "high_medium_NLRs.gff3", karyotype = "karyotype.txt", feature = "gene", window = 8000000)
+low_nlr_density <- GFFex(input = "low_confidence_NLRs.gff3", karyotype = "karyotype.txt", feature = "gene", window = 8000000)
+
+# Explicitly specify output file names
+high_medium_svg <- "high_medium_NLRs.svg"
+low_confidence_svg <- "low_confidence_NLRs.svg"
+
+# Generate ideogram for High/Medium confidence NLRs (heatmap overlay)
+ideogram(karyotype = karyotype, overlaid = high_medium_nlr_density, label_type = "heatmap", 
+         colorset1 = c("#f7f7f7", "#e34a33"), output = high_medium_svg)
+svg2pdf(high_medium_svg)
+# Generate ideogram for Low confidence NLRs (heatmap overlay)
+ideogram(karyotype = karyotype, overlaid = low_nlr_density, label_type = "heatmap", 
+         colorset1 = c("#f7f7f7", "#e34a33"), output = low_confidence_svg)
+svg2pdf(low_confidence_svg)
+
+print("NLR ideograms generated successfully with heatmap overlay!")
+
+```
+
