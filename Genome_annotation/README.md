@@ -94,3 +94,10 @@ funannotate predict \
 --EVM_HOME /global/scratch/users/skyungyong/Software/anaconda3/envs/funannotate/opt/evidencemodeler-1.1.1/ \
 --GENEMARK_PATH /global/scratch/users/skyungyong/Software/gmes_linux_64_4 \
 ```
+
+### Miniprot
+
+```
+/global/scratch/users/skyungyong/Software/miniprot/miniprot -t 56 --gff --outc=0.95 -N 0 ../3.Repeat/Kronos_output_latest/Kronos.collapsed.chromosomes.fa ../5.Annotations/Braker/uniprotkb_taxonomy_id_38820_2023_12_08.fasta
+```
+
