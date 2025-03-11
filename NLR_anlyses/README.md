@@ -168,24 +168,24 @@ After curating and labeling about 2,400 loci, we now know which genes are reliab
 gffread -x Kronos_NLRs.final.cds.fa -g Kronos.collapsed.chromosomes.masked.v1.1.fa Kronos_NLRs.final.gff3
 
 #get high-confidence NLRs and reduce redundancy 
-#this step generates 827 high-confidence nlrs
+#this step generates 828 high-confidence nlrs
 seqkit grep -f <(awk '$2 == "High" {print $1".1"}' NLR_confidence.list) Kronos_NLRs.final.cds.fa > Kronos_hc.cds.fa
-cd-hit -c 0.9 -i Kronos_hc.cds.fa -o Kronos_hc.cds.cd-hit.c_0.9.fa -T 30
+cd-hit-est -c 0.9 -i Kronos_hc.cds.fa -o Kronos_hc.cds.cd-hit.c_0.9.fa -T 30
 grep ">" Kronos_hc.cds.cd-hit.c_0.9.fa | sed 's/>//g' > geneIDs.list
 
 #create a separate gtf file for the selected high-confidence nlr genes
-gffread -T --ids geneIDs.list ../NLR_final_datasets_curation/Kronos_all.NLRs.final.gff3  > 827_hc_nlrs.gtf
-awk '$3 == "CDS" {print}' 827_hc_nlrs.gtf  > 827_hc_nlrs.cds.gtf
+gffread -T --ids geneIDs.list ../NLR_final_datasets_curation/Kronos_all.NLRs.final.gff3  > 828_hc_nlrs.gtf
+awk '$3 == "CDS" {print}' 828_hc_nlrs.gtf  > 828_hc_nlrs.cds.gtf
 
 #create a genbank file with 1,000 bp flanking regions
-perl gff2gbSmallDNA.pl 827_hc_nlrs.cds.gtf Kronos.collapsed.chromosomes.masked.v1.1.fa 1000 first.gb
+perl gff2gbSmallDNA.pl 828_hc_nlrs.cds.gtf Kronos.collapsed.chromosomes.masked.v1.1.fa 1000 first.gb
 
 #run quality check
 #here, everything passes, but TrturKRN7A02G026020 got removed from the previous possibly as this gene is within an intron of another gene. 
 etraining --species=generic first.gb > train.err
 
-#separate the genes into 700 trainning set and 126 test set
-perl randomSplit.pl first.gb 126
+#separate the genes into 126 test set, and 700 trainning set
+/global/scratch/users/skyungyong/Software/Augustus-3.3.3/augustus-3.3.3/scripts/perl randomSplit.pl first.gb 126
 
 #train augustus 
 perl /global/scratch/users/skyungyong/Software/Augustus-3.3.3/augustus-3.3.3/scripts/new_species.pl --species=Wheat_NLR #this is in maker environemnt 
@@ -201,11 +201,10 @@ We can compare how well the parameters do in predicting the NLRs in the test set
 #this parameter is before the optimization step 
 augustus --species=Wheat_NLR first.gb.test | tee firsttest.out
 *******      Evaluation of gene prediction     *******
-
 ---------------------------------------------\
                  | sensitivity | specificity |
 ---------------------------------------------|
-nucleotide level |       0.985 |       0.972 |
+nucleotide level |       0.983 |       0.964 |
 ---------------------------------------------/
 
 ----------------------------------------------------------------------------------------------------------\
@@ -213,15 +212,15 @@ nucleotide level |       0.985 |       0.972 |
            | total/ | total/ |   TP |--------------------|--------------------| sensitivity | specificity |
            | unique | unique |      | part | ovlp | wrng | part | ovlp | wrng |             |             |
 ----------------------------------------------------------------------------------------------------------|
-           |        |        |      |                 78 |                 93 |             |             |
-exon level |    325 |    340 |  247 | ------------------ | ------------------ |       0.726 |        0.76 |
-           |    325 |    340 |      |   43 |    2 |   33 |   43 |    3 |   47 |             |             |
+           |        |        |      |                 82 |                106 |             |             |
+exon level |    328 |    352 |  246 | ------------------ | ------------------ |       0.699 |        0.75 |
+           |    328 |    352 |      |   44 |    2 |   36 |   46 |    4 |   56 |             |             |
 ----------------------------------------------------------------------------------------------------------/
 
 ----------------------------------------------------------------------------\
 transcript | #pred | #anno |   TP |   FP |   FN | sensitivity | specificity |
 ----------------------------------------------------------------------------|
-gene level |   138 |   126 |   74 |   64 |   52 |       0.587 |       0.536 |
+gene level |   137 |   126 |   72 |   65 |   54 |       0.571 |       0.526 |
 ----------------------------------------------------------------------------/
 ```
 
@@ -259,11 +258,10 @@ Let's compare this to the other parameters we used in whole genome annotation.
 #auto trained parameters by braker in the version 1 annotation 
 augustus --species=Kronos_collapsed first.gb.test | tee firsttest.out
 *******      Evaluation of gene prediction     *******
-
 ---------------------------------------------\
                  | sensitivity | specificity |
 ---------------------------------------------|
-nucleotide level |       0.865 |       0.932 |
+nucleotide level |       0.861 |       0.919 |
 ---------------------------------------------/
 
 ----------------------------------------------------------------------------------------------------------\
@@ -271,15 +269,15 @@ nucleotide level |       0.865 |       0.932 |
            | total/ | total/ |   TP |--------------------|--------------------| sensitivity | specificity |
            | unique | unique |      | part | ovlp | wrng | part | ovlp | wrng |             |             |
 ----------------------------------------------------------------------------------------------------------|
-           |        |        |      |                352 |                213 |             |             |
-exon level |    479 |    340 |  127 | ------------------ | ------------------ |       0.374 |       0.265 |
-           |    479 |    340 |      |  171 |   75 |  106 |  159 |   20 |   34 |             |             |
+           |        |        |      |                369 |                225 |             |             |
+exon level |    496 |    352 |  127 | ------------------ | ------------------ |       0.361 |       0.256 |
+           |    496 |    352 |      |  174 |   75 |  120 |  161 |   21 |   43 |             |             |
 ----------------------------------------------------------------------------------------------------------/
 
 ----------------------------------------------------------------------------\
 transcript | #pred | #anno |   TP |   FP |   FN | sensitivity | specificity |
 ----------------------------------------------------------------------------|
-gene level |   170 |   126 |    0 |  170 |  126 |           0 |           0 |
+gene level |   174 |   126 |    0 |  174 |  126 |           0 |           0 |
 ----------------------------------------------------------------------------/
 ```
 
@@ -290,7 +288,7 @@ augustus --species=Kronos_manual first.gb.test | tee firsttest.out
 ---------------------------------------------\
                  | sensitivity | specificity |
 ---------------------------------------------|
-nucleotide level |       0.851 |       0.935 |
+nucleotide level |       0.836 |       0.921 |
 ---------------------------------------------/
 
 ----------------------------------------------------------------------------------------------------------\
@@ -298,15 +296,15 @@ nucleotide level |       0.851 |       0.935 |
            | total/ | total/ |   TP |--------------------|--------------------| sensitivity | specificity |
            | unique | unique |      | part | ovlp | wrng | part | ovlp | wrng |             |             |
 ----------------------------------------------------------------------------------------------------------|
-           |        |        |      |                287 |                156 |             |             |
-exon level |    471 |    340 |  184 | ------------------ | ------------------ |       0.541 |       0.391 |
-           |    471 |    340 |      |  158 |   33 |   96 |  120 |    3 |   33 |             |             |
+           |        |        |      |                298 |                161 |             |             |
+exon level |    489 |    352 |  191 | ------------------ | ------------------ |       0.543 |       0.391 |
+           |    489 |    352 |      |  147 |   39 |  112 |  114 |    4 |   43 |             |             |
 ----------------------------------------------------------------------------------------------------------/
 
 ----------------------------------------------------------------------------\
 transcript | #pred | #anno |   TP |   FP |   FN | sensitivity | specificity |
 ----------------------------------------------------------------------------|
-gene level |   161 |   126 |   34 |  127 |   92 |        0.27 |       0.211 |
+gene level |   160 |   126 |   33 |  127 |   93 |       0.262 |       0.206 |
 ----------------------------------------------------------------------------/
 ```
 
@@ -345,4 +343,7 @@ for prefix in */; do
   
   cd ..
 done
+
+
+python crop_genome.py --hmm orfs.aa.fa.against.NBARC.out --nlrannot NLRannotator.whole-genome.gff3 --genome Kronos.collapsed.chromosomes.masked.v1.1.fa
 ```
