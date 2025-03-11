@@ -30,15 +30,21 @@ orfipy --procs 56 --bed orfs.bed --pep orfs.aa.fa --max 45000 --ignore-case --pa
 hmmsearch --cpu 56 --domE 1e-4 -E 1e-4 --domtblout orfs.against.NBARC.out PF00931.hmm orfs.aa.fa
 
 # Crop genome to NB-ARC-containing loci
-python crop_genome.py orfs.against.NBARC.out Kronos.collapsed.chromosomes.masked.v1.1.fa
-
-#These steps will generate an output named *Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa. 
+python crop_genome.py --hmm orfs.aa.fa.against.NBARC.out --genome Kronos.collapsed.chromosomes.masked.v1.1.fa
 ```
 
 
 We later learned that some divergent NB-ARC domains in Kronos cannot be properly detected by this approach and additionally incoporated NLR-Annotator.
 ```
 java -jar NLR-Annotator-v2.1b.jar -t 40 -x ./NLR-Annotator/src/mot.txt -y ./NLR-Annotator/src/store.txt -i Kronos.collapsed.chromosomes.masked.v1.1.fa -o NLRannotator.whole-genome.out -g NLRannotator.whole-genome.gff3
+
+# Crop genome to NB-ARC-containing loci
+python crop_genome.py --nlrannot NLRannotator.whole-genome.gff3 --genome Kronos.collapsed.chromosomes.masked.v1.1.fa
+```
+
+Alternatively, the two outputs can be combined.
+```
+python crop_genome.py --hmm orfs.aa.fa.against.NBARC.out --nlrannot NLRannotator.whole-genome.gff3 --genome Kronos.collapsed.chromosomes.masked.v1.1.fa
 ```
 
 ### 2. Gene model prediction
