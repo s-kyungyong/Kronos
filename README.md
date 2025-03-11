@@ -193,10 +193,6 @@ singularity exec -B  /global/scratch/users/skyungyong/Kronos/ pasapipeline.v2.5.
  pwd
 /global/scratch/users/skyungyong/Kronos/5.Annotations
 
-### Miniprot
-
-/global/scratch/users/skyungyong/Software/miniprot/miniprot -t 56 --gff --outc=0.95 -N 0 ../3.Repeat/Kronos_output_latest/Kronos.collapsed.chromosomes.fa ../5.Annotations/Braker/uniprotkb_taxonomy_id_38820_2023_12_08.fasta
-
 
 
 ### Ginger
