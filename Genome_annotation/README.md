@@ -5,7 +5,7 @@ The first version of genome annotation largely focused on the integration of sho
 
 ### Paired-end Short-read Transcriptome Data Processing
 
-We donwloaded the paired-end RNA-seq data from the NCBI. The list can be found in [v1_rnaseq.list]((https://github.com/s-kyungyong/Kronos/blob/main/RNAseq/SRA.list](https://github.com/s-kyungyong/Kronos/blob/main/Genome_annotation/v1_rnaseq.list)). 
+We donwloaded the paired-end RNA-seq data from the NCBI. The list can be found in **v1_rnaseq.list**. 
 ```
 while read -r accession; do 
     sratoolkit.3.1.1-centos_linux64/bin/prefetch ${accession}
@@ -57,8 +57,16 @@ ls -d trinity_* | while read folder; do
     echo $prefix $prefix $left $right
 done > sample.list
 
-#run trinity
+#run trinity de novo
 singularity run -B $PWD trinity.sif Trinity  --verbose --seqType fq --max_memory 1500G --CPU 56 --samples_file $PWD/sample.list
+
+#run trinity genome-guided
+singularity run -B $PWD trinity.sif Trinity --verbose --max_memory 250G --CPU 56 --genome_guided_max_intron 10000 --genome_guided_bam all.merged.sorted.bam
+```
+
+Finally, these assembled transcripts can be processed by PASA.
+```
+singularity exec -B  /global/scratch/users/skyungyong/Kronos/ pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl -c /usr/local/src/PASApipeline/sample_data/sqlite.confs/alignAssembly.config -r -C -R --CPU 56 --ALIGNERS gmap --TRANSDECODER  -ALT_SPLICE -g /global/scratch/users/skyungyong/Kronos/3.Repeat/Kronos_output_latest/RepeatMasking/Kronos.collapsed.chromosomes.masked.fa -t /global/scratch/users/skyungyong/Kronos/5.Annotations/PASA/transcripts.fasta --trans_gtf /global/scratch/users/skyungyong/Kronos/5.Annotations/Stringtie/stringtie.gtf
 ```
 
 
@@ -70,10 +78,14 @@ To run BRAKER, we need transcriptome and protein evidence. **all.merged.sorted.b
 singularity exec -B $PWD braker3.sif braker.pl --verbosity=3 \
     --genome=Kronos.collapsed.chromosomes.masked.fa \
     --bam=all.merged.sorted.bam \
-    --prot_seq=uniprotkb_taxonomy_id_38820_2023_12_08.fasta \
+    --prot_seq=uniprotkb_38820.fasta \
     --species=Kronos --threads 48 --gff3 \
     --workingdir=$wd/braker \
     --AUGUSTUS_CONFIG_PATH=$wd/config
+
+#decorate utr
+#utr is deleted during evidencemodler step, so this is not needed.
+python stringtie2utr.py -g braker.gtf -s GeneMark-ETP/rnaseq/stringtie/transcripts_all.merged.sorted.gff -o braker.utr.gtf
 ```
 
 ### Funannotate
@@ -98,7 +110,7 @@ funannotate predict \
 ### Miniprot
 
 ```
-/global/scratch/users/skyungyong/Software/miniprot/miniprot -t 56 --gff --outc=0.95 -N 0 ../3.Repeat/Kronos_output_latest/Kronos.collapsed.chromosomes.fa ../5.Annotations/Braker/uniprotkb_taxonomy_id_38820_2023_12_08.fasta
+miniprot -t 56 --gff --outc=0.95 -N 0 Kronos.collapsed.chromosomes.fa uniprotkb_38820.fasta
 ```
 
 
