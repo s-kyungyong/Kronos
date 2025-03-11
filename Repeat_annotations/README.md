@@ -16,6 +16,9 @@ Repeative elements annotated in the Kronos reference genome v1.0 and v1.1 are pr
 singularity run HiTE.sif python main.py --genome Kronos.collapsed.chromosomes.fa \
      --thread 56 --outdir HiTE --recover 1 --annotate 1 \
      --plant 1 --classified 1 --domain 1 --recover 1 --debug 1
+
+#mask v1.0 genome
+RepeatMasker -xsmall -e ncbi -pa 56 -q -no_is -norna -nolow -div 40 -gff -lib confident_TE.cons.fa.classified -cutoff 225 Kronos.collapsed.chromosomes.fa
 ```
 
 ## 2. Repeat Annotations with EDTA
