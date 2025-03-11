@@ -1,1 +1,19 @@
 
+## Protein-coding Gene Preidction: v1.0 annotation
+
+
+
+
+
+### BRAKER
+
+
+
+
+singularity exec -B $PWD braker3.sif braker.pl --verbosity=3 \
+    --genome=$wd/Kronos.collapsed.chromosomes.masked.fa \
+    --bam=$wd/all.merged.sorted.bam \
+    --prot_seq=$wd/uniprotkb_taxonomy_id_38820_2023_12_08.fasta \
+    --species=Kronos --threads 48 --gff3 \
+    --workingdir=$wd/braker \
+    --AUGUSTUS_CONFIG_PATH=$wd/config
