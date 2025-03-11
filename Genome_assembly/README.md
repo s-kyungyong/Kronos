@@ -68,9 +68,7 @@ plotsr v1.1.0
 ```
 ---
 
-## Genome Assembly and Scaffolding
-
-### 1. Quality Control
+## 1. Quality Control
 
 #### HiFi Reads
 
@@ -309,27 +307,30 @@ This step creates the Kronos reference v1.0, with the following statistics.
 That's our genome v1.0! In the version 1.1, chromosomes 1B, 2A, 2B, 3A, 3B, 5A, 6A and 6B are flipped to make their orientations consistent with the Chinese Spring genome. 
 
 
----
-
-##4. Syntenic analyses
+##4. Synteny analyses
 
 The Kronos reference genome was compared to Svevo and Chinese Spring (IWGSC v1.0), which were downloaded from Plant Ensembl. For global synteny, the similarity search was performed using minimap.
 ```
-#for svevo
+#run minimap
 minimap2 --eqx -c -f 0.05 -K4g -t 30 -x asm5 Kronos.collapsed.chromosomes.masked.v1.1.fa Triticum_turgidum.Svevo.v1.dna.toplevel.fa -o Kronos_vs_Svevo.eqx_asm5.paf
-#for chinese spring
 minimap2 --eqx -c -f 0.05 -K4g -t 30 -x asm5 Kronos.collapsed.chromosomes.masked.v1.1.fa Triticum_aestivum.IWGSC.dna.toplevel.fa -o Kronos_vs_CS.eqx_asm5.paf
 
-
+#filter
+awk '$1 != "Un" && $1 !~ /[0-9]+D/' Kronos_vs_Svevo.eqx_asm5.paf > Kronos_vs_Svevo.eqx_asm5.filtered.paf
+awk '$1 != "Un" && $1 !~ /[0-9]+D/' Kronos_vs_CS.eqx_asm5.paf > Kronos_vs_CS.eqx_asm5.filtered.paf
 ```
 
 Structural variants were detecte using syri.
 ```
-syri -r Kronos.collapsed.chromosomes.masked.v1.1.fa -q Triticum_turgidum.Svevo.v1.dna.toplevel.fa -c Kronos_vs_Svevo.eqx_asm5.paf -F P -k --prefix Kronos_vs_Svevo
-syri -r Kronos.collapsed.chromosomes.masked.v1.1.fa -q Triticum_aestivum.IWGSC.dna.toplevel.fa -c Kronos_vs_CS.eqx_asm5.no_Un.no_D.paf -F P -k --prefix Kronos_vs_CS
+#analyze genomic variants
+syri -r Kronos.collapsed.chromosomes.masked.v1.1.fa -q Triticum_turgidum.Svevo.v1.dna.toplevel.fa -c Kronos_vs_Svevo.eqx_asm5.filtered.paf -F P -k --prefix Kronos_vs_Svevo.
+syri -r Kronos.collapsed.chromosomes.masked.v1.1.fa -q Triticum_aestivum.IWGSC.dna.toplevel.fa -c Kronos_vs_CS.eqx_asm5.filtered.paf -F P -k --prefix Kronos_vs_CS.
+
+#visualize as plots
+#genomeList files simply have location of each genome and its name as two columns
+plotsr --sr Kronos_vs_Svevo.syri.out --genomes genomeList.1.txt -o Kronos_vs_Svevo.pdf
+plotsr --sr Kronos_vs_CS.syri.out --genomes genomeList.2.txt -o Kronos_vs_CS.pdf
 ```
-
-
 
 For local synteny, BLAST v2.15.0 was used.
 ```
