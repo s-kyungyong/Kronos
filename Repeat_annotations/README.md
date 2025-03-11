@@ -2,11 +2,17 @@
 ## Data Availability
 
 
-## Method
+## Methods
 
 
-Repetitive elements were initially annotated with HiTE v3.0.0 (Hu et al., 2024) and used to soft-mask the reference genomes v1.0 and v1.1. After generating the reference annotation v2.0, we re-annotated repetitive elements with EDTA v2.2.2 (Ou et al., 2019). To enhance repeat prediction and classification, complete and consensus repeats for Triticum were retrieved from the TREP database and included as curated libraries (Schlagenhauf and Wicker et al., 2016). Additionally, classified repeats from HiTE were integrated as RepeatModeler libraries. To prevent over-masking, the coding sequences of the v2.0 annotations were also provided. 
+Repetitive elements were initially annotated with HiTE v3.0.0 (Hu et al., 2024) and used for v4.1.5 to soft-mask the reference genomes v1.0 and v1.1. After generating the reference annotation v2.0, we re-annotated repetitive elements with EDTA v2.2.2 (Ou et al., 2019). To enhance repeat prediction and classification, complete and consensus repeats for Triticum were retrieved from the TREP database and included as curated libraries (Schlagenhauf and Wicker et al., 2016). Additionally, classified repeats from HiTE were integrated as RepeatModeler libraries. To prevent over-masking, the coding sequences of the v2.0 annotations were also provided. 
 
+## Software version
+```
+HiTE v3.0
+EDTA v2.2.2
+RepeatMasker v4.1.5
+```
 
 ---
 
