@@ -347,3 +347,38 @@ done
 
 python crop_genome.py --hmm orfs.aa.fa.against.NBARC.out --nlrannot NLRannotator.whole-genome.gff3 --genome Kronos.collapsed.chromosomes.masked.v1.1.fa
 ```
+
+
+Due to some incompatibility between OpenMPI in our computer cluster and MAKER, each contig will be separated into a file and MAKER will run in parallel. 
+```
+#!/bin/bash
+
+dir=$1
+
+cd "$dir" || exit
+mkdir -p split_genome
+
+# Split the genome sequences into individual FASTA files
+seqkit split -i -O split_genome NLR_loci.fa
+
+cd split_genome || exit
+for fa in *.fa; do
+  prefix="${fa%.fa}"  # Extract prefix by removing ".fa"
+  mkdir -p "$prefix"
+  mv "$fa" "$prefix"/
+  cp /global/scratch/users/skyungyong/Kronos/NLR_annotations/Pan-NLRome/Evidence/maker* "$prefix"/
+done
+
+cd ../..
+
+ 
+```
+Run MAKER. 
+```
+cd split_genome
+for dir in $(ls -d *); do
+  cd $dir
+  maker -RM_off -genome ${dir}.fa 
+  cd ..
+done
+```
