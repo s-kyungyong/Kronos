@@ -318,6 +318,9 @@ minimap2 --eqx -c -f 0.05 -K4g -t 30 -x asm5 Kronos.collapsed.chromosomes.masked
 #filter
 awk '$1 != "Un" && $1 !~ /[0-9]+D/' Kronos_vs_Svevo.eqx_asm5.paf > Kronos_vs_Svevo.eqx_asm5.filtered.paf
 awk '$1 != "Un" && $1 !~ /[0-9]+D/' Kronos_vs_CS.eqx_asm5.paf > Kronos_vs_CS.eqx_asm5.filtered.paf
+
+#plot
+python synteny_minimap.py Kronos_vs_Svevo.eqx_asm5.filtered.paf 1A 1A
 ```
 
 Structural variants were detecte using syri.
@@ -334,5 +337,7 @@ plotsr --sr Kronos_vs_CS.syri.out --genomes genomeList.2.txt -o Kronos_vs_CS.pdf
 
 For local synteny, BLAST v2.15.0 was used.
 ```
-blastn -query {target.fa} -db {hit.db} -outfmt "6 std qlen slen" -out {query_target.blast.out} -evalue 1e-6 
+makeblastdb -in db.fa -out db -dbtype 'nucl'
+blastn -query query.fa -db db -outfmt "6 std qlen slen" -out query_vs_hit.blast.out -evalue 1e-6
+python synteny_blast.py query_vs_hit.blast.out 1A_start 1A_start --alignment_length 10000 --hstart 0 --hend 20000000
 ```
