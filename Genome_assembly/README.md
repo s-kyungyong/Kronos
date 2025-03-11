@@ -320,7 +320,7 @@ awk '$1 != "Un" && $1 !~ /[0-9]+D/' Kronos_vs_Svevo.eqx_asm5.paf > Kronos_vs_Sve
 awk '$1 != "Un" && $1 !~ /[0-9]+D/' Kronos_vs_CS.eqx_asm5.paf > Kronos_vs_CS.eqx_asm5.filtered.paf
 
 #plot
-python synteny_minimap.py Kronos_vs_Svevo.eqx_asm5.filtered.paf 1A 1A
+python synteny_minimap_synteny.py Kronos_vs_Svevo.eqx_asm5.filtered.paf 1A 1A
 ```
 
 Structural variants were detecte using syri.
@@ -339,5 +339,5 @@ For local synteny, BLAST v2.15.0 was used.
 ```
 makeblastdb -in db.fa -out db -dbtype 'nucl'
 blastn -query query.fa -db db -outfmt "6 std qlen slen" -out query_vs_hit.blast.out -evalue 1e-6
-python synteny_blast.py query_vs_hit.blast.out 1A_start 1A_start --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast_synteny.py query_vs_hit.blast.out 1A_start 1A_start --alignment_length 10000 --hstart 0 --hend 20000000
 ```
