@@ -5,7 +5,7 @@ The first version of genome annotation largely focused on the integration of sho
 
 ### Paired-end Short-read Transcriptome Data Processing
 
-We donwloaded the paired-end RNA-seq data from the NCBI. The list can be found in [v1_rnaseq.list]([https://github.com/s-kyungyong/Kronos/blob/main/RNAseq/SRA.list](https://github.com/s-kyungyong/Kronos/blob/main/Genome_annotation/v1_rnaseq.list)). 
+We donwloaded the paired-end RNA-seq data from the NCBI. The list can be found in [v1_rnaseq.list](https://github.com/s-kyungyong/Kronos/blob/main/RNAseq/SRA.list](https://github.com/s-kyungyong/Kronos/blob/main/Genome_annotation/v1_rnaseq.list). 
 ```
 while read -r accession; do 
     sratoolkit.3.1.1-centos_linux64/bin/prefetch ${accession}
@@ -100,4 +100,20 @@ funannotate predict \
 ```
 /global/scratch/users/skyungyong/Software/miniprot/miniprot -t 56 --gff --outc=0.95 -N 0 ../3.Repeat/Kronos_output_latest/Kronos.collapsed.chromosomes.fa ../5.Annotations/Braker/uniprotkb_taxonomy_id_38820_2023_12_08.fasta
 ```
+
+
+
+### EvidenceModler
+
+singularity exec -B /global/scratch/users/skyungyong/Kronos/ /global/scratch/users/skyungyong/Kronos/5.Annotations/EVM/EVidenceModeler.v2.1.0.simg EVidenceModeler --sample_id Kronos --genome $(pwd)/genome.fa --weights /global/scratch/users/skyungyong/Kronos/5.Annotations/EVM/V5/EVM_outputs/weights.txt --gene_predictions $(pwd)/abinitio.gff3 --protein_alignments $(pwd)/homology.gff3 --transcript_alignments $(pwd)/transcripts.gff3 --repeats $(pwd)/repeat.gff3 --CPU 56 -S --segmentSize 100000 --overlapSize 10000
+
+
+ABINITIO_PREDICTION     funannotate   3
+ABINITIO_PREDICTION     braker  3
+ABINITIO_PREDICTION     ginger  3
+ABINITIO_PREDICTION     gingers  3.5
+PROTEIN homology        2
+PROTEIN                  miniprot       1
+OTHER_PREDICTION        transdecoder    2.5
+TRANSCRIPT               pasa  8
 
