@@ -183,7 +183,7 @@ We can compare our Kronos statistics to the GenomeScope result for the hexaploid
 
 All the statistics look fairly similar. I believe that just like other reference wheat genomes, we can generate collapsed haplotypes (AB) for our Kronos genome. 
 
----
+
 
 ## 3. Genome Assembly and Scaffolding
 
