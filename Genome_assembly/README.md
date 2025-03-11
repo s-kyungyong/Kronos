@@ -114,18 +114,17 @@ ls -lha  KVK-KRONOS-*/*.fastq.gz
 -rwxr-xr-x 1 skyungyong ucb 62G Jul 26 12:01 KVK-KRONOS-HIC2-1067017/kvk-kronos-hic2-1067017_S3HiC_R2.fastq.gz
 ```
 
-We use fastp v0.23.2 for quality control, enabling automatic adapter detection and polyG trimming. Rreads with < 20 quality scores or < 50 bp are discarded.
+We use fastp for quality control, enabling automatic adapter detection and polyG trimming. Rreads with < 20 quality scores or < 50 bp are discarded.
 
 ```
 fastp --thread 54 -g --detect_adapter_for_pe -q 20 -l 50 --in1 $read1 --in2 $read2 --out1 $out1 --out2 $out2 -h bssh1.html &> bssh1.log
 fastqc -t 54 $out1 $out2
 ```
 
-----------
 
 ## 2. Genome Assessment
 
-Kronos is an allotetraploid wheat (AABB) with high homozygosity due to self-pollination. An available Durum wheat genome ([Svevo](https://www.nature.com/articles/s41588-019-0381-3)) is 10.45G in size. We also roughly estimate that the Kronos genome would be similar in size. To confirm this, we use GenomeScope v2.0 along with jellyfish v2.2.10.
+Kronos is an allotetraploid wheat (AABB) with high homozygosity due to self-pollination. An available Durum wheat genome ([Svevo](https://www.nature.com/articles/s41588-019-0381-3)) is 10.45G in size. We also roughly estimate that the Kronos genome would be similar in size. To confirm this, we use GenomeScope v2.0 along with jellyfish.
 ```
 jellyfish count -C -m 21 -s 50000000000 -t 20 Kronos.HiFi.fastq -o kmer_counts.jf
 jellyfish histo -h 5000000 -t 20 kmer_counts.jf > reads.histo
@@ -178,64 +177,35 @@ All the statistics look fairly similar. I believe that just like other reference
 
 ## 3. Genome Assembly and Scaffolding
 
-Genome assembly is done with hifiasm v0.19.5-r587. Because the residual heterozygosity is low, and we aim to generate collapsed haplotypes (AB), we will only use the HiFi reads at the assembly stage. This took 61 hours and 615 Gb of a peak memory.
+### 3A. Genome Assembly
+
+Genome assembly is done with hifiasm. Because the residual heterozygosity is low, and we aim to generate collapsed haplotypes (AB), we will only use the HiFi reads at the assembly stage. This took 61 hours and 615 Gb of a peak memory.
 ```
 hifi=Kronos.HiFi.filt.fastq.gz
 hifiasm -l0 -t 54 -o l0-hic $hifi
 ```
 
-Evaluate the assembly statistics with QUAST and compleasm v0.2.2.
+The associate contigs (a_ctg) include a lot of fragments that are potentially not useful. Most of these are likeley plasmids or repeats, which will be later discarded. Some might have been separated based on residual hetrozygosity. For now, let's combine the primary and associate contigs into a single file. 
 
 ```
 #convert gfa to fasta files
 awk '/^S/{print ">"$2"\n"$3}' l0.bp.p_ctg.gfa | fold > Kronos.p_ctg.fa
 awk '/^S/{print ">"$2"\n"$3}' l0.bp.a_ctg.gfa | fold > Kronos.a_ctg.fa
 
-#run quest
-quast.py --fast -t 20 -o quast Kronos.p_ctg.fa Kronos.a_ctg.fa
-
-#run compleasm against poales_odb10
-VERSION=0.2.2
-export SINGULARITY_CACHEDIR=/global/scratch/users/skyungyong/temp
-singularity exec docker://huangnengcsu/compleasm:v${VERSION} compleasm run -l poales_odb10 -t 20 -o p_busco -a Kronos.p_ctg.fa
-exec docker://huangnengcsu/compleasm:v${VERSION} compleasm run -l poales_odb10 -t 20 -o a_busco -a Kronos.a_ctg.fa
-```
-
-Here is the statistics. 
-
-|    | p_ctg | a_ctg |
-|----|---------|-----------|
-| # contigs  | 3317  | 2530 |
-| Length (Gb)  | 10.55 | 0.074 |
-| Largest contig (Mb) | 346.20  | 0.976 |
-| N50 (Mb) | 40.96 | 0.0306  |
-| L50| 50 | 6  | 849 |
-||            ||
-| Complete | 5.43% | 0.71% |
-| Duplicated | 94.40% | 0.16% |
-| Fragmented | 0.10% | 0.25% |
-| Missing | 0.06% | 98.88% |
-
-The associate contigs (a_ctg) include a lot of fragments that are potentially not useful. Most of these are likeley plasmids or repeats, which will be later discarded. Some might have been separated based on residual hetrozygosity. For now, let's combine the primary and associate contigs into a single file. 
-
-```
 cat Kronos.p_ctg.fa Kronos.a_ctg.fa > Kronos.draft.fa
 ```
 
----
-
-## 4. Scaffolding and Assessment
+### 3B. Scaffolding
 
 Now, we scaffold contigs with our Hi-C data. We follow [this Omni-C protocol](https://omni-c.readthedocs.io/en/latest/index.html) for mapping and use yahs for scaffolding. 
 
 ```
-#samtools #v1.15.1, bwa v0.7.17-r1188, pairtools v1.0.2, yahs v1.2a.2
 #index
 samtools faidx Kronos.draft.fa
 bwa index Kronos.draft.fa
 
 #align Hi-C read pairs
-bwa mem -o aligned.sam -5SP -T0 -t52 /Kronos.draft.fa <(zcat 0.HiC/KVK-*/*R1*trimmed.fq.gz) <(zcat 0.HiC/KVK-*/*R2*trimmed.fq.gz)
+bwa mem -o aligned.sam -5SP -T0 -t52 Kronos.draft.fa <(zcat 0.HiC/KVK-*/*R1*trimmed.fq.gz) <(zcat 0.HiC/KVK-*/*R2*trimmed.fq.gz)
 
 #process the alignments
 samtools view -@56 -h aligned.sam  \
@@ -286,9 +256,7 @@ grep 'scale factor' out_JBAT.log
 [I::main_pre] scale factor: 8
 ```
 
----
-
-## 5. Scaffolding renaming
+### 3C. Final Processing
 
 Remove chloroplast and mitocondiral genomes into separate files and reassign the scaffold names. For the plasmids, we will download these two accessions from the NCBI below. The wheat reference genome can be downloaded from [EnsemblPlants](https://plants.ensembl.org/Triticum_aestivum/Info/Index).
 ```
@@ -297,7 +265,7 @@ Triticum aestivum cultivar Chinese Yumai mitochondrion, complete genome: NC_0360
 Triticum_aestivum.IWGSC.dna.toplevel.fa
 ```
 
-As the scaffolds are too large, minimap won't be able to run. Let's break the assemblies first. 
+As the scaffolds are too large, minimap runs slow. Let's break the assemblies first. 
 ```
 python break_fa.py YaHS_scaffolds_final.fa
 python break_fa.py Triticum_aestivum.IWGSC.dna.toplevel.fa
@@ -326,26 +294,30 @@ This step creates the Kronos reference v1.0, with the following statistics.
 | N's | 4400| 16000| 7400| 18400| 3800| 20400| 13400| 18600| 4400| 21400| 5200| 20400| 5200| 20000| 731600 | 
 | unambiguous base pairs | 600439581| 708826986| 795812989| 828523133| 759124428| 864131987| 767852317| 699678356| 720275659| 731131626| 624298173| 733579245| 753471566| 766006795| 210519344 |
 
-
-In the version 1.1, chromosomes 1B, 2A, 2B, 3A, 3B, 5A, 6A and 6B are flipped to make their orientations consistent with the Chinese Spring genome. 
+That's our genome v1.0! In the version 1.1, chromosomes 1B, 2A, 2B, 3A, 3B, 5A, 6A and 6B are flipped to make their orientations consistent with the Chinese Spring genome. 
 
 
 ---
 
-## 6. Syntenic analyses
+##4. Syntenic analyses
 
-The Kronos reference genome was compared to Svevo and Chinese Spring (IWGSC), which were downloaded from Plant Ensembl. For global synteny, the similarity search was performed using minimap v2.28-r1209.
+The Kronos reference genome was compared to Svevo and Chinese Spring (IWGSC v1.0), which were downloaded from Plant Ensembl. For global synteny, the similarity search was performed using minimap.
 ```
 #for svevo
 minimap2 --eqx -c -f 0.05 -K4g -t 30 -x asm5 Kronos.collapsed.chromosomes.masked.v1.1.fa Triticum_turgidum.Svevo.v1.dna.toplevel.fa -o Kronos_vs_Svevo.eqx_asm5.paf
 #for chinese spring
 minimap2 --eqx -c -f 0.05 -K4g -t 30 -x asm5 Kronos.collapsed.chromosomes.masked.v1.1.fa Triticum_aestivum.IWGSC.dna.toplevel.fa -o Kronos_vs_CS.eqx_asm5.paf
+
+
 ```
 
-Structural variants were detecte using syri v1.7.0.
+Structural variants were detecte using syri.
 ```
-syri -r  /global/scratch/users/skyungyong/Kronos/5.Annotations/Final/Final_Final_for_release/Kronos.collapsed.chromosomes.masked.v1.1.fa -q Triticum_turgidum.Svevo.v1.dna.toplevel.fa -c Kronos_vs_Svevo.eqx_asm5.paf -F P -k --prefix Kronos_vs_Svevo
+syri -r Kronos.collapsed.chromosomes.masked.v1.1.fa -q Triticum_turgidum.Svevo.v1.dna.toplevel.fa -c Kronos_vs_Svevo.eqx_asm5.paf -F P -k --prefix Kronos_vs_Svevo
+syri -r Kronos.collapsed.chromosomes.masked.v1.1.fa -q Triticum_aestivum.IWGSC.dna.toplevel.fa -c Kronos_vs_CS.eqx_asm5.no_Un.no_D.paf -F P -k --prefix Kronos_vs_CS
 ```
+
+
 
 For local synteny, BLAST v2.15.0 was used.
 ```
