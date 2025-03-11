@@ -5,7 +5,7 @@ The first version of genome annotation largely focused on the integration of sho
 
 ### Paired-end Short-read Transcriptome Data Processing
 
-We donwloaded the paired-end RNA-seq data from the NCBI. The list can be found in [v1_rnaseq.list](https://github.com/s-kyungyong/Kronos/blob/main/RNAseq/SRA.list](https://github.com/s-kyungyong/Kronos/blob/main/Genome_annotation/v1_rnaseq.list). 
+We donwloaded the paired-end RNA-seq data from the NCBI. The list can be found in [v1_rnaseq.list]((https://github.com/s-kyungyong/Kronos/blob/main/RNAseq/SRA.list](https://github.com/s-kyungyong/Kronos/blob/main/Genome_annotation/v1_rnaseq.list)). 
 ```
 while read -r accession; do 
     sratoolkit.3.1.1-centos_linux64/bin/prefetch ${accession}
