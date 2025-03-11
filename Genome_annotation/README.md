@@ -72,7 +72,12 @@ singularity exec -B  /global/scratch/users/skyungyong/Kronos/ pasapipeline.v2.5.
 
 ### BRAKER
 
-To run BRAKER, we need transcriptome and protein evidence. **all.merged.sorted.bam** produced in the pipeline above will be the transcriptome evidence. For protein evidence, 2,850,097 sequences that belong to Poales (TAXID: 38820) were downloaded from UniProt. Then BRAKER can be run:
+To run BRAKER, the following evidence was incoporated:
+```
+all.merged.sorted.bam: filtered transcritpome alignments produced using hisat and samtools
+uniprotkb_38820.fasta: 2,850,097 protein sequences from Poales (TAXID: 38820) downloaded from UniProt
+
+```
 
 ```
 singularity exec -B $PWD braker3.sif braker.pl --verbosity=3 \
@@ -89,17 +94,35 @@ python stringtie2utr.py -g braker.gtf -s GeneMark-ETP/rnaseq/stringtie/transcrip
 ```
 
 ### Funannotate
+
+To run BRAKER, the following evidence was incoporated:
+```
+transcripts.fasta: de novo and genome-guided transcript assemblies from trinity
+all.merged.sorted.bam: filtered transcritpome alignments produced using hisat and samtools
+stringtie.gtf: transcript assemblies from stringtie
+```
+
+Augustus and SNAP parameters were pre-trained. Gene models from BRAKER were searched against the IWGSC reference annotation and transcript assemblies from Trinity. Then, genes were selected if they had start and stop codons, having the same length with hits, sequence ideneity ≥ 99.5% and minimum protein lengths of 350. 6,000 genes were selected for Augustus and SNAP, respectively. For Augustus, 5,700 were used as trainning set and 300 for testing. The worflow we followed is identical to the GINGER section. 
+```
+blastp -query braker.aa -db trinity -max_target_seqs -max_hsps 1 -num_threads 56 -evalue 1-04 -outfmt "6 std qlen slen" -out braker_vs_trinity.blast.out
+blastp -query braker.aa -db iwgsc -max_target_seqs -max_hsps 1 -num_threads 56 -evalue 1-04 -outfmt "6 std qlen slen" -out braker_vs_iwgsc.blast.out
+cat  braker_vs_trinity.blast.out braker_vs_iwgsc.blast.out > braker.blast.out
+
+#select genes
+python select_genes_funannotate.py
+```
+
 ```
 funannotate predict \
--i /global/scratch/users/skyungyong/Kronos/3.Repeat/Kronos_output_latest/RepeatMasking/Kronos.collapsed.chromosomes.masked.fa \
--o /global/scratch/users/skyungyong/Kronos/5.Annotations/Funannotate \
+-i Kronos.collapsed.chromosomes.masked.fa \
+-o Funannotate \
 -s "Triticum kronos" \
---transcript_evidence /global/scratch/users/skyungyong/Kronos/5.Annotations/PASA/transcripts.fasta \
+--transcript_evidence transcripts.fasta \
 --repeats2evm \
 --cpus 56 \
---ploidy 2 \
---rna_bam /global/scratch/users/skyungyong/Kronos/5.Annotations/Ginger/alignments/all.merged.ginger.sorted.bam \
---stringtie /global/scratch/users/skyungyong/Kronos/5.Annotations/Stringtie/stringtie.gtf \
+--ploidy 2 \ #2 was used as Kronos is homozygous and can be collapsed 
+--rna_bam all.merged.sorted.bam \
+--stringtie stringtie.gtf \
 --augustus_species Kronos_maker \
 --AUGUSTUS_CONFIG_PATH /global/scratch/users/skyungyong/Software/anaconda3/envs/funannotate/config/ \
 --organism other \
