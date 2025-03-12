@@ -310,3 +310,39 @@ OTHER_PREDICTION        transdecoder    2.5   #pasa transcript assembles transla
 TRANSCRIPT               pasa  8              #pasa transcript assemblies
 ```
 
+### 7. PASA
+```
+
+Inputs:
+Kronos.EVM.gff3: evidencemodeler gene models
+
+Outputs:
+Kronos.EVM.pasa.gff3: evidencemodeler gene models updated by pasa
+```
+
+PASA was run one more time to update UTRs and isoforms. 
+```
+singularity exec pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl -C -R -c alignAssembly.config -g Kronos.collapsed.chromosomes.masked.v1.1.fa -t transcripts.fasta --trans_gtf stringtie.gtf --TRANSDECODER --ALT_SPLICE --ALIGNERS gmap
+singularity exec pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl -A -L -c compare.config  -g Kronos.collapsed.chromosomes.masked.v1.1.fa -t transcripts.fasta --annots Kronos.EVM.gff3
+```
+
+### 8. Gene Model Selection
+
+
+blastp -query Kronos.v1.1.coordinate_fixed.pasa_updated.manual_fix.all_final.pep.fa -num_threads 56 -evalue 1e-10 -max_target_seqs 10 -max_hsps 1 -outfmt "6 std qlen slen" -out Kronos.v1.1.against.all.all_prot.max10 -db database/all_prot #pasa.orf #all_prot
+
+
+
+(base) [skyungyong@ln002 MAKER]$ cd transcripts/
+(base) [skyungyong@ln002 transcripts]$ ls
+all.est.fasta  sample_mydb_pasa.sqlite.assemblies.fasta  stringtie.fasta
+(base) [skyungyong@ln002 transcripts]$ cd ..
+(base) [skyungyong@ln002 MAKER]$ ls
+Runs  abinitio  proteins  transcripts
+(base) [skyungyong@ln002 MAKER]$ rm -r transcripts/
+(base) [skyungyong@ln002 MAKER]$ cd proteins/
+(base) [skyungyong@ln002 proteins]$ ls
+Aegilops_tauschii.Aet_v4.0.pep.all.fa                            Hordeum_vulgare.MorexV3_pseudomolecules_assembly.pep.all.fa  Triticum_aestivum.IWGSC.pep.all.fa            Triticum_urartu.IGDB.pep.all.fa
+Avena_sativa_ot3098.Oat_OT3098_v2.pep.all.fa                     Hordeum_vulgare_goldenpromise.GPv1.pep.all.fa                Triticum_dicoccoides.WEWSeq_v.1.0.pep.all.fa  all.prot.evidence.fa
+Avena_sativa_sang.Asativa_sang.v1.1.pep.all.fa                   Lolium_perenne.MPB_Lper_Kyuss_1697.pep.all.fa                Triticum_spelta.PGSBv2.0.pep.all.fa           get_pasa_orfs.py
+Brachypodium_distachyon.Brachypodium_distachyon_v3.0.pep.all.fa  Secale_cereale.Rye_Lo7_2018_v1p1p1.pep.all.fa                Triticum_turgidum.Svevo.v1.pep.all.fa         pasa.transdecoder.pep.complete.fa
