@@ -11,6 +11,13 @@ stringtie v2.1.7
 trinity v2.15.1
 pasa v2.5.3
 transdecoder v5.7.1
+braker v3.0.6
+funannotate v1.8.15
+segmasker v1.0.0
+augustus
+snap v2013_11_29
+ginger
+
 ```
 
 
@@ -90,6 +97,11 @@ singularity run trinity.sif Trinity --verbose --seqType fq --max_memory 1500G --
 
 #run trinity genome-guided
 singularity run trinity.sif Trinity --verbose --max_memory 250G --CPU 56 --genome_guided_max_intron 10000 --genome_guided_bam all.merged.sorted.bam
+
+#combine the oututs to transcripts.fa
+#process assemblies
+TransDecoder.LongOrfs -t transcripts.fa
+TransDecoder.Predict -t TransDecoder.LongOrfs -t transcripts.fa
 ```
 
 Finally, these assembled transcripts was processed by PASA, and orfs were predicted by transdecoder.
@@ -141,9 +153,7 @@ outputs:
 Triticum_kronos.filtered.gff3: funannotate gene models
 ```
 
-Funannotate internally trains augustus and snap. 
-
-Augustus and SNAP parameters were pre-trained. Gene models from BRAKER were searched against the IWGSC reference annotation and transcript assemblies from Trinity. Then, genes were selected if they had start and stop codons, having the same length with hits, sequence ideneity ≥ 99.5% and minimum protein lengths of 350. 6,000 genes were selected for Augustus and SNAP, respectively. For Augustus, 5,700 were used as trainning set and 300 for testing. The worflow we followed is identical to the GINGER section. 
+Funannotate internally trains augustus and snap. However, we manually trained them and provided those parameters to funannotate. Gene models from BRAKER were searched against the IWGSC reference annotation (v1.0) and transcript assemblies from Trinity (protein sequences from transdecoder). Then, genes were selected if they had start and stop codons, having the same length with hits, sequence ideneity ≥ 99.5% and minimum protein lengths of 350. 6,000 genes were randomly selected for Augustus and SNAP, respectively. For Augustus, 5,700 were used as trainning set and 300 for testing. The worflow we followed is identical to the one described below in the GINGER section. 
 ```
 blastp -query braker.aa -db trinity -max_target_seqs -max_hsps 1 -num_threads 56 -evalue 1e-10 -outfmt "6 std qlen slen" -out braker_vs_trinity.blast.out
 blastp -query braker.aa -db iwgsc -max_target_seqs -max_hsps 1 -num_threads 56 -evalue 1e-10 -outfmt "6 std qlen slen" -out braker_vs_iwgsc.blast.out
@@ -153,6 +163,7 @@ cat  braker_vs_trinity.blast.out braker_vs_iwgsc.blast.out > braker.blast.out
 python select_genes_for_training.py 6000 
 ```
 
+Funannotate was run as below. We made it to pick up the pre-trained SNAP parameters. 
 ```
 funannotate predict \
 -i Kronos.collapsed.chromosomes.masked.fa \
@@ -171,35 +182,40 @@ funannotate predict \
 --GENEMARK_PATH /global/scratch/users/skyungyong/Software/gmes_linux_64_4 \
 ```
 
-Funannotate produced a lot of gene models than expected (137,303!). Gene models with high portion of low complexity regions were removed.
+Funannotate produced a lot of gene models than expected (137,303!). Gene models with high portion of low complexity regions were removed. This was not perfect filtering, but as different evidence would be combined at a later step, we did not dig in for further filtering. 
 ```
 segmasker -in Triticum_kronos.proteins.fa -out Triticum_kronos.proteins.segmakser.out
 python filter_genes_funannotate.py
-
 ```
 
 ### 4. GINGER
-
-To run GINGER, the following evidence was incoporated:
 ```
+inputs:
+transcripts.fasta: de novo and genome-guided transcript assemblies from trinity
 all.merged.sorted.bam: filtered transcritpome alignments produced using hisat and samtools
-left.norm.norm.fq
-right.norm.norm.fq
+left.norm.norm.fq: pre-normalized rnaseq data
+right.norm.norm.fq: pre-normalized rnaseq data
+braker.gtf: braker gene models
+braker.aa: protein sequences of braker gene models
+
 #protein evidence for SPALN (tritaest)
 Triticum_aestivum.IWGSC.pep.all.fa
 Triticum_turgidum.Svevo.v1.pep.all.fa
 Triticum_dicoccoides.WEWSeq_v.1.0.pep.all.fa
 Triticum_spelta.PGSBv2.0.pep.all.fa
 Triticum_urartu.IGDB.pep.all.fa
+
+outputs:
+ginger_phase2.gff: ginger gene models
 ```
 
-GINGER uses Nextflow to streamline annotations. We made a few changes here. 
+GINGER uses Nextflow to streamline annotations. We made a few changes here in the workflow
 ```
-denovo.nf: transcript assembles with oases/velvet were skipped, as this required 17,000,000 Gb memory. 
+denovo.nf: transcript assembles with oases/velvet were not performed, as this required 17,000,000 Gb memory. 
 abinitio.nf: Augustus and SNAP were trained manually
 ```
 
-Gene models from BRAKER were searched against the IWGSC reference annotation and transcript assemblies from Trinity. Then, genes were selected if they had start and stop codons, having the same length with hits, sequence ideneity ≥ 99.5% and minimum protein lengths of 350. 8,500 genes were selected for Augustus and SNAP, respectively. For Augustus, 5,700 were used as trainning set and 300 for testing. The worflow we followed is identical to the GINGER section. 
+Augustus and SNAP were trainned similarly. Gene models from BRAKER were searched against the IWGSC reference annotation (v1.0) and transcript assemblies from Trinity. Then, genes were selected if they had start and stop codons, having the same length with hits, sequence ideneity ≥ 99.5% and minimum protein lengths of 350. This time, 8,500 genes were randomly selected for Augustus and SNAP, respectively. For Augustus, 5,700 were used as trainning set and 300 for testing. 
 ```
 blastp -query braker.aa -db trinity -max_target_seqs -max_hsps 1 -num_threads 56 -evalue 1e-10 -outfmt "6 std qlen slen" -out braker_vs_trinity.blast.out
 blastp -query braker.aa -db iwgsc -max_target_seqs -max_hsps 1 -num_threads 56 -evalue 1e-10 -outfmt "6 std qlen slen" -out braker_vs_iwgsc.blast.out
@@ -209,35 +225,35 @@ cat  braker_vs_trinity.blast.out braker_vs_iwgsc.blast.out > braker.blast.out
 python select_genes_for_training.py 8500 
 ```
 
-AUGUSTUS training
+AUGUSTUS was trained as below.
 ```
 gff2gbSmallDNA.pl augustus.gff3 Kronos.collapsed.chromosomes.masked.fa 2000 genes.gb
 randomSplit.pl genes.gb 400 # 400 test set
-new_species.pl --species=Kronos_manual --AUGUSTUS_CONFIG_PATH=/global/scratch/users/skyungyong/Kronos/5.Annotations/Braker/config
+new_species.pl --species=Kronos_manual
 etraining -species=Kronos_manual genes.gb.train
 optimize_augustus.pl --species=Kronos_manual --cpus=48 --UTR=off genes.gb.train
 ```
 
-SNAP trainning
+SNAP was trained as below.
 ```
-gff3_to_zff.pl Kronos.collapsed.chromosomes.masked.fa snap.gff3 > snap.zff
-fathom -validate snap.zff Kronos.collapsed.chromosomes.masked.fa
-fathom -categorize 1000 snap.zff Kronos.collapsed.chromosomes.masked.fa
-fathom -export 100 -plus uni.*
-fathom -validate export.ann export.dna
+gff3_to_zff.pl genome.dna snap.gff3 > genome.ann # genome.dna = Kronos.collapsed.chromosomes.masked.fa
+fathom -validate genome.ann genome.dna 
+fathom -categorize 1000 genome.ann genome.dna 
+fathom -export 100 -plus uni.ann uni.dna
 forge export.ann export.dna
 hmm-assembler.pl Kronos . > Kronos_manual.hmm
 ```
 
+GINGER was run as below.
 ```
-nextflow -C nextflow.config run /path/to/pipeline/mapping.nf
-nextflow -C nextflow.config run /path/to/pipeline/denovo.nf
-nextflow -C nextflow.config run /path/to/pipeline/abinitio.nf
-nextflow -C nextflow.config run /path/to/pipeline/homology.nf
-/path/to/pipeline/phase0.sh nextflow.config
-/path/to/pipeline/phase1.sh nextflow.config > phase1.log
-/path/to/pipeline/phase2.sh 50
-/path/to/pipeline/summary.sh nextflow.config
+nextflow -C nextflow.config run mapping.nf
+nextflow -C nextflow.config run denovo.nf
+nextflow -C nextflow.config run abinitio.nf
+nextflow -C nextflow.config run homology.nf
+phase0.sh nextflow.config
+phase1.sh nextflow.config > phase1.log
+phase2.sh 50
+summary.sh nextflow.config
 ```
 
 
