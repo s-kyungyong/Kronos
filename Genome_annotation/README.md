@@ -214,18 +214,17 @@ miniprot -t 56 --gff --outc=0.95 -N 0 Kronos.collapsed.chromosomes.fa uniprotkb_
 
 ### EvidenceModler
 
-singularity exec -B /global/scratch/users/skyungyong/Kronos/ /global/scratch/users/skyungyong/Kronos/5.Annotations/EVM/EVidenceModeler.v2.1.0.simg EVidenceModeler --sample_id Kronos --genome $(pwd)/genome.fa --weights /global/scratch/users/skyungyong/Kronos/5.Annotations/EVM/V5/EVM_outputs/weights.txt --gene_predictions $(pwd)/abinitio.gff3 --protein_alignments $(pwd)/homology.gff3 --transcript_alignments $(pwd)/transcripts.gff3 --repeats $(pwd)/repeat.gff3 --CPU 56 -S --segmentSize 100000 --overlapSize 10000
+singularity exec EVidenceModeler.v2.1.0.simg EVidenceModeler --sample_id Kronos --genome genome.fa --weights weights.txt --gene_predictions abinitio.gff3 --protein_alignments homology.gff3 --transcript_alignments transcripts.gff3 --repeats repeat.gff3 --CPU 56 -S --segmentSize 100000 --overlapSize 10000
 
 
 ABINITIO_PREDICTION     funannotate   3
 ABINITIO_PREDICTION     braker  3
 ABINITIO_PREDICTION     ginger  3
-ABINITIO_PREDICTION     gingers  3.5
-PROTEIN homology        2
+ABINITIO_PREDICTION     gingers  3.5 #single-exon genes from GINGER
+PROTEIN homology        2            #ginger's SPALN
 PROTEIN                  miniprot       1
 OTHER_PREDICTION        transdecoder    2.5
 TRANSCRIPT               pasa  8
-
 
 
 /global/scratch/users/skyungyong/Software/miniprot/miniprot -P CD -t 56 --gff -G 4000 -N 40 --outc=0.95 /global/scratch/users/skyungyong/Kronos/3.Repeat/Kronos_output_latest/RepeatMasking/Kronos.collapsed.chromosomes.masked.miniprot.mpi ../MAKER/proteins/all.prot.evidence.fa > miniprot.gff3
