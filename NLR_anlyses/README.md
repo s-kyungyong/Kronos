@@ -416,3 +416,6 @@ for dir in $(ls -d *); do
     echo "${dir} Finished"
 done
 cat */*.gff3 > Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.maker_out.gff3
+
+
+NLR_loci.part_GWHEQUH00000005_814475367-814511264 Finished
