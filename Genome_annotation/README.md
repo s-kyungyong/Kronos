@@ -1,9 +1,18 @@
 
 ## Protein-coding Gene Preidction: v1.0 annotation
 
-The first version of genome annotation largely focused on the integration of short-read sequencing data produced for Kronos. 
+The first version of genome annotation largely focused on the integration of short-read sequencing data produced for Kronos and the consensus of multiple gene prediction software
 
 ### 1. Paired-end Short-read Transcriptome Data Processing
+```
+inputs:
+Publicly available RNA-seq data for  Kronos
+
+outputs:
+all.merged.sorted.bam: filtered transcriptome alignments
+transcripts.fasta: de novo and genome-guided transcript assemblies from trinity
+stringtie.gtf: transcript assemblies from stringtie
+```
 
 We donwloaded the paired-end RNA-seq data from the NCBI. The list can be found in **v1_rnaseq.list**. 
 ```
