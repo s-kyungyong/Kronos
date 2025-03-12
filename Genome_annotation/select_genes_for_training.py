@@ -2,10 +2,11 @@ from Bio import SeqIO
 import subprocess
 import random
 import os
+import sys
 
 MIN_SEQ_LENGTH = 350
 SEQID=99.5
-num_gene=6000
+num_gene=int(sys.argv[1])
 
 # Constants
 def parse_gff_attributes(attributes):
