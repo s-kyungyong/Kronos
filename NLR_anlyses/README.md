@@ -408,3 +408,11 @@ for dir in $(ls -d *); do
   cd ..
 done
 ```
+
+get gff files 
+
+for dir in $(ls -d *); do 
+    gff3_merge -d ${dir}/${dir}.maker.output/${dir}_master_datastore_index.log -o ${dir}/${dir}.gff3
+    echo "${dir} Finished"
+done
+cat */*.gff3 > Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.maker_out.gff3
