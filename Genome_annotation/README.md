@@ -3,7 +3,7 @@
 
 The first version of genome annotation largely focused on the integration of short-read sequencing data produced for Kronos. 
 
-### Paired-end Short-read Transcriptome Data Processing
+### 1. Paired-end Short-read Transcriptome Data Processing
 
 We donwloaded the paired-end RNA-seq data from the NCBI. The list can be found in **v1_rnaseq.list**. 
 ```
@@ -64,13 +64,17 @@ singularity run -B $PWD trinity.sif Trinity  --verbose --seqType fq --max_memory
 singularity run -B $PWD trinity.sif Trinity --verbose --max_memory 250G --CPU 56 --genome_guided_max_intron 10000 --genome_guided_bam all.merged.sorted.bam
 ```
 
-Finally, these assembled transcripts can be processed by PASA.
+Finally, these assembled transcripts can be processed by PASA, and orfs can be predicted by transdecoder
 ```
 singularity exec -B  /global/scratch/users/skyungyong/Kronos/ pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl -c /usr/local/src/PASApipeline/sample_data/sqlite.confs/alignAssembly.config -r -C -R --CPU 56 --ALIGNERS gmap --TRANSDECODER  -ALT_SPLICE -g /global/scratch/users/skyungyong/Kronos/3.Repeat/Kronos_output_latest/RepeatMasking/Kronos.collapsed.chromosomes.masked.fa -t /global/scratch/users/skyungyong/Kronos/5.Annotations/PASA/transcripts.fasta --trans_gtf /global/scratch/users/skyungyong/Kronos/5.Annotations/Stringtie/stringtie.gtf
+
+#process assemblies
+TransDecoder.LongOrfs -t sample_mydb_pasa.sqlite.assemblies.fasta
+TransDecoder.Predict -t TransDecoder.LongOrfs -t sample_mydb_pasa.sqlite.assemblies.fasta
 ```
 
 
-### BRAKER
+### 2. BRAKER
 
 To run BRAKER, the following evidence was incoporated:
 ```
@@ -93,7 +97,7 @@ singularity exec -B $PWD braker3.sif braker.pl --verbosity=3 \
 python stringtie2utr.py -g braker.gtf -s GeneMark-ETP/rnaseq/stringtie/transcripts_all.merged.sorted.gff -o braker.utr.gtf
 ```
 
-### Funannotate
+### 3. Funannotate
 
 To run BRAKER, the following evidence was incoporated:
 ```
@@ -104,12 +108,12 @@ stringtie.gtf: transcript assemblies from stringtie
 
 Augustus and SNAP parameters were pre-trained. Gene models from BRAKER were searched against the IWGSC reference annotation and transcript assemblies from Trinity. Then, genes were selected if they had start and stop codons, having the same length with hits, sequence ideneity ≥ 99.5% and minimum protein lengths of 350. 6,000 genes were selected for Augustus and SNAP, respectively. For Augustus, 5,700 were used as trainning set and 300 for testing. The worflow we followed is identical to the GINGER section. 
 ```
-blastp -query braker.aa -db trinity -max_target_seqs -max_hsps 1 -num_threads 56 -evalue 1-04 -outfmt "6 std qlen slen" -out braker_vs_trinity.blast.out
-blastp -query braker.aa -db iwgsc -max_target_seqs -max_hsps 1 -num_threads 56 -evalue 1-04 -outfmt "6 std qlen slen" -out braker_vs_iwgsc.blast.out
+blastp -query braker.aa -db trinity -max_target_seqs -max_hsps 1 -num_threads 56 -evalue 1e-10 -outfmt "6 std qlen slen" -out braker_vs_trinity.blast.out
+blastp -query braker.aa -db iwgsc -max_target_seqs -max_hsps 1 -num_threads 56 -evalue 1e-10 -outfmt "6 std qlen slen" -out braker_vs_iwgsc.blast.out
 cat  braker_vs_trinity.blast.out braker_vs_iwgsc.blast.out > braker.blast.out
 
 #select genes
-python select_genes_funannotate.py
+python select_genes_for_training.py 6000 
 ```
 
 ```
@@ -137,10 +141,73 @@ python filter_genes_funannotate.py
 
 ```
 
+### 4. GINGER
+
+To run GINGER, the following evidence was incoporated:
+```
+all.merged.sorted.bam: filtered transcritpome alignments produced using hisat and samtools
+left.norm.norm.fq
+right.norm.norm.fq
+#protein evidence for SPALN (tritaest)
+Triticum_aestivum.IWGSC.pep.all.fa
+Triticum_turgidum.Svevo.v1.pep.all.fa
+Triticum_dicoccoides.WEWSeq_v.1.0.pep.all.fa
+Triticum_spelta.PGSBv2.0.pep.all.fa
+Triticum_urartu.IGDB.pep.all.fa
+```
+
+GINGER uses Nextflow to streamline annotations. We made a few changes here. 
+```
+denovo.nf: transcript assembles with oases/velvet were skipped, as this required 17,000,000 Gb memory. 
+abinitio.nf: Augustus and SNAP were trained manually
+```
+
+Gene models from BRAKER were searched against the IWGSC reference annotation and transcript assemblies from Trinity. Then, genes were selected if they had start and stop codons, having the same length with hits, sequence ideneity ≥ 99.5% and minimum protein lengths of 350. 8,500 genes were selected for Augustus and SNAP, respectively. For Augustus, 5,700 were used as trainning set and 300 for testing. The worflow we followed is identical to the GINGER section. 
+```
+blastp -query braker.aa -db trinity -max_target_seqs -max_hsps 1 -num_threads 56 -evalue 1e-10 -outfmt "6 std qlen slen" -out braker_vs_trinity.blast.out
+blastp -query braker.aa -db iwgsc -max_target_seqs -max_hsps 1 -num_threads 56 -evalue 1e-10 -outfmt "6 std qlen slen" -out braker_vs_iwgsc.blast.out
+cat  braker_vs_trinity.blast.out braker_vs_iwgsc.blast.out > braker.blast.out
+
+#select genes
+python select_genes_for_training.py 8500 
+```
+
+AUGUSTUS training
+```
+gff2gbSmallDNA.pl augustus.gff3 Kronos.collapsed.chromosomes.masked.fa 2000 genes.gb
+randomSplit.pl genes.gb 400 # 400 test set
+new_species.pl --species=Kronos_manual --AUGUSTUS_CONFIG_PATH=/global/scratch/users/skyungyong/Kronos/5.Annotations/Braker/config
+etraining -species=Kronos_manual genes.gb.train
+optimize_augustus.pl --species=Kronos_manual --cpus=48 --UTR=off genes.gb.train
+```
+
+SNAP trainning
+```
+gff3_to_zff.pl Kronos.collapsed.chromosomes.masked.fa snap.gff3 > snap.zff
+fathom -validate snap.zff Kronos.collapsed.chromosomes.masked.fa
+fathom -categorize 1000 snap.zff Kronos.collapsed.chromosomes.masked.fa
+fathom -export 100 -plus uni.*
+fathom -validate export.ann export.dna
+forge export.ann export.dna
+hmm-assembler.pl Kronos . > Kronos_manual.hmm
+```
+
+```
+nextflow -C nextflow.config run /path/to/pipeline/mapping.nf
+nextflow -C nextflow.config run /path/to/pipeline/denovo.nf
+nextflow -C nextflow.config run /path/to/pipeline/abinitio.nf
+nextflow -C nextflow.config run /path/to/pipeline/homology.nf
+/path/to/pipeline/phase0.sh nextflow.config
+/path/to/pipeline/phase1.sh nextflow.config > phase1.log
+/path/to/pipeline/phase2.sh 50
+/path/to/pipeline/summary.sh nextflow.config
+```
+
+
 ### Miniprot
 
 ```
-miniprot -t 56 --gff --outc=0.95 -N 0 Kronos.collapsed.chromosomes.fa uniprotkb_38820.fasta
+miniprot -t 56 --gff --outc=0.95 -N 0 Kronos.collapsed.chromosomes.fa uniprotkb_38820.fasta > miniprot.gff3
 ```
 
 
@@ -159,3 +226,6 @@ PROTEIN                  miniprot       1
 OTHER_PREDICTION        transdecoder    2.5
 TRANSCRIPT               pasa  8
 
+
+
+/global/scratch/users/skyungyong/Software/miniprot/miniprot -P CD -t 56 --gff -G 4000 -N 40 --outc=0.95 /global/scratch/users/skyungyong/Kronos/3.Repeat/Kronos_output_latest/RepeatMasking/Kronos.collapsed.chromosomes.masked.miniprot.mpi ../MAKER/proteins/all.prot.evidence.fa > miniprot.gff3
