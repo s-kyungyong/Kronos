@@ -14,10 +14,11 @@ transdecoder v5.7.1
 braker v3.0.6
 funannotate v1.8.15
 segmasker v1.0.0
-augustus
+augustus v3.3.2
 snap v2013_11_29
-ginger
-
+ginger v1.0.1
+miniprot v0.12
+evidencemodeler v2.1.0
 ```
 
 
@@ -244,7 +245,7 @@ forge export.ann export.dna
 hmm-assembler.pl Kronos . > Kronos_manual.hmm
 ```
 
-GINGER was run as below.
+GINGER was run roughly as below. Note that we had to make changes in the next flow modules for the modifications mentioned earlier in this section.
 ```
 nextflow -C nextflow.config run mapping.nf
 nextflow -C nextflow.config run denovo.nf
@@ -257,27 +258,55 @@ summary.sh nextflow.config
 ```
 
 
-### Miniprot
+### 5. Miniprot
+```
+inputs:
+uniprotkb_38820.fasta: 2,850,097 protein sequences from Poales (TAXID: 38820) downloaded from UniProt
 
+outputs:
+miniprot.gff3: protein evidence alignments
+```
+
+We used miniprot to align the protein sequences from UniProt. 
 ```
 miniprot -t 56 --gff --outc=0.95 -N 0 Kronos.collapsed.chromosomes.fa uniprotkb_38820.fasta > miniprot.gff3
 ```
 
 
 
-### EvidenceModler
+### 6. EvidenceModler
+```
+inputs:
+braker.gff: braker gene models
+Triticum_kronos.filtered.gff3: funannotate gene models
+ginger_phase2.gff: ginger gene models
+miniprot.gff3: protein evidence alignments
+sample_mydb_pasa.sqlite.pasa_assemblies.gff3: pasa transcript assemblies
+sample_mydb_pasa.sqlite.assemblies.fasta.transdecoder.genome.gff3: pasa transcript assembles translated by transdecoder
 
+outputs:
+Kronos.EVM.gff3: evidencemodeler gene models
+```
+
+Finally, all evidence was combined by EvidenceModeler. There were some modifications within the inputs.
+```
+abinitio.gff3: this combines braker.gff, Triticum_kronos.filtered.gff3, ginger_phase2.gff and sample_mydb_pasa.sqlite.assemblies.fasta.transdecoder.genome.gff
+homology.gff3: this includes miniprot.gff3 and an intermediate output from ginger (spaln alignments) 
+transcripts.gff3: this includes sample_mydb_pasa.sqlite.pasa_assemblies.gff3
+```
+
+EvidenceModeler was run as below with the specified weights. 
+```
 singularity exec EVidenceModeler.v2.1.0.simg EVidenceModeler --sample_id Kronos --genome genome.fa --weights weights.txt --gene_predictions abinitio.gff3 --protein_alignments homology.gff3 --transcript_alignments transcripts.gff3 --repeats repeat.gff3 --CPU 56 -S --segmentSize 100000 --overlapSize 10000
 
+#weight.txt
+ABINITIO_PREDICTION     funannotate   3       #funannotat gene models
+ABINITIO_PREDICTION     braker  3             #braker gene models
+ABINITIO_PREDICTION     ginger  3             #ginger gene models
+ABINITIO_PREDICTION     gingers  3.5          #single-exon genes from GINGER
+PROTEIN homology        2                     #ginger's SPALN
+PROTEIN                  miniprot       1     #protein mapping with miniprot
+OTHER_PREDICTION        transdecoder    2.5   #pasa transcript assembles translated by transdecoder
+TRANSCRIPT               pasa  8              #pasa transcript assemblies
+```
 
-ABINITIO_PREDICTION     funannotate   3
-ABINITIO_PREDICTION     braker  3
-ABINITIO_PREDICTION     ginger  3
-ABINITIO_PREDICTION     gingers  3.5 #single-exon genes from GINGER
-PROTEIN homology        2            #ginger's SPALN
-PROTEIN                  miniprot       1
-OTHER_PREDICTION        transdecoder    2.5
-TRANSCRIPT               pasa  8
-
-
-/global/scratch/users/skyungyong/Software/miniprot/miniprot -P CD -t 56 --gff -G 4000 -N 40 --outc=0.95 /global/scratch/users/skyungyong/Kronos/3.Repeat/Kronos_output_latest/RepeatMasking/Kronos.collapsed.chromosomes.masked.miniprot.mpi ../MAKER/proteins/all.prot.evidence.fa > miniprot.gff3
