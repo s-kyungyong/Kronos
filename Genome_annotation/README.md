@@ -130,6 +130,13 @@ funannotate predict \
 --GENEMARK_PATH /global/scratch/users/skyungyong/Software/gmes_linux_64_4 \
 ```
 
+Funannotate produced a lot of gene models than expected (137,303!). Gene models with high portion of low complexity regions were removed.
+```
+segmasker -in Triticum_kronos.proteins.fa -out Triticum_kronos.proteins.segmakser.out
+python filter_genes_funannotate.py
+
+```
+
 ### Miniprot
 
 ```
