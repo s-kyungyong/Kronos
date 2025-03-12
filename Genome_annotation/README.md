@@ -1,17 +1,31 @@
 
-## Protein-coding Gene Preidction: v1.0 annotation
+# Protein-coding Gene Preidction: v1.0 annotation
+
+```
+trim_galore v0.6.6
+cutadapt v3.7
+sratoolkit v3.1.1
+hisat v2.2.1
+samtools v1.9
+stringtie v2.1.7
+trinity v2.15.1
+pasa v2.5.3
+transdecoder v5.7.1
+```
+
 
 The first version of genome annotation largely focused on the integration of short-read sequencing data produced for Kronos and the consensus of multiple gene prediction software
 
 ### 1. Paired-end Short-read Transcriptome Data Processing
 ```
 inputs:
-Publicly available RNA-seq data for  Kronos
+Publicly available RNA-seq data for Kronos
 
 outputs:
 all.merged.sorted.bam: filtered transcriptome alignments
 transcripts.fasta: de novo and genome-guided transcript assemblies from trinity
 stringtie.gtf: transcript assemblies from stringtie
+sample_mydb_pasa.sqlite.assemblies.fasta: transcript assemblies from pasa
 ```
 
 We donwloaded the paired-end RNA-seq data from the NCBI. The list can be found in **v1_rnaseq.list**. 
@@ -21,12 +35,14 @@ while read -r accession; do
     sratoolkit.3.1.1-centos_linux64/bin/fasterq-dump -O . -e ${Numthreads} ${accession}
 done < v1_rnaseq.list
 ```
-Let's first remove adapters and low-quality reads from the libraries. Trim_galore and cutadapt versions were v0.6.6 and v3.7. This generated about 1.6 Tb of fastq files in total
+Remove adapters and low-quality reads from the datasets, using trim_galore and cutadapt. This generated about 1.6 Tb of fastq files.
 ```
-ls *.fastq | cut -d "_" -f 1 | sort -u | while read accession; do trim_galore -a -j 8 --paired $accession\_1.fastq $accession\_2.fastq ; done
+ls *.fastq | cut -d "_" -f 1 | sort -u | while read accession; do 
+    trim_galore --paired -j 8 -a "${accession}_1.fastq" "${accession}_2.fastq"
+done
 ```
 
-The RNA-seq data can be mapped to the genome and processed. Reads will be mapped to the genome with hisat, filtered with samtools and assembled with stringtie. 
+The RNA-seq data were mapped to the genome by hisat, processed by samtools and assembled by stringtie. 
 ```
 # index the genome (v1.0)
 hisat2-build -p 20 Kronos.collapsed.chromosomes.fa Kronos
@@ -50,13 +66,16 @@ done
 #merge all bamfiles
 samtools merge -@ 56 -h SRX10965366.mapped.bam -o all.merged.bam *.mapped.bam
 samtools sort -@ 56 all.merged.bam > all.merged.sorted.bam
+
+#assemble with stringtie
+stringtie -o stringtie.gtf -p 56 --conservative all.merged.sorted.bam
 ```
 
 
-De novo assembly is done with Trinity v2.15.1. We initially tried running Trinity on the 1.6 Tb of paired-end fastq files all at once. After two weeks, Trinity was still stuck at the insilico normalization step with about 35-45% progress. We, therefore, had to take some other ways around. Each pair will be normalized first, and then Trinity is run. This took a few days, producing transcripts of ~1 Gb. 
+De novo assembly was done using Trinity v2.15.1. We initially tried running Trinity on the 1.6 Tb of paired-end fastq files all at once. After two weeks, Trinity was still stuck at the insilico normalization step with about 35-45% progress. We, therefore, had to take some other ways around. Each pair will be normalized first, and then Trinity was run. This took a few days, producing transcripts of ~1 Gb. 
 ```
 #for each pair 
-singularity run -B $PWD trinity.sif Trinity --verbose --max_memory 90G --just_normalize_reads --seqType fq --CPU 40 --left $left --right $right --output trinity_$prefix
+singularity run trinity.sif Trinity --verbose --max_memory 90G --just_normalize_reads --seqType fq --CPU 40 --left $left --right $right --output trinity_$prefix
 
 #list all normalized reads
 ls -d trinity_* | while read folder; do
@@ -67,15 +86,15 @@ ls -d trinity_* | while read folder; do
 done > sample.list
 
 #run trinity de novo
-singularity run -B $PWD trinity.sif Trinity  --verbose --seqType fq --max_memory 1500G --CPU 56 --samples_file $PWD/sample.list
+singularity run trinity.sif Trinity --verbose --seqType fq --max_memory 1500G --CPU 56 --samples_file sample.list
 
 #run trinity genome-guided
-singularity run -B $PWD trinity.sif Trinity --verbose --max_memory 250G --CPU 56 --genome_guided_max_intron 10000 --genome_guided_bam all.merged.sorted.bam
+singularity run trinity.sif Trinity --verbose --max_memory 250G --CPU 56 --genome_guided_max_intron 10000 --genome_guided_bam all.merged.sorted.bam
 ```
 
-Finally, these assembled transcripts can be processed by PASA, and orfs can be predicted by transdecoder
+Finally, these assembled transcripts was processed by PASA, and orfs were predicted by transdecoder.
 ```
-singularity exec -B  /global/scratch/users/skyungyong/Kronos/ pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl -c /usr/local/src/PASApipeline/sample_data/sqlite.confs/alignAssembly.config -r -C -R --CPU 56 --ALIGNERS gmap --TRANSDECODER  -ALT_SPLICE -g /global/scratch/users/skyungyong/Kronos/3.Repeat/Kronos_output_latest/RepeatMasking/Kronos.collapsed.chromosomes.masked.fa -t /global/scratch/users/skyungyong/Kronos/5.Annotations/PASA/transcripts.fasta --trans_gtf /global/scratch/users/skyungyong/Kronos/5.Annotations/Stringtie/stringtie.gtf
+singularity exec pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl -c /usr/local/src/PASApipeline/sample_data/sqlite.confs/alignAssembly.config -r -C -R --CPU 56 --ALIGNERS gmap --TRANSDECODER -ALT_SPLICE -g Kronos.collapsed.chromosomes.masked.fa -t transcripts.fasta --trans_gtf stringtie.gtf
 
 #process assemblies
 TransDecoder.LongOrfs -t sample_mydb_pasa.sqlite.assemblies.fasta
@@ -84,14 +103,17 @@ TransDecoder.Predict -t TransDecoder.LongOrfs -t sample_mydb_pasa.sqlite.assembl
 
 
 ### 2. BRAKER
-
-To run BRAKER, the following evidence was incoporated:
 ```
+inputs:
 all.merged.sorted.bam: filtered transcritpome alignments produced using hisat and samtools
 uniprotkb_38820.fasta: 2,850,097 protein sequences from Poales (TAXID: 38820) downloaded from UniProt
 
+outputs:
+braker.gtf: braker gene models
+braker.aa: protein sequences of braker gene models
 ```
 
+BRAKER was run as below.
 ```
 singularity exec -B $PWD braker3.sif braker.pl --verbosity=3 \
     --genome=Kronos.collapsed.chromosomes.masked.fa \
@@ -107,13 +129,19 @@ python stringtie2utr.py -g braker.gtf -s GeneMark-ETP/rnaseq/stringtie/transcrip
 ```
 
 ### 3. Funannotate
-
-To run BRAKER, the following evidence was incoporated:
 ```
+inputs:
 transcripts.fasta: de novo and genome-guided transcript assemblies from trinity
 all.merged.sorted.bam: filtered transcritpome alignments produced using hisat and samtools
 stringtie.gtf: transcript assemblies from stringtie
+braker.gtf: braker gene models
+braker.aa: protein sequences of braker gene models
+
+outputs:
+Triticum_kronos.filtered.gff3: funannotate gene models
 ```
+
+Funannotate internally trains augustus and snap. 
 
 Augustus and SNAP parameters were pre-trained. Gene models from BRAKER were searched against the IWGSC reference annotation and transcript assemblies from Trinity. Then, genes were selected if they had start and stop codons, having the same length with hits, sequence ideneity ≥ 99.5% and minimum protein lengths of 350. 6,000 genes were selected for Augustus and SNAP, respectively. For Augustus, 5,700 were used as trainning set and 300 for testing. The worflow we followed is identical to the GINGER section. 
 ```
