@@ -26,6 +26,7 @@ deeptools v3.5.5
 samtools v
 interproscan v5.68-100.0
 apllo v2.0.6
+agat v
 ```
 
 ---
@@ -169,20 +170,17 @@ For manual curation, all these datasets need to be loaded into the Apollo Genome
 perl ./Apollo/bin/prepare-refseqs.pl --fasta ${chromosome}.nlr_loci.fa --out .
 
 #load annotations
-cat all_models.recoordinated.gff3 Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.maker_out.gff3
-awk '$3 == "gene" || $3 == "mRNA" || $3 == "exon" || $3 == "CDS" {print}'
-perl ~/Software/Apollo/bin/flatfile-to-json.pl --trackLabel iprscan --type match:iprscan --out . --gff interpro.gff3
- 1811  less 1B.gff3 | awk '$3 == "gene" || $3 == "mRNA" || $3 == "exon" || $3 == "CDS" {print}' > 1B.genes.gff3
- 1812  conda activate agat
- 1813  agat_sp_flag_premature_stop_codons.pl --gff 1B.genes.gff3 --fa 1B.fa --out 1B.genes.fixed.gff3
- 1814  conda deactivate
- 1815  agat_sp_flag_premature_stop_codons.pl --gff 1B.genes.gff3 --fa 1B.fa --out 1B.genes.fixed.gff3
- 1816  perl ~/Software/Apollo/bin/flatfile-to-json.pl --trackLabel final --type mRNA --className mRNA --out . --gff 1B.genes.fixed.gff3
+#first, extract genes in that chromosome
+cat all_models.recoordinated.gff3 Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.maker_out.gff3 | \
+    awk '$1 == ${chromosome} && ($3 == "gene" || $3 == "mRNA" || $3 == "exon" || $3 == "CDS") {print}' > ${chromosome}.genes.gff3
 
+#get rid of models with in-frame stop codon using agat and then load
+agat_sp_flag_premature_stop_codons.pl --gff ${chromosome}.genes.gff3 --fa ${chromosome}.nlr_loci.fa --out ${chromosome}.genes.fixed.gff3
+perl ./Apollo/bin/flatfile-to-json.pl --trackLabel models --type mRNA --className mRNA --out . --gff ${chromosome}.genes.fixed.gff3
 
-perl Apollo/bin/prepare-refseqs.pl --fasta 1A.fa --out .
-for feature in {augustus,snap,maker,KRNv1.0,KRNv2.0,v1Annot}; do perl Apollo/bin/flatfile-to-json.pl --trackLabel ${feature} --type mRNA --className mRNA --out . --gff 1A.gff3; done
+#change interproscan coordinates
 
+perl ./Apollo/bin/flatfile-to-json.pl --trackLabel iprscan --type match:iprscan --out . --gff interpro.gff3
 
 
 ## NLR Prediction in Wheat Genomes
