@@ -183,6 +183,15 @@ perl ./Apollo/bin/flatfile-to-json.pl --trackLabel models --type mRNA --classNam
 perl ./Apollo/bin/flatfile-to-json.pl --trackLabel iprscan --type match:iprscan --out . --gff interpro.gff3
 
 
+1818  perl ~/Software/Apollo/bin/add-bam-track.pl --bam_url 1B.bam --label bam --in ./trackList.json
+ 1819  perl ~/Software/Apollo/bin/add-bw-track.pl --bw_url 1B.bam.bigwig --label bigwig --in ./trackList.json
+ 1820  pwd
+ 1821  perl ~/Software/Apollo/bin/add-bw-track.pl --bw_url 1B.bigwig --label bigwig --in ./trackList.json
+ 1822  ls
+ 1823  perl ~/Software/Apollo/bin/add-bam-track.pl --bam_url 1B.bam --label bam --in ./trackList.json
+ 1824  perl ~/Software/Apollo/bin/add-bw-track.pl --bw_url 1B.bigwig --label bigwig --in ./trackList.json
+
+
 ## NLR Prediction in Wheat Genomes
 
 In order to identify highly variable NLRs, enough coverages of homologous sequences are needed. We will collect them by predicting NLR genes in other published wheat genomes. Let's first train NLR specific prediction parameters. 
