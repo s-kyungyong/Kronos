@@ -26,7 +26,7 @@ deeptools v3.5.5
 samtools v
 interproscan v5.68-100.0
 apllo v2.0.6
-agat v
+agat v0.8.0
 ```
 
 ---
