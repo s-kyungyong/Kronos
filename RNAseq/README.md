@@ -5,33 +5,42 @@
 Quantification
 
 ```
-grep ">" ../Kronos.collapsed.chromosomes.masked.v1.1.fa | cut -d " " -f 1 | cut -d ">" -f 2 > decoys.txt
-gffread -x Kronos.v2.1.transcripts.fa -g ../Kronos.collapsed.chromosomes.masked.v1.1.fa Kronos.v2.1.gff3
-cat Kronos.v2.1.transcripts.fa ../Kronos.collapsed.chromosomes.masked.v1.1.fa > Kronos.gentrome.fa
+#prepare database
+grep ">"Kronos.collapsed.chromosomes.masked.v1.1.fa | cut -d " " -f 1 | cut -d ">" -f 2 > decoys.txt
+gffread -x Kronos.v2.1.transcripts.fa -g Kronos.collapsed.chromosomes.masked.v1.1.fa Kronos.v2.1.gff3
+cat Kronos.v2.1.transcripts.fa Kronos.collapsed.chromosomes.masked.v1.1.fa > Kronos.gentrome.fa
 
-
-#index genome
+#index gentrome
 salmon index -t Kronos.gentrome.fa -d decoys.txt -p 30 -i salmon_index
+```
 
-#map and quantify: IU for unstranded paired-end reads
-#provide gtf to aggregate transcript-level counts to gene-level counts
-
-/global/scratch/projects/vector_kvklab/wheat_RNAseq/ChenJ_all_150bp/
+```
+#map and quantify:
+#for paired-end data:
 
 indir=$1
-outdir=$2
 
 for fq1 in ${indir}/*_1.filtered.fastq; do
   prefix=$(basename "$fq1" | cut -d "_" -f 1) 
-  fq2=$(echo $fq | sed 's/_1/_2/g')
+  fq2=$(echo $fq | sed 's/_1.filtered/_2.filtered/g')
 
-  salmon quant -l IU -1 "$fq1" -2 "$fq2" -p 40 \
+  salmon quant -l A -1 "$fq1" -2 "$fq2" -p 40 \
     -g /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/RNAseqDB-Salmon/Kronos.v2.1.gtf \
     -i /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/RNAseqDB-Salmon/salmon_index/ \
     -o "${prefix}" --validateMappings
 done
 
+#for single_end
+indir=$1
 
+for fq1 in ${indir}/*.filtered.fastq; do
+  prefix=$(basename "$fq1" | cut -d "." -f 1) 
+
+  salmon quant -l A -r "$fq1" -p 40 \
+    -g /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/RNAseqDB-Salmon/Kronos.v2.1.gtf \
+    -i /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/RNAseqDB-Salmon/salmon_index/ \
+    -o "${prefix}" --validateMappings
+done
 ```
 
 
