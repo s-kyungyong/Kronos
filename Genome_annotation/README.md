@@ -369,6 +369,23 @@ Protein-coding Gene Preidction: v2.0 annotation
 The second version of genome annotation integrates publicly available long-read sequencing data for Triticum.
 
 
+while read -r accession; do 
+    sratoolkit.3.1.1-centos_linux64/bin/prefetch ${accession}
+    sratoolkit.3.1.1-centos_linux64/bin/fasterq-dump -O . -e ${Numthreads} ${accession}
+done < v2_rnaseq.list
+
+for fq in *.filtered.fq; do
+  prefix=$(echo $fq | cut -d "." -f 1)
+  minimap2 -I 12G -t 56 -x splice:hq -a -o "${prefix}.sam" /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/Reference/Kronos.collapsed.chromosomes.masked.v1.1.broken.fa Stringtie/"${prefix}.filtered.fq"
+  samtools view -@56 -h -b Stringtie/"${prefix}.sam" | samtools sort -@ 56 > Stringtie/"${prefix}.bam"
+done
+
+#denovo
+stringtie -p 1 -v -o Kronos.stringtie.savio3.gtf --mix ../ShortReads/all.merged.bam ../LongReads/all.sorted.bam
+
+#reference-guided
+#cat filtered.list | while read chr; do stringtie -v -o Kronos.reference-guided.${chr}.gtf -p 4 -G Kronos.v1.0.all.recoordinated.gff3 --mix ../ShortReads/by_chromosome/all.${chr}.filtered.bam ../LongReads/by_chromosome/all.sorted.${chr}.bam; done
+cat all.list | while read chr; do stringtie -v -o Kronos.reference-guided.${chr}.gtf -p 4 -G Kronos.v1.0.all.recoordinated.gff3 --mix ../ShortReads/by_chromosome/all.${chr}.bam ../LongReads/by_chromosome/all.sorted.${chr}.bam; done
 
 # None-coding RNA Preidction: 
 
