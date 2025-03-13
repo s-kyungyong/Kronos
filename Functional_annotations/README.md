@@ -66,6 +66,8 @@ The commandline above will enable the following analyses
 
 ## Annotation Transfer
 
+
+```
 wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/018/294/505/GCF_018294505.1_IWGSC_CS_RefSeq_v2.1/GCF_018294505.1_IWGSC_CS_RefSeq_v2.1_protein.faa.gz
 wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/162/155/GCF_002162155.2_WEW_v2.1/GCF_002162155.2_WEW_v2.1_protein.faa.gz
 wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/003/073/215/GCF_003073215.2_Tu2.1/GCF_003073215.2_Tu2.1_protein.faa.gz
@@ -76,4 +78,5 @@ cat *_protein.faa > NCBI_refseq.aa.fa
 diamond makedb --in NCBI_refseq.aa.fa --db NCBI_refseq.aa
 diamond blastp --masking 0 -d NCBI_refseq.aa --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen --evalue 1-e04 --max-target-seqs 5 --query /global/scratch/projects/vector_kvklab/KS-Kronos_Final_datasets/02.Annotations/00.Proteins/v2.1/Kronos.v2.1.pep.fa --out Kronos.v2.1.against.NCBI.refseq.dmnd.out
 
-
+python transfer_annotations.py
+```
