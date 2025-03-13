@@ -592,6 +592,7 @@ SLURM script: run_blast_CS_749873542_765942456.sh
 ```
 scp "jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/png_SV*.png" /Users/r_upercut/Downloads/test/SV_freg/edits
 scp "jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/genome_paf_synteny/SV/*.svg" /Users/r_upercut/Downloads/test/new_global/SV
+scp "jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/*.png" /Users/r_upercut/Downloads/test/start_end
 
 scp jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/Svevo.v1/3B_61893014-70588348_vs_3B_41893014-90588348.synteny.png /Users/r_upercut/Downloads/test/SV_freg/edits
 (base) [jiaqitang0422@n0184 Chinese_spring]$ python blast_vertical_synteny.py K.CS_812819653_821568195.blast.out 2B_812819653-821568195 2B_792819653-841568195 --hstart 1 --hend 700000000
@@ -750,11 +751,11 @@ if __name__ == "__main__":
     fasta_file = sys.argv[1]
     extract_regions(fasta_file)
 ```
-
+python extract_chr_start_end.py ../Svevo.v1_1B.fna
 Usage: `python extract_chr_start_end.py /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/Chinese_spring_1B.fa 
 ✅ Extracted 1B_start.fa and 1B_end.fa`
 Making blast database: /global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in 1A_end.fa -out 1A_end -dbtype 'nucl'
-
+scp "jiaqitang0422@dtn.brc.berkeley.edu:/global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/*.png" /Users/r_upercut/Downloads/test/start_end
 Blast run slurm job:
 ```
 #!/bin/bash
@@ -765,6 +766,40 @@ Blast run slurm job:
 #SBATCH --qos=minium_htc4_normal
 #SBATCH --time=72:00:00
 /global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/7B_end.fa -db ./CS_start_end/7B_end -outfmt "6 std qlen slen" -out K.CS.7B_end.blast.out -evalue 1e-6 
+#!/bin/bash
+#SBATCH --account=ac_kvkallow
+#SBATCH --partition=savio3
+#SBATCH --nodes=1
+#SBATCH --qos=savio_normal
+#SBATCH --time=72:00:00
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/4B_end.fa -db ../SV_start_end/4B_end -outfmt "6 std qlen slen" -out K.SV.4B_end.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/4B_start.fa -db ../SV_start_end/4B_start -outfmt "6 std qlen slen" -out K.SV.4B_start.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/1B_end.fa -db ../SV_start_end/1B_end -outfmt "6 std qlen slen" -out K.SV.1B_end.blast.out -evalue 1e-6
+
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/1A_end.fa -db ../SV_start_end/1A_end -outfmt "6 std qlen slen" -out K.SV.1A_end.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/1A_start.fa -db ../SV_start_end/1A_start -outfmt "6 std qlen slen" -out K.SV.1A_start.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/1B_end.fa -db ../SV_start_end/1B_end -outfmt "6 std qlen slen" -out K.SV.1B_end.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/1B_start.fa -db ../SV_start_end/1B_start -outfmt "6 std qlen slen" -out K.SV.1B_start.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/2A_end.fa -db ../SV_start_end/2A_end -outfmt "6 std qlen slen" -out K.SV.2A_end.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/2A_start.fa -db ../SV_start_end/2A_start -outfmt "6 std qlen slen" -out K.SV.2A_start.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/2B_end.fa -db ../SV_start_end/2B_end -outfmt "6 std qlen slen" -out K.SV.2B_end.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/2B_start.fa -db ../SV_start_end/2B_start -outfmt "6 std qlen slen" -out K.SV.2B_start.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/3A_end.fa -db ../SV_start_end/3A_end -outfmt "6 std qlen slen" -out K.SV.3A_end.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/3A_start.fa -db ../SV_start_end/3A_start -outfmt "6 std qlen slen" -out K.SV.3A_start.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/3B_end.fa -db ../SV_start_end/3B_end -outfmt "6 std qlen slen" -out K.SV.3B_end.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/3B_start.fa -db ../SV_start_end/3B_start -outfmt "6 std qlen slen" -out K.SV.3B_start.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/4A_end.fa -db ../SV_start_end/4A_end -outfmt "6 std qlen slen" -out K.SV.4A_end.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/4A_start.fa -db ../SV_start_end/4A_start -outfmt "6 std qlen slen" -out K.SV.4A_start.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/4B_end.fa -db ../SV_start_end/4B_end -outfmt "6 std qlen slen" -out K.SV.4B_end.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/4B_start.fa -db ../SV_start_end/4B_start -outfmt "6 std qlen slen" -out K.SV.4B_start.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/7A_end.fa -db ../SV_start_end/7A_end -outfmt "6 std qlen slen" -out K.SV.7A_end.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/7A_start.fa -db ../SV_start_end/7A_start -outfmt "6 std qlen slen" -out K.SV.7A_start.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/7B_end.fa -db ../SV_start_end/7B_end -outfmt "6 std qlen slen" -out K.SV.7B_end.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/7B_start.fa -db ../SV_start_end/7B_start -outfmt "6 std qlen slen" -out K.SV.7B_start.blast.out -evalue 1e-6
+```
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/7B_end.fa -db ../SV_start_end/7B_end -outfmt "6 std qlen slen" -out K.SV.7B_end.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/7B_start.fa -db ../SV_start_end/7B_start -outfmt "6 std qlen slen" -out K.SV.7B_start.blast.out -evalue 1e-6
+
 ```
 Blast synteny slurm job:
 ```
@@ -777,6 +812,118 @@ Blast synteny slurm job:
 #SBATCH --time=72:00:00
 python synteny_blast.py K.CS.1A_start.blast.out 1A_start 1A_start --alignment_length 10000 --hstart 0 --hend 20000000
 ```
+```
+#!/bin/bash
+#SBATCH --account=ac_kvkallow
+#SBATCH --partition=savio3_htc
+#SBATCH --nodes=1
+#SBATCH --qos=savio_normal
+#SBATCH --time=72:00:00
+#!/bin/bash
+#SBATCH --account=ac_kvkallow
+#SBATCH --partition=savio3
+#SBATCH --nodes=1
+#SBATCH --qos=savio_normal
+#SBATCH --time=72:00:00
+python synteny_blast.py K.SV.4B_start.blast.out 4B_start LT934118.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.SV.4B_end.blast.out 4B_end LT934118.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.SV.1B_end.blast.out 1B_end LT934112.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+
+python hit_rename_synteny_blast.py K.SV.1A_start.blast.out 1A_start LT934111.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+
+python hit_rename_synteny_blast.py K.SV.1A_end.blast.out 1A_end LT934111.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.1B_start.blast.out 1B_start LT934112.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.1B_end.blast.out 1B_end LT934112.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.2A_start.blast.out 2A_start LT934113.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.2A_end.blast.out 2A_end LT934113.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.2B_start.blast.out 2B_start LT934114.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.2B_end.blast.out 2B_end LT934114.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.3A_start.blast.out 3A_start LT934115.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.3A_end.blast.out 3A_end LT934115.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.3B_start.blast.out 3B_start LT934116.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.3B_end.blast.out 3B_end LT934116.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.4A_start.blast.out 4A_start LT934117.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.4A_end.blast.out 4A_end LT934117.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.4B_start.blast.out 4B_start LT934118.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.4B_end.blast.out 4B_end LT934118.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.5A_start.blast.out 5A_start LT934119.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.5A_end.blast.out 5A_end LT934119.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.5B_start.blast.out 5B_start LT934120.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.5B_end.blast.out 5B_end LT934120.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.6A_start.blast.out 6A_start LT934121.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.6A_end.blast.out 6A_end LT934121.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.6B_start.blast.out 6B_start LT934122.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.6B_end.blast.out 6B_end LT934122.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.7A_start.blast.out 7A_start LT934123.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.7A_end.blast.out 7A_end LT934123.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.7B_start.blast.out 7B_start LT934124.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.7B_end.blast.out 7B_end LT934124.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934111.1_end.fa -out 1A_end -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934111.1_start.fa -out 1A_start -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934112.1_end.fa -out 1B_end -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934112.1_start.fa -out 1B_start -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934113.1_end.fa -out 2A_end -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934113.1_start.fa -out 2A_start -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934114.1_end.fa -out 2B_end -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934114.1_start.fa -out 2B_start -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934115.1_end.fa -out 3A_end -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934115.1_start.fa -out 3A_start -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934116.1_end.fa -out 3B_end -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934116.1_start.fa -out 3B_start -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934117.1_end.fa -out 4A_end -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934117.1_start.fa -out 4A_start -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934118.1_end.fa -out 4B_end -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934118.1_start.fa -out 4B_start -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934119.1_end.fa -out 5A_end -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934119.1_start.fa -out 5A_start -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934120.1_end.fa -out 5B_end -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934120.1_start.fa -out 5B_start -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934121.1_end.fa -out 6A_end -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934121.1_start.fa -out 6A_start -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934122.1_end.fa -out 6B_end -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934122.1_start.fa -out 6B_start -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934123.1_end.fa -out 7A_end -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934123.1_start.fa -out 7A_start -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934124.1_end.fa -out 7B_end -dbtype 'nucl'
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/makeblastdb -in LT934124.1_start.fa -out 7B_start -dbtype 'nucl'
+
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/1A_end.fa -db ./CS_start_end/1A_end -outfmt "6 std qlen slen" -out K.CS.1A_end.blast.out -evalue 1e-6 
+#!/bin/bash
+#SBATCH --account=fc_kvkallow
+#SBATCH --partition=savio3_htc
+#SBATCH --nodes=1
+#SBATCH --qos=savio_normal
+#SBATCH --time=72:00:00
+
+python synteny_blast.py K.CS.1A_end.blast.out 1A_end 1A_end --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.1B_end.blast.out 1B_end 1B_end --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.1B_start.blast.out 1B_start 1B_start --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.2A_end.blast.out 2A_end 2A_end --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.2A_start.blast.out 2A_start 2A_start --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.2B_end.blast.out 2B_end 2B_end --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.2B_start.blast.out 2B_start 2B_start --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.3A_end.blast.out 3A_end 3A_end --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.3A_start.blast.out 3A_start 3A_start --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.3B_end.blast.out 3B_end 3B_end --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.3B_start.blast.out 3B_start 3B_start --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.4A_end.blast.out 4A_end 4A_end --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.4A_start.blast.out 4A_start 4A_start --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.4B_end.blast.out 4B_end 4B_end --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.4B_start.blast.out 4B_start 4B_start --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.5A_end.blast.out 5A_end 5A_end --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.5A_start.blast.out 5A_start 5A_start --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.5B_end.blast.out 5B_end 5B_end --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.5B_start.blast.out 5B_start 5B_start --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.6A_end.blast.out 6A_end 6A_end --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.6A_start.blast.out 6A_start 6A_start --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.6B_end.blast.out 6B_end 6B_end --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.6B_start.blast.out 6B_start 6B_start --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.7A_end.blast.out 7A_end 7A_end --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.7A_start.blast.out 7A_start 7A_start --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.7B_end.blast.out 7B_end 7B_end --alignment_length 10000 --hstart 0 --hend 20000000
+python synteny_blast.py K.CS.7B_start.blast.out 7B_start 7B_start --alignment_length 10000 --hstart 0 --hend 20000000
+
 
 
 
