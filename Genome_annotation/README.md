@@ -370,7 +370,8 @@ Protein-coding Gene Preidction: v2.0 annotation
 sratoolkit v3.1.1
 minimap v2.28-r1209
 samtools v1.20
-
+stringtie v2.1.7
+isoquant v3.5.2
 ```
 
 The second version of genome annotation integrates publicly available long-read sequencing data for Triticum.
