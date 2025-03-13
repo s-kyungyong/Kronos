@@ -21,6 +21,11 @@ hmmsearch v3.4
 nlr-annotator v2.1b
 maker v3.01.03
 seqkit v
+star v2.7.11b
+deeptools v3.5.5
+samtools v
+interproscan v5.68-100.0
+apllo v2.0.6
 ```
 
 ---
@@ -32,13 +37,13 @@ seqkit v
 The Kronos genome is large, and for targeted manual curation, NLR loci need to be first extracted from the genome. NLRs were loosely defined as NB-ARC domain-containing genes or proteins. Genomic regions containing NB-ARC domains were identified and extracted with 15,000 flanking sequences from both ends. You may choose to increase the flanking size, as a small number of genes could not be fully contained in this region.
 
 ```
-# Identify open reading frames (ORFs)
+#identify open reading frames (ORFs)
 orfipy --procs 56 --bed orfs.bed --pep orfs.aa.fa --max 45000 --ignore-case --partial-3 --partial-5 Kronos.collapsed.chromosomes.masked.v1.1.fa
 
-# Search for NB-ARC domains using HMMER
+#search for NB-ARC domains using HMMER
 hmmsearch --cpu 56 --domE 1e-4 -E 1e-4 --domtblout orfs.against.NBARC.out PF00931.hmm orfs.aa.fa
 
-# Crop genome to NB-ARC-containing loci
+#crop genome to NB-ARC-containing loci
 python crop_genome.py --hmm orfs.aa.fa.against.NBARC.out --genome Kronos.collapsed.chromosomes.masked.v1.1.fa
 ```
 
@@ -47,7 +52,7 @@ We later learned that some divergent NB-ARC domains in Kronos cannot be properly
 ```
 java -jar NLR-Annotator-v2.1b.jar -t 40 -x ./NLR-Annotator/src/mot.txt -y ./NLR-Annotator/src/store.txt -i Kronos.collapsed.chromosomes.masked.v1.1.fa -o NLRannotator.whole-genome.out -g NLRannotator.whole-genome.gff3
 
-# Crop genome to NB-ARC-containing loci
+#crop genome to NB-ARC-containing loci
 python crop_genome.py --nlrannot NLRannotator.whole-genome.gff3 --genome Kronos.collapsed.chromosomes.masked.v1.1.fa
 ```
 
@@ -127,7 +132,7 @@ while read -r read1 read2; do
         --readFilesCommand zcat
 done < reads.list
 
-#merge all bam files
+#filter alignments
 for bam in *.bam; do
         samtools view -F 260 -q 20 -@ 56 -b ${bam} > ${bam}.filtered.bam
 done
@@ -140,19 +145,27 @@ samtools index -@ 56 merged.bam
 bamCoverage -b merged.bam -o output.bigwig --binSize 1 --normalizeUsing None
 ```
 
+Lastly, domain prediction results are also useful. This information was generated as below.
+```
+#identify open reading frames (ORFs)
+orfipy --procs 56 --bed orfs.bed --pep orfs.aa.fa --max 45000 --ignore-case --partial-3 --partial-5 Kronos.collapsed.chromosomes.masked.v1.1.fa
+
+#predict pfam domains
+global/scratch/users/skyungyong/Software/interproscan-5.68-100.0/interproscan.sh \
+    -i orfs.aa.fa \
+    --appl PFAM-37.0 \
+    --disable-precalc \
+    --output-dir ./output \
+    --tempdir ./temp \
+    --cpu 40 \
+```
 
 ### 4. Manual curation
 
 perl Apollo/bin/prepare-refseqs.pl --fasta 1A.fa --out .
 for feature in {augustus,snap,maker,KRNv1.0,KRNv2.0,v1Annot}; do perl Apollo/bin/flatfile-to-json.pl --trackLabel ${feature} --type mRNA --className mRNA --out . --gff 1A.gff3; done
 
-### 5. NLR-Annotator
 
-After the initial curation, we run out first QC. In this step, we ensure that all putative NLR loci are detected and annotated. 
-
-```
-java -jar /global/scratch/users/skyungyong/Software/NLR-Annotator/NLR-Annotator-v2.1b.jar -t 40 -x /global/scratch/users/skyungyong/Software/NLR-Annotator/src/mot.txt -y /global/scratch/users/skyungyong/Software/NLR-Annotator/src/store.txt -i  /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/Kronos.collapsed.chromosomes.masked.v1.1.fa -o NLRannotator.whole-genome.out -g NLRannotator.whole-genome.gff3
-```
 
 ## NLR Prediction in Wheat Genomes
 
