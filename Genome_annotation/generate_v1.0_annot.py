@@ -113,7 +113,8 @@ with open('Name_conversion.list', 'w') as o:
 gdict = {line.split()[0]: line.split()[1] for line in open(description)}
 hq    = { tr2gene[key]: gdict[key] for key in gdict if 'quality=high' in gdict[key] }
 
-print(len(hq))
+tr_counts = {}
+tr_name   = {}
 with open(f'{description}.w_converted_names', 'w') as o2, \
      open('Gene_confidnece.list', 'w') as o4, \
      open('Kronos.v1.0.high.gff3', 'w') as o, \
@@ -141,7 +142,19 @@ with open(f'{description}.w_converted_names', 'w') as o2, \
         elif attr == "mRNA":
             gid = items[-1].split("Parent=")[1].split(';')[0]
             rid = items[-1].split('ID=')[1].split(';')[0]
-            newName = gname[gid]
-            items[-1] = f'ID={newName}.1;Parent={newName}'
+
+            if gid not in tr_counts:
+                tr_counts[gid] = 1
+
+            newName = f'{gname[gid]}.{tr_counts[gid]}'
+            tr_name[rid] = newName
+            tr_counts[gid] += 1
+            items[-1] = f'ID={newName};Parent={gname[gid]}'
             o2.write(f'{gid}\t{rid}\t{newName}\t{gdict[rid]}\n')
+
+        else:
+            rid = items[-1].split("Parent=")[1].split(';')[0]
+            newName = tr_name[rid]
+            items[-1] = f'Parent={newName}'
+
         (o if quality == 'high' else o3).write("\t".join(items) + "\n")
