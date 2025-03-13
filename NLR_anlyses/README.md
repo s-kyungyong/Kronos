@@ -163,7 +163,7 @@ global/scratch/users/skyungyong/Software/interproscan-5.68-100.0/interproscan.sh
 
 ### 4. Manual curation
 
-For manual curation, all these datasets need to be loaded into the Apollo Genome Browser. We conducted annotations for each chromosome. It took about 3 weeks to annotate all loci.
+For manual curation, all these datasets need to be loaded into the Apollo Genome Browser. We conducted annotations for each chromosome. It took about 3 weeks to annotate all loci. After curation, there was a lot of downstream QC and manual examination over multiple iterations.
 
 ```
 #create reference sequence
