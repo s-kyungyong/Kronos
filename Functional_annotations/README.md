@@ -31,22 +31,34 @@ SMART annotation: Skip SMART annotations
 
 Domain annotations are from InterProScan. 
 ```
-nohup docker run --rm \
-    -v /Users/s.kyungyong/Desktop/Software/interproscan-5.68-100.0/data:/opt/interproscan/data \
-    -v $PWD/output:/output \
-    -v $PWD:/workspace \
-    -v $PWD/temp:/temp \
-    --memory=300g \
-    --memory-swap=300g \
-    --shm-size=128g \
-    --cpus=0.0 \
-    interpro/interproscan:5.68-100.0 \
-    --input /workspace/Kronos.v2.1.pep.fa \
+/global/scratch/users/skyungyong/Software/interproscan-5.68-100.0/interproscan.sh
+    --inputKronos.v2.1.pep.fa \
     --disable-precalc \
     --output-dir /output \
     --tempdir /temp \
-    --cpu 48 \
+    --cpu 40 \
     --goterms \
     --pathways \
-    --appl FunFam-4.3.0,SFLD-4,Gene3D-4.3.0,SUPERFAMILY-1.75,SMART-9.0,CDD-3.20,PIRSR-2023_05,Pfam-37.0,PIRSF-3.10,NCBIfam-14.0 &
+```
+
+The commandline above will enable the following analyses
+```
+                       FunFam (4.3.0) : Prediction of functional annotations for novel, uncharacterized sequences.
+                         SFLD (4) : SFLD is a database of protein families based on hidden Markov models (HMMs).
+                      PANTHER (18.0) : The PANTHER (Protein ANalysis THrough Evolutionary Relationships) Classification System is a unique resource that classifies genes by their functions, using published scientific experimental evidence and evolutionary relationships to predict function even in the absence of direct experimental evidence.
+                       Gene3D (4.3.0) : Structural assignment for whole genes and genomes using the CATH domain structure database.
+                        Hamap (2023_05) : High-quality Automated and Manual Annotation of Microbial Proteomes.
+                       PRINTS (42.0) : A compendium of protein fingerprints - a fingerprint is a group of conserved motifs used to characterise a protein family.
+              ProSiteProfiles (2023_05) : PROSITE consists of documentation entries describing protein domains, families and functional sites as well as associated patterns and profiles to identify them.
+                        Coils (2.2.1) : Prediction of coiled coil regions in proteins.
+                  SUPERFAMILY (1.75) : SUPERFAMILY is a database of structural and functional annotations for all proteins and genomes.
+                        SMART (9.0) : SMART allows the identification and analysis of domain architectures based on hidden Markov models (HMMs).
+                          CDD (3.20) : CDD predicts protein domains and families based on a collection of well-annotated multiple sequence alignment models.
+                        PIRSR (2023_05) : PIRSR is a database of protein families based on hidden Markov models (HMMs) and Site Rules.
+              ProSitePatterns (2023_05) : PROSITE consists of documentation entries describing protein domains, families and functional sites as well as associated patterns and profiles to identify them.
+                      AntiFam (7.0) : AntiFam is a resource of profile-HMMs designed to identify spurious protein predictions.
+                         Pfam (37.0) : A large collection of protein families, each represented by multiple sequence alignments and hidden Markov models (HMMs).
+                   MobiDBLite (2.0) : Prediction of intrinsically disordered regions in proteins.
+                        PIRSF (3.10) : The PIRSF concept is used as a guiding principle to provide comprehensive and non-overlapping clustering of UniProtKB sequences into a hierarchical order to reflect their evolutionary relationships.
+                      NCBIfam (14.0) : NCBIfam is a collection of protein families based on Hidden Markov Models (HMMs).
 ```
