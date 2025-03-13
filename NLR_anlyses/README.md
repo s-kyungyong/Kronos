@@ -178,18 +178,18 @@ cat all_models.recoordinated.gff3 Kronos.collapsed.chromosomes.masked.v1.1.fa.NL
 agat_sp_flag_premature_stop_codons.pl --gff ${chromosome}.genes.gff3 --fa ${chromosome}.nlr_loci.fa --out ${chromosome}.genes.fixed.gff3
 perl ./Apollo/bin/flatfile-to-json.pl --trackLabel models --type mRNA --className mRNA --out . --gff ${chromosome}.genes.fixed.gff3
 
-#change interproscan coordinates
+#change and load interproscan coordinates
+python recoordinate_ipr.py orfs.aa.fa.gff3 ${chromosome}.nlr_loci.fa ${chromosome} > ${chromosome}.ipr.gff3
+perl ./Apollo/bin/flatfile-to-json.pl --trackLabel iprscan --type match:iprscan --out . --gff ${chromosome}.ipr.gff3
 
-perl ./Apollo/bin/flatfile-to-json.pl --trackLabel iprscan --type match:iprscan --out . --gff interpro.gff3
+#load transcriptome data
+perl ./Apollo/bin/add-bam-track.pl --bam_url ${chromosome}.bam --label bam --in ./trackList.json
+perl ./Apollo/bin/add-bw-track.pl --bw_url ${chromosome}.bam.bigwig --label bigwig --in ./trackList.json
 
+#run apollo
+./Apollo/bin/apollo run-local 7070
+```
 
-1818  perl ~/Software/Apollo/bin/add-bam-track.pl --bam_url 1B.bam --label bam --in ./trackList.json
- 1819  perl ~/Software/Apollo/bin/add-bw-track.pl --bw_url 1B.bam.bigwig --label bigwig --in ./trackList.json
- 1820  pwd
- 1821  perl ~/Software/Apollo/bin/add-bw-track.pl --bw_url 1B.bigwig --label bigwig --in ./trackList.json
- 1822  ls
- 1823  perl ~/Software/Apollo/bin/add-bam-track.pl --bam_url 1B.bam --label bam --in ./trackList.json
- 1824  perl ~/Software/Apollo/bin/add-bw-track.pl --bw_url 1B.bigwig --label bigwig --in ./trackList.json
 
 
 ## NLR Prediction in Wheat Genomes
