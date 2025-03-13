@@ -1,6 +1,5 @@
 import sys
 from Bio import SeqIO
-import re
 
 def process_orf(orf_output):
   #get original genomic coordinates
