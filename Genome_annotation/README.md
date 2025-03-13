@@ -19,7 +19,7 @@ snap v2013_11_29
 ginger v1.0.1
 miniprot v0.12
 evidencemodeler v2.1.0
-blast v
+blast v2.15.0
 ```
 
 
@@ -366,26 +366,67 @@ python generate_v1.0_annot.py
 
 Protein-coding Gene Preidction: v2.0 annotation
 
+```
+sratoolkit v3.1.1
+minimap v2.28-r1209
+samtools v1.20
+
+```
+
 The second version of genome annotation integrates publicly available long-read sequencing data for Triticum.
 
+### 1. Long-read Transcriptome Data Download
 
+We donwloaded the long-read RNA-seq data from the NCBI. The list can be found in **v2_rnaseq.list**. 
+```
 while read -r accession; do 
     sratoolkit.3.1.1-centos_linux64/bin/prefetch ${accession}
     sratoolkit.3.1.1-centos_linux64/bin/fasterq-dump -O . -e ${Numthreads} ${accession}
 done < v2_rnaseq.list
+```
 
-for fq in *.filtered.fq; do
+### 2. Alignment
+
+These long-reads were aligned to the genome.
+```
+for fq in *.fq; do
   prefix=$(echo $fq | cut -d "." -f 1)
-  minimap2 -I 12G -t 56 -x splice:hq -a -o "${prefix}.sam" /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/Reference/Kronos.collapsed.chromosomes.masked.v1.1.broken.fa Stringtie/"${prefix}.filtered.fq"
-  samtools view -@56 -h -b Stringtie/"${prefix}.sam" | samtools sort -@ 56 > Stringtie/"${prefix}.bam"
+  minimap2 -I 12G -t 56 -x splice:hq -a -o "${prefix}.sam" Kronos.collapsed.chromosomes.masked.v1.1.broken.fa ${fq}
+  samtools view -@56 -h -b "${prefix}.sam" | samtools sort -@ 56 > "${prefix}.bam"
 done
 
-#denovo
-stringtie -p 1 -v -o Kronos.stringtie.savio3.gtf --mix ../ShortReads/all.merged.bam ../LongReads/all.sorted.bam
+#merge all bam files
+samtools merge -@56 -h ERR11193282.bam all.long-read.merged.bam *.bam
+samtools index -@56 all.long-read.merged.bam
 
-#reference-guided
-#cat filtered.list | while read chr; do stringtie -v -o Kronos.reference-guided.${chr}.gtf -p 4 -G Kronos.v1.0.all.recoordinated.gff3 --mix ../ShortReads/by_chromosome/all.${chr}.filtered.bam ../LongReads/by_chromosome/all.sorted.${chr}.bam; done
-cat all.list | while read chr; do stringtie -v -o Kronos.reference-guided.${chr}.gtf -p 4 -G Kronos.v1.0.all.recoordinated.gff3 --mix ../ShortReads/by_chromosome/all.${chr}.bam ../LongReads/by_chromosome/all.sorted.${chr}.bam; done
+#separate for each chromosome
+for chromosome in \
+  1A 1A_296625417 1B 1B_362283996 2A 2A_389606086 2B 2B_416081101 \
+  3A 3A_354343362 3B 3B_427883679 4A 4A_376933649 4B 4B_351648618 \
+  5A 5A_305547233 5B 5B_360298581 6A 6A_294206980 6B 6B_365632995 \
+  7A 7A_370147894 7B 7B_378890030 Un; do
+  samtools view -@56 -h -b all.long-read.merged.bam $chromosome > all.long-read.merged.${chromosome}.bam
+done
+```
+
+### 3. Assembly
+
+Transcripts were then assemblied, using stringtie and isoquant. The short-read transcriptome alignments obtained during the first version of annotation was included to enhance splicing site detection.
+```
+#de novo assembly using stringtie
+stringtie -p 4 -v -o Kronos.${chromosome}.stringtie.denovo.gtf --mix all.short-read.merged.${chromosome}.bam all.long-read.merged.${chromosome}.bam
+
+#reference-annotation guided using stringtie
+stringtie -p -4 -o Kronos.${chromosome}.stringtie.guided.gtf -p 4 -G Kronos.v1.0.all.gff3 --mix all.short-read.merged.${chromosome}.bam all.long-read.merged.${chromosome}.bam
+
+#assemblies using isoquant
+isoquant.py --threads 56 --reference Kronos.collapsed.chromosomes.masked.v1.1.broken.fa --illumina_bam all.short-read.merged.bam --output Isoquant_Kronos --data_type pacbio_ccs --bam $bam
+```
+
+### 4. Updating Annotations
+
+
+
 
 # None-coding RNA Preidction: 
 
