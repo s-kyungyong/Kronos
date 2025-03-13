@@ -362,3 +362,46 @@ blastp -query Kronos.EVM.pasa..pep.fa -num_threads 56 -evalue 1e-10 -max_target_
 python generate_v1.0_annot.py
 ```
 
+
+
+# None-coding RNA Preidction: 
+
+```
+cmscan v1.1.5
+```
+
+
+## RFAM search
+
+
+```
+#download the databases: rfam v15.0
+wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz
+gunzip Rfam.cm.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.clanin
+cmpress Rfam.cm
+
+#preparezvalues for each chromosome
+cat zvalue.list
+1A 1200.879162
+1B 1417.658372
+2A 1591.626378
+2B 1657.049066
+3A 1518.249256
+3B 1728.269574
+4A 1535.707034
+4B 1399.361912
+5A 1440.551718
+5B 1462.269252
+6A 1248.596746
+6B 1467.16489
+7A 1506.943932
+7B 1532.01879
+Un 421.039088
+
+#for each chromosome
+while read -r chromosome zvalue; do
+  cmscan -Z ${zvalue} --cut_ga --rfam --nohmmonly --tblout ${chromosome}.Rfam.tblout --fmt 2 --cpu 56 --clanin Rfam.clanin Rfam.cm Kronos.v1.1.${chromosome}.fa
+done < seqLengths.list
+
+./tRNAscan-SE_installed/bin/tRNAscan-SE -E -o tRNAscan-SE.out -f tRNAscan-SE.ss -s tRNAscan-SE.iso -m tRNAscan-SE.stats -c ./tRNAscan-SE_installed/bin/tRNAscan-SE.conf ../Final/Kronos.collapsed.chromosomes.v1.1.fa
