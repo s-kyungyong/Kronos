@@ -31,7 +31,7 @@ SMART annotation: Skip SMART annotations
 
 Domain annotations are from InterProScan. 
 ```
-/global/scratch/users/skyungyong/Software/interproscan-5.68-100.0/interproscan.sh
+/global/scratch/users/skyungyong/Software/interproscan-5.68-100.0/interproscan.sh \
     -i Kronos.v2.1.pep.fa \
     --disable-precalc \
     --output-dir /output \
