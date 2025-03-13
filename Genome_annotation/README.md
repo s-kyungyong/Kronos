@@ -19,6 +19,7 @@ snap v2013_11_29
 ginger v1.0.1
 miniprot v0.12
 evidencemodeler v2.1.0
+blast v
 ```
 
 
@@ -312,7 +313,6 @@ TRANSCRIPT               pasa  8              #pasa transcript assemblies
 
 ### 7. PASA
 ```
-
 Inputs:
 Kronos.EVM.gff3: evidencemodeler gene models
 
@@ -327,22 +327,38 @@ singularity exec pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PAS
 ```
 
 ### 8. Gene Model Selection
+```
+Inputs:
+Kronos.EVM.pasa.gff3: evidencemodeler gene models updated by pasa
+pasa.transdecoder.pep.complete.fa: pasa transcript assemblies translated with transdecoder. These all have start and stop codons. 
 
+protein databases:
+Aegilops_tauschii.Aet_v4.0.pep.all.fa
+Hordeum_vulgare.MorexV3_pseudomolecules_assembly.pep.all.fa
+Triticum_aestivum.IWGSC.pep.all.fa
+Triticum_urartu.IGDB.pep.all.fa
+Avena_sativa_ot3098.Oat_OT3098_v2.pep.all.fa                    
+Hordeum_vulgare_goldenpromise.GPv1.pep.all.fa
+Triticum_dicoccoides.WEWSeq_v.1.0.pep.all.fa  all.prot.evidence.fa
+Avena_sativa_sang.Asativa_sang.v1.1.pep.all.fa
+Lolium_perenne.MPB_Lper_Kyuss_1697.pep.all.fa
+Triticum_spelta.PGSBv2.0.pep.all.fa
+Brachypodium_distachyon.Brachypodium_distachyon_v3.0.pep.all.fa
+Secale_cereale.Rye_Lo7_2018_v1p1p1.pep.all.fa
+Triticum_turgidum.Svevo.v1.pep.all.fa
 
-blastp -query Kronos.v1.1.coordinate_fixed.pasa_updated.manual_fix.all_final.pep.fa -num_threads 56 -evalue 1e-10 -max_target_seqs 10 -max_hsps 1 -outfmt "6 std qlen slen" -out Kronos.v1.1.against.all.all_prot.max10 -db database/all_prot #pasa.orf #all_prot
+Outputs:
+Kronos.EVM.pasa.gff3: evidencemodeler gene models updated by pasa
+```
+Lastly, high-confidence genes were selected based on the evidence. 
 
+```
+#search against the protein databases
+blastp -query Kronos.EVM.pasa..pep.fa -num_threads 56 -evalue 1e-10 -max_target_seqs 10 -max_hsps 1 -outfmt "6 std qlen slen" -out Kronos.v1.0.against.all.all_prot.max10 -db all_prot 
+blastp -query Kronos.EVM.pasa..pep.fa -num_threads 56 -evalue 1e-10 -max_target_seqs 10 -max_hsps 1 -outfmt "6 std qlen slen" -out Kronos.v1.0.against.all.pasa_orf.max10 -db pasa_orf
 
+#create version 1 annotations
+#the input gff has to be correctly sorted first
+python generate_v1.0_annot.py
+```
 
-(base) [skyungyong@ln002 MAKER]$ cd transcripts/
-(base) [skyungyong@ln002 transcripts]$ ls
-all.est.fasta  sample_mydb_pasa.sqlite.assemblies.fasta  stringtie.fasta
-(base) [skyungyong@ln002 transcripts]$ cd ..
-(base) [skyungyong@ln002 MAKER]$ ls
-Runs  abinitio  proteins  transcripts
-(base) [skyungyong@ln002 MAKER]$ rm -r transcripts/
-(base) [skyungyong@ln002 MAKER]$ cd proteins/
-(base) [skyungyong@ln002 proteins]$ ls
-Aegilops_tauschii.Aet_v4.0.pep.all.fa                            Hordeum_vulgare.MorexV3_pseudomolecules_assembly.pep.all.fa  Triticum_aestivum.IWGSC.pep.all.fa            Triticum_urartu.IGDB.pep.all.fa
-Avena_sativa_ot3098.Oat_OT3098_v2.pep.all.fa                     Hordeum_vulgare_goldenpromise.GPv1.pep.all.fa                Triticum_dicoccoides.WEWSeq_v.1.0.pep.all.fa  all.prot.evidence.fa
-Avena_sativa_sang.Asativa_sang.v1.1.pep.all.fa                   Lolium_perenne.MPB_Lper_Kyuss_1697.pep.all.fa                Triticum_spelta.PGSBv2.0.pep.all.fa           get_pasa_orfs.py
-Brachypodium_distachyon.Brachypodium_distachyon_v3.0.pep.all.fa  Secale_cereale.Rye_Lo7_2018_v1p1p1.pep.all.fa                Triticum_turgidum.Svevo.v1.pep.all.fa         pasa.transdecoder.pep.complete.fa
