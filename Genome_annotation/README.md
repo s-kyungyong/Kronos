@@ -362,6 +362,12 @@ blastp -query Kronos.EVM.pasa..pep.fa -num_threads 56 -evalue 1e-10 -max_target_
 python generate_v1.0_annot.py
 ```
 
+----
+
+Protein-coding Gene Preidction: v2.0 annotation
+
+The second version of genome annotation integrates publicly available long-read sequencing data for Triticum.
+
 
 
 # None-coding RNA Preidction: 
