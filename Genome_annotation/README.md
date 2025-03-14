@@ -430,6 +430,28 @@ isoquant.py --threads 56 --reference Kronos.collapsed.chromosomes.masked.v1.1.br
 
 # Protein-coding Gene Preidction: v2.1 annotation
 
+In this version, existing genes in the v2.0 annotation that overlap with low-confidence NLRs were discarded. High and medium-confidence NLRs were added instead. 
+```
+#input:
+v2.0 annotations
+nlr annotations
+nlr confidence (high/medium/low)
+
+#generate v2.1 annotation
+generate_v2.1_annot.py
+
+#sort gff
+grep -v '^#' Kronos.v2.1.initial.gff3 | \
+awk 'BEGIN {OFS="\t"} { 
+    if ($3 == "gene") type = 1;
+    else if ($3 == "mRNA") type = 2;
+    else if ($3 == "exon") type = 3;
+    else if ($3 == "CDS") type = 4;
+    else type = 5;
+    print $0, type 
+}' | sort -k1,1 -k4,4n -k10,10n | cut -f1-9 > Kronos.v2.1.gff3  # Sort by chromosome, start, then type order
+
+```
 
 
 # None-coding RNA Preidction: 
