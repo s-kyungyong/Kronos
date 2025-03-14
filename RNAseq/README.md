@@ -1,6 +1,23 @@
 
+fastp v0.24.0
 
 
+Trimming 
+```
+#for paired-end 
+for fq1 in *_1.fastq; do
+  fq2=$(echo $fq1  | sed 's/_1.fastq/_2.fastq/g')
+  out1=$(echo $fq1 | sed 's/fastq/filtered.fastq/g')
+  out2=$(echo $fq2 | sed 's/fastq/filtered.fastq/g')
+  fastp --in1 $fq1 --out1 $out1 --in2 $fq2 --out2 $out2 -q 20 --length_required 50 --detect_adapter_for_pe -w 16
+done
+
+#for single end
+for fq1 in *.fastq; do
+  out1=$(echo $fq1 | sed 's/fastq/filtered.fastq/g')
+  fastp --in1 $fq1 --out1 $out1 -q 20 --length_required 50 -w 16
+done
+```
 
 Quantification
 
