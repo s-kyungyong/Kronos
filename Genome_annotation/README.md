@@ -364,7 +364,7 @@ python generate_v1.0_annot.py
 
 ----
 
-Protein-coding Gene Preidction: v2.0 annotation
+# Protein-coding Gene Preidction: v2.0 annotation
 
 ```
 sratoolkit v3.1.1
@@ -426,6 +426,9 @@ isoquant.py --threads 56 --reference Kronos.collapsed.chromosomes.masked.v1.1.br
 
 ### 4. Updating Annotations
 
+
+
+# Protein-coding Gene Preidction: v2.1 annotation
 
 
 
