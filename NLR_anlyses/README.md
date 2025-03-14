@@ -373,48 +373,58 @@ gene level |   160 |   126 |   42 |  118 |   84 |       0.333 |       0.263 |
 So the NLR-specific parameters are much better!
 
 
+### 3. NLR Prediction in Wheat Genomes
 
-
- 
-Here, our aim is to define highly variable NLR group within Kronos. Other wheat species may have divergent NLRs, whose the close homologs may be missing in Kronos. These genes may not be correctly predicted. This is OK. These genes will be filtered out anyways, as they will not offer any evolutionary information in the Shannon Entropy analyses of Kronos NLRs. 
-
+NLRs were then predicted in wheat genomes. Genomes are listed in **genome.list**. 
+```
+#download genomes
 while IFS=$'\t' read -r col1 prefix url; do
     mkdir -p "$prefix" && cd "$prefix" || continue
     wget "$url"
     cd ..
 done < genome.list
+```
 
+Following the previous workflow, the NLR loci were detected
 ```
 for prefix in */; do
   cd "${prefix}" || exit
   
-  gz=$(ls *.gz)
+  gz=$(ls *.gz) #some genomes are compressed differently. Change accordingly
   genome="${gz%.gz}"
   gunzip "$gz"
 
+  #orf prediction and hmmsearch
   orfipy --procs 20 --bed orfs.bed --pep orfs.aa.fa --max 45000 --ignore-case --partial-3 --partial-5 "${genome}"
-
   hmmsearch --cpu 20 --domE 1e-4 -E 1e-4 --domtblout orfs.against.NBARC.out \
-      /global/scratch/users/skyungyong/Kronos/NLR_annotations/Pan-NLRome/PF00931.hmm "${genome}_out/orfs.aa.fa"
+              PF00931.hmm "${genome}_out/orfs.aa.fa"
 
-  java -jar /global/scratch/users/skyungyong/Software/NLR-Annotator/NLR-Annotator-v2.1b.jar \
-      -t 20 -x /global/scratch/users/skyungyong/Software/NLR-Annotator/src/mot.txt \
-      -y /global/scratch/users/skyungyong/Software/NLR-Annotator/src/store.txt \
-      -i "${genome}" -o NLRannotator.whole-genome.out -g NLRannotator.whole-genome.gff3
+  #nlr-annotator
+  java -jar ./NLR-Annotator/NLR-Annotator-v2.1b.jar \
+      -t 20 -x ./NLR-Annotator/src/mot.txt \
+      -y ./NLR-Annotator/src/store.txt \
+      -i "${genome}" -o NLRannotator.whole-genome.out \
+      -g NLRannotator.whole-genome.gff3
   done
-  
+
+  #crop genomes 
+  python crop_genome.py --hmm orfs.aa.fa.against.NBARC.out --nlrannot NLRannotator.whole-genome.gff3 --genome Kronos.collapsed.chromosomes.masked.v1.1.fa
+
   cd ..
 done
-
-
-python crop_genome.py --hmm orfs.aa.fa.against.NBARC.out --nlrannot NLRannotator.whole-genome.gff3 --genome Kronos.collapsed.chromosomes.masked.v1.1.fa
 ```
 
 
-Due to some incompatibility between OpenMPI in our computer cluster and MAKER, each contig will be separated into a file and MAKER will run in parallel. 
+Then, gene models were predicted with maker. The evidence and ab initio predictors used is different from the Kronos NLR prediction.
 ```
-#!/bin/bash
+est evidence: transcript assemblies from stringtie that combined short and long-read transcriptome alignments. This was produced in the v2.0 annotation.
+protein evidence: reliably curated Kronos NLRs, cloned functional NLRs, and NLRs from RefPlantNLR
+ab initio prediction: Wheat_NLR, trained above.
+```
 
+For each locus, a separate directory was made to run maker in parallel. We ran > 500 jobs at the same time to speed up this step. This still took over 3 days. 
+```
+#for each genome
 dir=$1
 
 cd "$dir" || exit
@@ -428,30 +438,19 @@ for fa in *.fa; do
   prefix="${fa%.fa}"  # Extract prefix by removing ".fa"
   mkdir -p "$prefix"
   mv "$fa" "$prefix"/
-  cp /global/scratch/users/skyungyong/Kronos/NLR_annotations/Pan-NLRome/Evidence/maker* "$prefix"/
-done
-
-cd ../..
-
- 
-```
-Run MAKER. 
-```
-cd split_genome
-for dir in $(ls -d *); do
-  cd $dir
+  cp /global/scratch/users/skyungyong/Kronos/NLR_annotations/Pan-NLRome/Evidence/maker* "$prefix"/ #copy control files
   maker -RM_off -genome ${dir}.fa 
-  cd ..
 done
 ```
 
-get gff files 
+Once all jobs were finished, gff3 files were collected and genes were extracted. 
+```
+#create gff3 outputs
+ls -d * | parallel -j 40 'gff3_merge -d "{}/{}.maker.output/{}_master_datastore_index.log" -o "{}/{}.gff3" && echo "Processed: {}"'
 
-for dir in $(ls -d *); do 
-    gff3_merge -d ${dir}/${dir}.maker.output/${dir}_master_datastore_index.log -o ${dir}/${dir}.gff3
-    echo "${dir} Finished"
-done
-cat */*.gff3 > Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.maker_out.gff3
+#collect raw outputs into a separate folder
+find split_genome -type f -name "*.gff3" -print0 | xargs -0 mv -t raw_gff/
 
-
-NLR_loci.part_GWHEQUH00000005_814475367-814511264 Finished
+#combine gene annotations into a single gff3 file
+find raw_gff -type f -name "*.gff3" -exec grep -E 'gene|exon|mRNA|CDS' {} + | awk '$3 == "gene" || $3 == "exon" || $3 == "mRNA" || $3 == "CDS"' > NLR_loci.maker.gff3
+```
