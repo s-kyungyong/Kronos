@@ -72,7 +72,7 @@ def build_interval_trees(coordinates):
     return intervals
 
 
-def process_gff3(v2_annot, nlr_annot):
+def process_gff3(v2_annot, nlr_annot, nlr_confidence, output_gff3):
     """
     Process the GFF3 file and identify disqualified CDS entries.
     """
@@ -83,7 +83,7 @@ def process_gff3(v2_annot, nlr_annot):
     nlr_confidence = {}
     to_be_removed = {}
     to_be_added   = {}
-    for line in open('../description.filtered.list', 'r'):
+    for line in open(nlr_confidence, 'r'):
         fields = line.split()
         nlr_confidence[ fields[0] ] = fields[2]
         if fields[2] in ["High", "Medium"]:
@@ -110,7 +110,7 @@ def process_gff3(v2_annot, nlr_annot):
 
     removed = 0
     added   = 0
-    with open('Kronos.v2.1.initial.gff3', 'w') as o:
+    with open(output_gff, 'w') as o:
         for line in open(v2_annot, 'r'):
             fields = line.strip().split()
             fields[1] = "KRNv2.1"
@@ -134,5 +134,7 @@ def process_gff3(v2_annot, nlr_annot):
 if __name__ == "__main__":
 
     v2_annot  = 'Kronos.v2.0.gff3'
-    nlr_annot = 'Kronos_all.NLRs.final.v2.1.gff3'
-    process_gff3(v2_annot, nlr_annot)
+    v21_annot = "Kronos.v2.1.initial.gff3"
+    nlr_confidence = 'Kronos_all.NLRs.final.conf.list'
+    nlr_annot = 'Kronos_all.NLRs.final.gff3'
+    process_gff3(v2_annot, nlr_annot, nlr_confidence, v21_annot)
