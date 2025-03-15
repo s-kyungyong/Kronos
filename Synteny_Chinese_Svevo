@@ -810,21 +810,72 @@ Blast synteny slurm job:
 #SBATCH --nodes=1
 #SBATCH --qos=minium_htc4_normal
 #SBATCH --time=72:00:00
-python synteny_blast.py K.CS.1A_start.blast.out 1A_start 1A_start --alignment_length 10000 --hstart 0 --hend 20000000
-```
-```
+
 #!/bin/bash
 #SBATCH --account=ac_kvkallow
 #SBATCH --partition=savio3_htc
 #SBATCH --nodes=1
 #SBATCH --qos=savio_normal
 #SBATCH --time=72:00:00
+python hit_rename_synteny_blast.py K.SV.4B_start.blast.out 4B_start LT934118.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.4B_end.blast.out 4B_end LT934118.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.5A_end.blast.out 5A_end LT934119.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.5B_end.blast.out 5B_end LT934120.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+
+python hit_rename_synteny_blast.py K.SV.5A_start.blast.out 5A_start LT934119.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.5B_start.blast.out 5B_start LT934120.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/6A_end.fa -db ../SV_start_end/6A_end -outfmt "6 std qlen slen" -out K.SV.6A_end.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/6A_start.fa -db ../SV_start_end/6A_start -outfmt "6 std qlen slen" -out K.SV.6A_start.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/6B_end.fa -db ../SV_start_end/6B_end -outfmt "6 std qlen slen" -out K.SV.6B_end.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/6B_start.fa -db ../SV_start_end/6B_start -outfmt "6 std qlen slen" -out K.SV.6B_start.blast.out -evalue 1e-6
+
+
+python synteny_blast.py K.CS.1A_start.blast.out 1A_start 1A_start --alignment_length 10000 --hstart 0 --hend 20000000
+```
+```
 #!/bin/bash
 #SBATCH --account=ac_kvkallow
 #SBATCH --partition=savio3
 #SBATCH --nodes=1
 #SBATCH --qos=savio_normal
 #SBATCH --time=72:00:00
+
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/5A_start.fa -db ../SV_start_end/5A_start -outfmt "6 std qlen slen" -out K.SV.5A_start.blast.out -evalue 1e-6
+/global/scratch/users/jiaqitang0422/Software/ncbi-blast-2.15.0+/bin/blastn -query /global/scratch/users/jiaqitang0422/Kronos/Chinese_spring/start_end/5B_start.fa -db ../SV_start_end/5B_start -outfmt "6 std qlen slen" -out K.SV.5B_start.blast.out -evalue 1e-6
+
+#!/bin/bash
+#SBATCH --account=ac_kvkallow
+#SBATCH --partition=savio3
+#SBATCH --nodes=1
+#SBATCH --qos=savio_normal
+#SBATCH --time=72:00:00
+python hit_rename_synteny_blast.py K.SV.1A_end.blast.out 1A_end LT934111.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.1B_start.blast.out 1B_start LT934112.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.1B_end.blast.out 1B_end LT934112.1_end --alignment_length 12000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.2A_start.blast.out 2A_start LT934113.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.2A_end.blast.out 2A_end LT934113.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.2B_start.blast.out 2B_start LT934114.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.2B_end.blast.out 2B_end LT934114.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.3A_start.blast.out 3A_start LT934115.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.3A_end.blast.out 3A_end LT934115.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.3B_start.blast.out 3B_start LT934116.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.3B_end.blast.out 3B_end LT934116.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.4A_start.blast.out 4A_start LT934117.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.4A_end.blast.out 4A_end LT934117.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.5A_start.blast.out 5A_start LT934119.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.5A_end.blast.out 5A_end LT934119.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.5B_start.blast.out 5B_start LT934120.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.5B_end.blast.out 5B_end LT934120.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.6A_start.blast.out 6A_start LT934121.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.6A_end.blast.out 6A_end LT934121.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.6B_start.blast.out 6B_start LT934122.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.6B_end.blast.out 6B_end LT934122.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.7A_start.blast.out 7A_start LT934123.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.7A_end.blast.out 7A_end LT934123.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.7B_start.blast.out 7B_start LT934124.1_start --alignment_length 10000 --hstart 0 --hend 20000000
+python hit_rename_synteny_blast.py K.SV.7B_end.blast.out 7B_end LT934124.1_end --alignment_length 10000 --hstart 0 --hend 20000000
+
+
 python synteny_blast.py K.SV.4B_start.blast.out 4B_start LT934118.1_start --alignment_length 10000 --hstart 0 --hend 20000000
 python synteny_blast.py K.SV.4B_end.blast.out 4B_end LT934118.1_end --alignment_length 10000 --hstart 0 --hend 20000000
 python synteny_blast.py K.SV.1B_end.blast.out 1B_end LT934112.1_end --alignment_length 10000 --hstart 0 --hend 20000000
