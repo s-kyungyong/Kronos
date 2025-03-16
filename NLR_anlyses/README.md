@@ -190,24 +190,33 @@ perl ./Apollo/bin/add-bw-track.pl --bw_url ${chromosome}.bam.bigwig --label bigw
 ./Apollo/bin/apollo run-local 7070
 ```
 
+
+
+```
 seqkit grep -f <(awk '$2 == "High" || $2 == "Medium" {print $1".1"}' NLR_confidence.list) Kronos.NLRs.fa > Kronos.NLRs.reliable.fa
 [INFO] 1089 patterns loaded from file
  hmmsearch --domtblout Kronos.NLRs.reliable.against.PF00931.hmm.out --cpu 56 -E 1e-04 --domE 1e-04 PF00931.hmm Kronos.NLRs.reliable.fa
 
- awk '{print $1}' Kronos.NLRs.reliable.against.PF00931.hmm.out | grep 'KRN' | sort -u | wc -l
+awk '{print $1}' Kronos.NLRs.reliable.against.PF00931.hmm.out | grep 'KRN' | sort -u | wc -l
 1067
 
 hmmalign --trim -o Kronos.NLRs.reliable.hmmalign.sto PF00931.hmm Kronos.NLRs.reliable.fa
-mafft --maxiterate 1000 --globalpair --thread 56 Kronos.NLRs.reliable.hmmalign.fa > Kronos.NLRs.reliable.hmmalign.mafft.msa.fa
 esl-reformat fasta Kronos.NLRs.reliable.hmmalign.sto > Kronos.NLRs.reliable.hmmalign.fa
-trimal -gt 0.4 -in Kronos.NLRs.reliable.hmmalign.mafft.msa.fa -out  Kronos.NLRs.reliable.hmmalign.mafft.msa.filtered.fa #245 positions left
+cd-hit -T 2 -c 0.8 -i Kronos.NLRs.reliable.hmmalign.fa -o Kronos.NLRs.reliable.hmmalign.cd-hit.filtered.fa
+mafft --maxiterate 1000 --globalpair --thread 56 Kronos.NLRs.reliable.hmmalign.cd-hit.filtered.fa > Kronos.NLRs.reliable.hmmalign.cd-hit.filtered.mafft.msa.fa
+trimal -gt 0.3 -in Kronos.NLRs.reliable.hmmalign.cd-hit.filtered.mafft.msa.fa -out Kronos.NLRs.reliable.hmmalign.cd-hit.filtered.mafft.msa.filtered.fa #246 positions left
 
- python remove_gappy_seqs.py Kronos.NLRs.reliable.hmmalign.mafft.msa.filtered.fa Kronos.NLRs.reliable.hmmalign.mafft.msa.filtered.clean.fa
-38 gappy sequences removed
-hmmbuild -n Kronos_NBARC Kronos_NBARC.hmm Kronos.NLRs.reliable.hmmalign.mafft.msa.filtered.clean.fa
+python remove_gappy_seqs.py Kronos.NLRs.reliable.hmmalign.cd-hit.filtered.mafft.msa.filtered.fa Kronos.NLRs.reliable.hmmalign.cd-hit.filtered.mafft.msa.filtered.clean.fa
+22 gappy sequences removed
+hmmbuild -n Kronos_NBARC Kronos_NBARC.hmm Kronos.NLRs.reliable.hmmalign.cd-hit.filtered.mafft.msa.filtered.clean.fa
 
 hmmsearch --domtblout Kronos.NLRs.reliable.against.Kronos_NBARC.hmm.out --cpu 56 -E 1e-04 --domE 1e-04 Kronos_NBARC.hmm Kronos.NLRs.reliable.fa
+awk '{print $1}' Kronos.NLRs.reliable.against.Kronos_NBARC.hmm.out | grep 'KRN' | sort -u | wc -l
+1077
 
+#there are small number of very divergent NBARC domain that cannot be detected using this method. We will likeley skip these
+
+```
 
 
 ## NLR Prediction in Wheat Genomes
@@ -480,7 +489,9 @@ for dir in */; do
         pushd "$dir" || continue
         if [[ -f "NLR_loci.maker.gff3" && -f "NLR_loci.fa" ]]; then
             awk -F ':' '{print $2}' NLR_loci.maker.gff3 > cleaned_NLR_loci.maker.gff3
-            gffread -x NLR_loci.maker.cds.fa -y NLR_loci.maker.pep.fa -g NLR_loci.fa cleaned_NLR_loci.maker.gff3
+#            gffread -x NLR_loci.maker.cds.fa -y NLR_loci.maker.pep.fa -g NLR_loci.fa cleaned_NLR_loci.maker.gff3
+#            hmmsearch --domtblout NLR_loci.maker.pep.against.Kronos_NBARC.hmm.out -E 1e-4 --domE 1e-4 --cpu 56 /global/scratch/users/skyungyong/Kronos/NLR_annotations/HMM/Kronos_NBARC.hmm NLR_loci.maker.pep.fa
+            blastp -query NLR_loci.maker.pep.fa -db /global/scratch/users/skyungyong/Kronos/NLR_annotations/HMM/blastdb/Kronos.NLRs.reliable -evalue 1e-4 -max_target_seqs 1 -max_hsps 1 -num_threads 56 -outfmt "6 std qlen slen" -out NLR_loci.maker.pep.against.Kronos_NBARC.blast.out
         else
             echo "Skipping $dir: Required files not found."
         fi
