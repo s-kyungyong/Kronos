@@ -491,7 +491,7 @@ for dir in */; do
             cut -d ":" -f 2- NLR_loci.maker.gff3 > cleaned_NLR_loci.maker.gff3
             gffread -x NLR_loci.maker.cds.fa -y NLR_loci.maker.pep.fa -g NLR_loci.fa cleaned_NLR_loci.maker.gff3
             hmmsearch --domtblout NLR_loci.maker.pep.against.Kronos_NBARC.hmm.out -E 1e-4 --domE 1e-4 --cpu 56 /global/scratch/users/skyungyong/Kronos/NLR_annotations/HMM/Kronos_NBARC.hmm NLR_loci.maker.pep.fa
-            blastp -query NLR_loci.maker.pep.fa -db /global/scratch/users/skyungyong/Kronos/NLR_annotations/HMM/blastdb/Kronos.NLRs.reliable -evalue 1e-4 -max_target_seqs 1 -max_hsps 1 -num_threads 56 -outfmt "6 std qlen slen" -out NLR_loci.maker.pep.against.Kronos_NBARC.blast.out
+            diamond blastp -q NLR_loci.maker.pep.fa -d /global/scratch/users/skyungyong/Kronos/NLR_annotations/HMM/blastdb/Kronos.NLRs.reliable.dmnd --evalue 1e-4 --masking 0 --max-target-seqs 1 --max-hsps 1 --threads 56 --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen -o NLR_loci.maker.pep.against.Kronos_NBARC.dmnd.out
         else
             echo "Skipping $dir: Required files not found."
         fi
