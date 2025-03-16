@@ -200,6 +200,15 @@ seqkit grep -f <(awk '$2 == "High" || $2 == "Medium" {print $1".1"}' NLR_confide
 hmmalign --trim -o Kronos.NLRs.reliable.hmmalign.sto PF00931.hmm Kronos.NLRs.reliable.fa
 mafft --maxiterate 1000 --globalpair --thread 56 Kronos.NLRs.reliable.hmmalign.fa > Kronos.NLRs.reliable.hmmalign.mafft.msa.fa
 esl-reformat fasta Kronos.NLRs.reliable.hmmalign.sto > Kronos.NLRs.reliable.hmmalign.fa
+trimal -gt 0.4 -in Kronos.NLRs.reliable.hmmalign.mafft.msa.fa -out  Kronos.NLRs.reliable.hmmalign.mafft.msa.filtered.fa #245 positions left
+
+ python remove_gappy_seqs.py Kronos.NLRs.reliable.hmmalign.mafft.msa.filtered.fa Kronos.NLRs.reliable.hmmalign.mafft.msa.filtered.clean.fa
+38 gappy sequences removed
+hmmbuild -n Kronos_NBARC Kronos_NBARC.hmm Kronos.NLRs.reliable.hmmalign.mafft.msa.filtered.clean.fa
+
+hmmsearch --domtblout Kronos.NLRs.reliable.against.Kronos_NBARC.hmm.out --cpu 56 -E 1e-04 --domE 1e-04 Kronos_NBARC.hmm Kronos.NLRs.reliable.fa
+
+
 
 ## NLR Prediction in Wheat Genomes
 
