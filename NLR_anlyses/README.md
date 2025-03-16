@@ -479,7 +479,7 @@ ls -d * | parallel -j 40 'gff3_merge -d "{}/{}.maker.output/{}_master_datastore_
 find split_genome -type f -name "*.gff3" -print0 | xargs -0 mv -t raw_gff/
 
 #combine gene annotations into a single gff3 file
-find raw_gff -type f -name "*.gff3" -exec grep -E 'gene|exon|mRNA|CDS' {} + | awk '$3 == "gene" || $3 == "exon" || $3 == "mRNA" || $3 == "CDS"' > NLR_loci.maker.gff3
+find raw_gff -type f -name "*.gff3" -exec grep -E 'gene|exon|mRNA|CDS' {} + | awk '$3 == "gene" || $3 == "exon" || $3 == "mRNA" || $3 == "CDS"' | cut -d ":" -f 2- > NLR_loci.maker.gff3
 
 awk -F ':' '{print $2}' NLR_loci.maker.gff3 > cleaned_NLR_loci.maker.gff3
 
@@ -488,9 +488,9 @@ for dir in */; do
     if [[ -d "$dir" ]]; then
         pushd "$dir" || continue
         if [[ -f "NLR_loci.maker.gff3" && -f "NLR_loci.fa" ]]; then
-            awk -F ':' '{print $2}' NLR_loci.maker.gff3 > cleaned_NLR_loci.maker.gff3
-#            gffread -x NLR_loci.maker.cds.fa -y NLR_loci.maker.pep.fa -g NLR_loci.fa cleaned_NLR_loci.maker.gff3
-#            hmmsearch --domtblout NLR_loci.maker.pep.against.Kronos_NBARC.hmm.out -E 1e-4 --domE 1e-4 --cpu 56 /global/scratch/users/skyungyong/Kronos/NLR_annotations/HMM/Kronos_NBARC.hmm NLR_loci.maker.pep.fa
+            cut -d ":" -f 2- NLR_loci.maker.gff3 > cleaned_NLR_loci.maker.gff3
+            gffread -x NLR_loci.maker.cds.fa -y NLR_loci.maker.pep.fa -g NLR_loci.fa cleaned_NLR_loci.maker.gff3
+            hmmsearch --domtblout NLR_loci.maker.pep.against.Kronos_NBARC.hmm.out -E 1e-4 --domE 1e-4 --cpu 56 /global/scratch/users/skyungyong/Kronos/NLR_annotations/HMM/Kronos_NBARC.hmm NLR_loci.maker.pep.fa
             blastp -query NLR_loci.maker.pep.fa -db /global/scratch/users/skyungyong/Kronos/NLR_annotations/HMM/blastdb/Kronos.NLRs.reliable -evalue 1e-4 -max_target_seqs 1 -max_hsps 1 -num_threads 56 -outfmt "6 std qlen slen" -out NLR_loci.maker.pep.against.Kronos_NBARC.blast.out
         else
             echo "Skipping $dir: Required files not found."
