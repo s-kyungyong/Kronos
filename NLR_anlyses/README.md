@@ -190,7 +190,16 @@ perl ./Apollo/bin/add-bw-track.pl --bw_url ${chromosome}.bam.bigwig --label bigw
 ./Apollo/bin/apollo run-local 7070
 ```
 
+seqkit grep -f <(awk '$2 == "High" || $2 == "Medium" {print $1".1"}' NLR_confidence.list) Kronos.NLRs.fa > Kronos.NLRs.reliable.fa
+[INFO] 1089 patterns loaded from file
+ hmmsearch --domtblout Kronos.NLRs.reliable.against.PF00931.hmm.out --cpu 56 -E 1e-04 --domE 1e-04 PF00931.hmm Kronos.NLRs.reliable.fa
 
+ awk '{print $1}' Kronos.NLRs.reliable.against.PF00931.hmm.out | grep 'KRN' | sort -u | wc -l
+1067
+
+hmmalign --trim -o Kronos.NLRs.reliable.hmmalign.sto PF00931.hmm Kronos.NLRs.reliable.fa
+mafft --maxiterate 1000 --globalpair --thread 56 Kronos.NLRs.reliable.hmmalign.fa > Kronos.NLRs.reliable.hmmalign.mafft.msa.fa
+esl-reformat fasta Kronos.NLRs.reliable.hmmalign.sto > Kronos.NLRs.reliable.hmmalign.fa
 
 ## NLR Prediction in Wheat Genomes
 
@@ -453,4 +462,21 @@ find split_genome -type f -name "*.gff3" -print0 | xargs -0 mv -t raw_gff/
 
 #combine gene annotations into a single gff3 file
 find raw_gff -type f -name "*.gff3" -exec grep -E 'gene|exon|mRNA|CDS' {} + | awk '$3 == "gene" || $3 == "exon" || $3 == "mRNA" || $3 == "CDS"' > NLR_loci.maker.gff3
+
+awk -F ':' '{print $2}' NLR_loci.maker.gff3 > cleaned_NLR_loci.maker.gff3
+
+#get protein sequences
+for dir in */; do
+    if [[ -d "$dir" ]]; then
+        pushd "$dir" || continue
+        if [[ -f "NLR_loci.maker.gff3" && -f "NLR_loci.fa" ]]; then
+            awk -F ':' '{print $2}' NLR_loci.maker.gff3 > cleaned_NLR_loci.maker.gff3
+            gffread -x NLR_loci.maker.cds.fa -y NLR_loci.maker.pep.fa -g NLR_loci.fa cleaned_NLR_loci.maker.gff3
+        else
+            echo "Skipping $dir: Required files not found."
+        fi
+        popd
+    fi
+done
+
 ```
