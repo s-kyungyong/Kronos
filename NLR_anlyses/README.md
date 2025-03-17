@@ -400,6 +400,19 @@ gene level |   160 |   126 |   42 |  118 |   84 |       0.333 |       0.263 |
 So the NLR-specific parameters are much better!
 
 
+grep ">"  /global/scratch/projects/vector_kvklab/KS-Kronos_Final_datasets/03.NLRs/04.Ab_initio/Kronos_hc.cds.cd-hit.c_0.9.fa  | cut -d ">" -f 2 | shuf | head -n 700 > selected.hc.list
+gffread --ids selected.hc.list  /global/scratch/projects/vector_kvklab/KS-Kronos_Final_datasets/03.NLRs/04.Ab_initio/828_hc_nlrs.gtf > selected.hc.gff
+awk '$3 != "exon" {print}' selected.hc.gff  > selected.hc.cds.gff
+agat_convert_sp_gff2zff.pl --gff selected.hc.cds.gff  --fasta /global/scratch/projects/vector_kvklab/KS-Makido/Kronos.collapsed.chromosomes.masked.v1.1.folded.fa -o genome.ann
+grep ">" genome.ann  | cut -d ">" -f 2 | while read line; do awk -v seq=$line -v RS
+=">" '$1 == seq {print RS $0; exit}' /global/scratch/projects/vector_kvklab/KS-Kronos_Final_datasets/00.Genomes/99.Genomes/Kronos.collapsed.chromosomes.masked.v1.1.fa; done > genome.dna
+
+fathom -validate genome.ann genome.dna
+fathom -categorize 1000 genome.ann genome.dna
+fathom -export 1000 -plus uni.ann uni.dna
+forge export.ann export.dna
+hmm-assembler.pl Kronos_NLRs . > Wheat_NLR.hmm
+
 ### 3. NLR Prediction in Wheat Genomes
 
 NLRs were then predicted in wheat genomes. Genomes are listed in **genome.list**. 
