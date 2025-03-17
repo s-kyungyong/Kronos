@@ -461,6 +461,15 @@ est evidence: transcript assemblies from stringtie that combined short and long-
 protein evidence: reliably curated Kronos NLRs, cloned functional NLRs, and NLRs from RefPlantNLR
 ab initio prediction: Wheat_NLR, trained above.
 ```
+cat /global/scratch/projects/vector_kvklab/KS-IsoSeq-HiFi/*.fastq > long-read.fq
+
+for fa in *.fasta; do 
+#    orfipy -procs 56 --ignore-case --pep prot.fa ${fa}
+    cd orfipy_${fa}_out
+    hmmsearch --domtblout prot.fa.against.Kronos_NBARC.hmm.out --cpu 56 -E 1E-4 --domE 1e-4 orfipy_${fa}_out /global/scratch/users/skyungyong/Kronos/NLR_annotations/HMM/Kronos_NBARC.hmm prot.fa
+    cd ..
+done 
+
 
 For each locus, a separate directory was made to run maker in parallel. We ran > 500 jobs at the same time to speed up this step. This still took over 3 days. 
 ```
