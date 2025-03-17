@@ -466,11 +466,29 @@ cat /global/scratch/projects/vector_kvklab/KS-IsoSeq-HiFi/*.fastq > long-read.fq
 for fa in *.fasta; do 
 #    orfipy -procs 56 --ignore-case --pep prot.fa ${fa}
     cd orfipy_${fa}_out
-    hmmsearch --domtblout prot.fa.against.Kronos_NBARC.hmm.out --cpu 56 -E 1E-4 --domE 1e-4 orfipy_${fa}_out /global/scratch/users/skyungyong/Kronos/NLR_annotations/HMM/Kronos_NBARC.hmm prot.fa
+#    hmmsearch --domtblout prot.fa.against.Kronos_NBARC.hmm.out --cpu 56 -E 1E-4 --domE 1e-4 orfipy_${fa}_out Kronos_NBARC.hmm prot.fa
+#    seqkit grep -f <(awk '!/^#/ {print $1}' prot.fa.against.Kronos_NBARC.hmm.out | sort -u) prot.fa > hits.fasta
+    cd-hit -c 1 -T 40 -i hits.fasta -o hits.reduced.fasta
     cd ..
 done 
 
+ cat *.fasta_out/hits.reduced.fasta > all_hits/hits.reduced.combined.fa
+ cd-hit -c 1.0 -M 6000000 -T 40 -i hits.reduced.combined.fa -o hits.reduced.combined.reduced.fa
+ seqkit grep -f <( grep ">" hits.reduced.combined.reduced.fa | cut -d "_" -f 1 | sort -u) ../*.fasta > hits.reduced.combined.reduced.est.fa
 
+ grep ">" hits.reduced.combined.reduced.fa | cut -d "_" -f 1 | sort -u | sed 's/>//g' > hit_ids.txt
+awk -F"[_\\.]" '{gsub(/^>/, "", $1); print $1"."$2 > "hit_ids_"$1".txt"}' hit_ids.txt
+
+
+
+ for fa in ../*RR*.fasta; do
+    prefix=$(basename "$fa" .fasta)
+    if [ -f "hit_ids_${prefix}.txt" ]; then
+        seqkit grep -f "hit_ids_${prefix}.txt" "$fa" >> hits.reduced.combined.reduced.est.fa
+    fi
+done
+
+ 
 For each locus, a separate directory was made to run maker in parallel. We ran > 500 jobs at the same time to speed up this step. This still took over 3 days. 
 ```
 #for each genome
