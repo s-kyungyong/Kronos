@@ -506,7 +506,7 @@ for fa in *.fa; do
   mkdir -p "$prefix"
   mv "$fa" "$prefix"/
   cp /global/scratch/users/skyungyong/Kronos/NLR_annotations/Pan-NLRome/Evidence/maker* "$prefix"/ #copy control files
-  maker -RM_off -genome ${dir}.fa 
+#  maker -RM_off -genome ${dir}.fa 
 done
 ```
 
