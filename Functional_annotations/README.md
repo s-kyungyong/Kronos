@@ -29,16 +29,23 @@ SMART annotation: Skip SMART annotations
 
 ## InterProScan
 
-Domain annotations are from InterProScan. 
+Domain annotations are from InterProScan. Due to memory issues, each database was searched and then all outputs were concatnated. 
 ```
-/global/scratch/users/skyungyong/Software/interproscan-5.68-100.0/interproscan.sh \
-    -i Kronos.v2.1.pep.fa \
-    --disable-precalc \
-    --output-dir /output \
-    --tempdir /temp \
-    --cpu 40 \
-    --goterms \
-    --pathways \
+DATABASES="FunFam-4.3.0 SFLD-4 PANTHER-18.0 Gene3D-4.3.0 Hamap-2023_05 PRINTS-42.0 ProSiteProfiles-2023_05 Coils-2.2.1 SUPERFAMILY-1.75 SMART-9.0 CDD-3.20 PIRSR-2023_05 ProSitePatterns-2023_05 AntiFam-7.0 Pfam-37.0 MobiDBLite-2.0 PIRSF-3.10 NCBIfam-14.0"
+
+for db in $DATABASES; do
+    prefix=$(echo $db | cut -d "-" -f 1)
+    mkdir -p $prefix  # Create directory if it doesn't exist
+
+    /global/scratch/users/skyungyong/Software/interproscan-5.68-100.0/interproscan.sh \
+        -i Kronos.v2.1.pep.fa \
+        --disable-precalc \
+        --output-dir $prefix \
+        --cpu 16 \
+        --goterms \
+        --pathways \
+        --appl $db  # Run only the specific database
+done
 ```
 
 The commandline above will enable the following analyses
