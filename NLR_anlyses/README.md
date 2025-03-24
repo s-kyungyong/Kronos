@@ -212,11 +212,32 @@ hmmbuild -n Kronos_NBARC Kronos_NBARC.hmm Kronos.NLRs.reliable.hmmalign.cd-hit.f
 
 hmmsearch --domtblout Kronos.NLRs.reliable.against.Kronos_NBARC.hmm.out --cpu 56 -E 1e-04 --domE 1e-04 Kronos_NBARC.hmm Kronos.NLRs.reliable.fa
 awk '{print $1}' Kronos.NLRs.reliable.against.Kronos_NBARC.hmm.out | grep 'KRN' | sort -u | wc -l
-1077
+1077 
 
 #there are small number of very divergent NBARC domain that cannot be detected using this method. We will likeley skip these
 
 ```
+
+Phylogeny:
+hmmsearch --domE 1e-4 -E 1e-4 --domtblout Kronos_and_known_NLRs.against.Kronos_NBARC.hmm.out --cpu 40 ../NLR_annotations/HMM/Kronos_NBARC.hmm Kronos_and_known_NLRs.fa
+hmmalign --trim -o Kronos_and_known_NLRs.hmmalign.sto ../NLR_annotations/HMM/Kronos_NBARC.hmm Kronos_and_known_NLRs.fa
+esl-reformat fasta Kronos_and_known_NLRs.hmmalign.sto >Kronos_and_known_NLRs.hmmalign.fasta
+mafft --maxiterate 1000 --globalpair --thread 40 Kronos_and_known_NLRs.hmmalign.fasta > Kronos_and_known_NLRs.hmmalign.msa.fasta
+trimal -gt 0.3 -in Kronos_and_known_NLRs.hmmalign.msa.fasta -out Kronos_and_known_NLRs.hmmalign.msa.filtered.fasta
+python remove_gappy_seqs.py Kronos_and_known_NLRs.hmmalign.msa.filtered.fasta Kronos_and_known_NLRs.hmmalign.msa.filtered.clean.fasta
+15 gappy sequences removed
+
+less Kronos_and_known_NLRs.hmmalign.msa.filtered.clean.fasta | gre
+p ">" | grep -c "KRN"
+1074 #1121 total: non
+
+raxml-ng --all \
+  --msa Kronos_and_known_NLRs.hmmalign.msa.filtered.clean.fasta \
+  --search 20 \
+  --model LG+G8+F \
+  --tree pars{10} \
+  --bs-trees 1000 \
+  --threads 56
 
 
 ## NLR Prediction in Wheat Genomes
