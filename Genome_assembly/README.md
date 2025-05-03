@@ -341,3 +341,41 @@ makeblastdb -in db.fa -out db -dbtype 'nucl'
 blastn -query query.fa -db db -outfmt "6 std qlen slen" -out query_vs_hit.blast.out -evalue 1e-6
 python synteny_blast_synteny.py query_vs_hit.blast.out 1A_start 1A_start --alignment_length 10000 --hstart 0 --hend 20000000
 ```
+
+for chromosome in 1A 1B 2A 2B 3A 3B 4A 4B 5A 5B 6A 6B 7A 7B; do
+  fasta=GCF_002162155.2_WEW_v2.1_genomic.renamed.fa
+  length=$(awk -v chr=$chromosome '$1 == chr {print $2}' ${fasta}.fai)
+  tail_start=$((length - 20000000 + 1))
+
+  samtools faidx $fasta ${chromosome}:1-20000000 > Zavitan_${chromosome}.head.fa
+  samtools faidx $fasta ${chromosome}:${tail_start}-${length} > Zavitan_${chromosome}.tail.fa
+done
+
+for fa in Svevo*fa; do makeblastdb -in ${fa} -out $(echo $fa | cut -d "." -f -2) -dbtype 'nucl'; done
+
+for fa in Kronos*.fa; do 
+  # Extract base name
+  base=$(basename $fa .fa)
+  region=$(echo $base | cut -d "_" -f 2)
+
+  # Svevo comparison
+  svevo_db=$(echo $fa | sed 's/Kronos/Svevo/')
+  blastn -query ${fa} -db ${svevo_db} -num_threads 48 \
+    -outfmt "6 std qlen slen" \
+    -out Kronos_vs_Svevo.${region}.blastn.out -evalue 1e-4
+
+  # Zavitan comparison
+  zavitan_db=$(echo $fa | sed 's/Kronos/Zavitan/')
+  blastn -query ${fa} -db ${zavitan_db} -num_threads 48 \
+    -outfmt "6 std qlen slen" \
+    -out Kronos_vs_Zavitan.${region}.blastn.out -evalue 1e-4
+done
+
+
+for fa in Kronos*.fa; do 
+  base=$(basename $fa | sed "s/.fa//g")
+  region=$(echo $base | cut -d "_" -f 2)
+  minimap2 -x asm5 -t 40 -o Kronos_vs_Svevo.${region}.minimap.out ../0.Syri/Triticum_turgidum.Svevo.v1.dna.toplevel.fa ${fa}
+  minimap2 -x asm5 -t 40 -o Kronos_vs_Zavitan.${region}.minimap.out ../0.Syri/GCF_002162155.2_WEW_v2.1_genomic.renamed.fa ${fa}
+done
+
