@@ -15,7 +15,19 @@ Variants detected by remapping to the Kronos reference genome are available in Z
 
 ## Methods
 
+## Software version
 
+```
+sra-toolkit v3.1.1
+fastp v0.23.4
+trimmomatic v0.39
+bwa v0.7.18-r1243-dirty
+samtools v1.2
+picard v3.0.0
+MAPS
+GATK v4.5.0
+snpeff v5.2a
+```
 ---
 
 ## Exome-capture
