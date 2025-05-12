@@ -1,9 +1,9 @@
 import sys
 
 input_file = sys.argv[1]
+accessions = sys.argv[2]
 output_file = input_file.replace('.tsv', '.reformatted.tsv')
 
-accessions = "MAPS_groups.list"
 suffix     = ".sorted.rmdup.bam"
 
 accession2kr = {}
