@@ -336,34 +336,35 @@ done
 
 # Promoter capture sequencing data remapping 
 
-The analysis of promoter-capture sequencing data was done nearly identically with the exome capture data analysis. Thus, only the workflow different from the previous one is recorded. 
+The analysis of promoter-capture sequencing data was done nearly identically with the exome capture data analysis. Thus, only the workflow different from the previous one is recorded below. 
 
 
-### 2. Downloading Sequencing Data
-The sequencing data were directly obtained from [Zhang et al.](https://www.pnas.org/doi/10.1073/pnas.2306494120) who generated the data. The exceptions were accessions included in the following repositories, which were downloaded through the same workflow. 
+### 1. Downloading Sequencing Data
+Most of the sequencing data were directly obtained from [Zhang et al. 2023](https://www.pnas.org/doi/10.1073/pnas.2306494120). Any missing sequencing data were downloaded from PRJNA1218005.
+
+### 2. Quality Control and Filtering
+The datasets in PRJNA1218005 should already be trimmed. A small number of datasets directly provided by the author was not. These were trimmed with trimmomatic. 
+
 ```
-biosample SAMN46714602 (SRA: SRS24009474)
-biosample SAMN46547906 (SRA: SRS23982952)
-biosample SAMN46547933 (SRA: SRS23982976)
-```
+for fq1 in *R1*fastq.gz; do
+        fq2=$(echo $fq1 | sed 's/R1/R2/g')
+        out1=$(echo $fq1 | sed 's/.fastq.gz/_trimmed.fq.gz/g')
+        out2=$(echo $fq2 | sed 's/.fastq.gz/_trimmed.fq.gz/g')
 
-### 3. Quality Control and Filtering
-Most of the data we received were already trimmed, but a small subset was not. These reads were trimmed with trimmomatic v0.39. 
-
-
-Numthreads=40
-reference_dir=/global/scratch/projects/vector_kvklab/KS-Kronos_remapping/Reference
-bwa aln -t ${Numthreads} ${reference_dir}/Kronos -f ${accession}.${x}.sai ${accession}.${x}.filtered.fq
-bwa sampe -N 10 -n 10 -f ${accession}.sam ${reference_dir}/Kronos ${accession}.1.sai ${accession}.2.sai ${accession}.1.filtered.fq ${accession}.2.filtered.fq
-
-### 3. Quality Control and Filtering
-
-Reads are filtered using fastp v0.23.4 to remove low-quality reads:
-```
-for fq in *R1_*; do
-    p1=$fq
-    p2=$(echo $p1 | sed 's/R1/R2/g')
-    prefix=$(echo $p1 | cut -d "_" -f 3)
-    fastp --in1 ${p1} --in2 ${p2} --out1 ${prefix}.1.filtered.fq --out2 ${prefix}.2.filtered.fq --thread 16 -q 20
+        if [[ ! -f "${out1}" ]]; then
+                trimmomatic PE $fq1 $fq2 $out1 ${fq1}_trimmed_unpaired.fq.gz $out2 ${fq2}_unpaired.fq.gz ILLUMINACLIP:/global/scratch/users/skyungyong/Software/anaconda3/envs/mamba/envs/snp/share/trimmomatic/adapters/TruSeq3-PE-2.fa:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36 SLIDINGWINDOW:4:20
+        fi
 done
 ```
+
+### 5A. Merging Redundant Libraries
+
+No mutant data were merged. 
+
+### 6A. Preparing for MAPS Pipeline
+
+The BioProject PRJNA1218005 contains 33 BioSamples. Each BioSample contains a batch of Kronos mutants to be processed together. 
+
+### 7A. Running the MAPS Pipeline
+
+In first part of the MAPS pipeline, l was set as **int(math.ceil(lib * 0.8))**.
