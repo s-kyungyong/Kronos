@@ -71,5 +71,5 @@ with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
             items[0] = chromosome
             items[1] = str(int(pos) + int(items[1]))
 
-        o.write("\t".join(items) + "\n")
+        outfile.write("\t".join(items) + "\n")
            
