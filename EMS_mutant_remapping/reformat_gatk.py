@@ -69,4 +69,7 @@ with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
         if '_' in items[0]:
             chromosome, pos = items[0].split("_", 1)
             items[0] = chromosome
+            items[1] = str(int(pos) + int(items[1]))
+
+        o.write("\t".join(items) + "\n")
            
