@@ -242,6 +242,11 @@ raxml-ng --all \
 
 ## NLR Prediction in Wheat Genomes
 
+```
+augustus v3.3.3
+
+```
+
 In order to identify highly variable NLRs, enough coverages of homologous sequences are needed. We will collect them by predicting NLR genes in other published wheat genomes. Let's first train NLR specific prediction parameters. 
 
 ### 1. Trainning Augustus
@@ -420,19 +425,22 @@ gene level |   160 |   126 |   42 |  118 |   84 |       0.333 |       0.263 |
 
 So the NLR-specific parameters are much better!
 
+We can also train NLR-specific parameters for SNAP as below. 
 
-grep ">"  /global/scratch/projects/vector_kvklab/KS-Kronos_Final_datasets/03.NLRs/04.Ab_initio/Kronos_hc.cds.cd-hit.c_0.9.fa  | cut -d ">" -f 2 | shuf | head -n 700 > selected.hc.list
-gffread --ids selected.hc.list  /global/scratch/projects/vector_kvklab/KS-Kronos_Final_datasets/03.NLRs/04.Ab_initio/828_hc_nlrs.gtf > selected.hc.gff
+```
+#use randomly selected 700 genes for training 
+grep ">"  Kronos_hc.cds.cd-hit.c_0.9.fa  | cut -d ">" -f 2 | shuf | head -n 700 > selected.hc.list
+gffread --ids selected.hc.list  828_hc_nlrs.gtf > selected.hc.gff
 awk '$3 != "exon" {print}' selected.hc.gff  > selected.hc.cds.gff
-agat_convert_sp_gff2zff.pl --gff selected.hc.cds.gff  --fasta /global/scratch/projects/vector_kvklab/KS-Makido/Kronos.collapsed.chromosomes.masked.v1.1.folded.fa -o genome.ann
-grep ">" genome.ann  | cut -d ">" -f 2 | while read line; do awk -v seq=$line -v RS
-=">" '$1 == seq {print RS $0; exit}' /global/scratch/projects/vector_kvklab/KS-Kronos_Final_datasets/00.Genomes/99.Genomes/Kronos.collapsed.chromosomes.masked.v1.1.fa; done > genome.dna
+agat_convert_sp_gff2zff.pl --gff selected.hc.cds.gff  --fasta Kronos.collapsed.chromosomes.masked.v1.1.folded.fa -o genome.ann
+grep ">" genome.ann  | cut -d ">" -f 2 | while read line; do awk -v seq=$line -v RS=">" '$1 == seq {print RS $0; exit}' Kronos.collapsed.chromosomes.masked.v1.1.fa; done > genome.dna
 
 fathom -validate genome.ann genome.dna
 fathom -categorize 1000 genome.ann genome.dna
 fathom -export 1000 -plus uni.ann uni.dna
 forge export.ann export.dna
 hmm-assembler.pl Kronos_NLRs . > Wheat_NLR.hmm
+```
 
 ### 3. NLR Prediction in Wheat Genomes
 
@@ -482,33 +490,44 @@ est evidence: transcript assemblies from stringtie that combined short and long-
 protein evidence: reliably curated Kronos NLRs, cloned functional NLRs, and NLRs from RefPlantNLR
 ab initio prediction: Wheat_NLR, trained above.
 ```
-cat /global/scratch/projects/vector_kvklab/KS-IsoSeq-HiFi/*.fastq > long-read.fq
 
-for fa in *.fasta; do 
-#    orfipy -procs 56 --ignore-case --pep prot.fa ${fa}
+Let's first create the evidence datasets. We can capture NLR sequences from long-read transcriptome data in **long-read_transripts.list**.
+```
+while read -r accession; do
+    fa=${accession}.fasta
+    
+    #detect all orfs 
+    orfipy -procs 56 --ignore-case --pep prot.fa ${fa}
     cd orfipy_${fa}_out
-#    hmmsearch --domtblout prot.fa.against.Kronos_NBARC.hmm.out --cpu 56 -E 1E-4 --domE 1e-4 orfipy_${fa}_out Kronos_NBARC.hmm prot.fa
-#    seqkit grep -f <(awk '!/^#/ {print $1}' prot.fa.against.Kronos_NBARC.hmm.out | sort -u) prot.fa > hits.fasta
+    
+    #serch for nbarc domains and extract the hits
+    hmmsearch --domtblout prot.fa.against.Kronos_NBARC.hmm.out --cpu 56 -E 1E-4 --domE 1e-4 orfipy_${fa}_out Kronos_NBARC.hmm prot.fa
+    seqkit grep -f <(awk '!/^#/ {print $1}' prot.fa.against.Kronos_NBARC.hmm.out | sort -u) prot.fa > hits.fasta
+    
+    #remove the exact matches 
     cd-hit -c 1 -T 40 -i hits.fasta -o hits.reduced.fasta
     cd ..
-done 
+done < long-read_transcripts.list
+```
 
- cat *.fasta_out/hits.reduced.fasta > all_hits/hits.reduced.combined.fa
- cd-hit -c 1.0 -M 6000000 -T 40 -i hits.reduced.combined.fa -o hits.reduced.combined.reduced.fa
- seqkit grep -f <( grep ">" hits.reduced.combined.reduced.fa | cut -d "_" -f 1 | sort -u) ../*.fasta > hits.reduced.combined.reduced.est.fa
+Combine all hits and remove exact matches again
+```
+#concatnate all NBARC-containging sequences into a single file
+cat *.fasta_out/hits.reduced.fasta > all_hits/hits.reduced.combined.fa
 
- grep ">" hits.reduced.combined.reduced.fa | cut -d "_" -f 1 | sort -u | sed 's/>//g' > hit_ids.txt
+#remove redundancy and reextract the hits 
+cd-hit -c 1.0 -M 6000000 -T 40 -i hits.reduced.combined.fa -o hits.reduced.combined.reduced.fa
+seqkit grep -f <( grep ">" hits.reduced.combined.reduced.fa | cut -d "_" -f 1 | sort -u) ../*.fasta > hits.reduced.combined.reduced.est.fa
+grep ">" hits.reduced.combined.reduced.fa | cut -d "_" -f 1 | sort -u | sed 's/>//g' > hit_ids.txt
 awk -F"[_\\.]" '{gsub(/^>/, "", $1); print $1"."$2 > "hit_ids_"$1".txt"}' hit_ids.txt
 
-
-
- for fa in ../*RR*.fasta; do
+for fa in ../*.fasta; do
     prefix=$(basename "$fa" .fasta)
     if [ -f "hit_ids_${prefix}.txt" ]; then
         seqkit grep -f "hit_ids_${prefix}.txt" "$fa" >> hits.reduced.combined.reduced.est.fa
     fi
 done
-
+```
  
 For each locus, a separate directory was made to run maker in parallel. We ran > 500 jobs at the same time to speed up this step. This still took over 3 days. 
 ```
