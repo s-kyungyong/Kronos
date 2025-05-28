@@ -30,6 +30,12 @@ Most of the datasets can be accessed through [Zenodo: Chromosome-level genome as
 | [4](https://zenodo.org/records/14853918)  | Exome-capture sequencing data remapped for 1,440 Kronos EMS mutants v1.0 |
 
 
+Additional datasets are available in [Zenodo: Chromosome-level genome assembly of Triticum turgidum var 'Kronos' additional datasets](https://zenodo.org/records/15399687)
+| version                                   | Contents | Comments |
+|-------------------------------------------|---------|-----------|
+| [1](https://zenodo.org/records/15399687)  | Repeat annotations  | Final repeat annotation |
+
+
 ---
 ## Final Versions
 For clarity, here are the final versions of our datasets
