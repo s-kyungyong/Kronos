@@ -352,14 +352,29 @@ for fq1 in *R1*fastq.gz; do
         out2=$(echo $fq2 | sed 's/.fastq.gz/_trimmed.fq.gz/g')
 
         if [[ ! -f "${out1}" ]]; then
-                trimmomatic PE $fq1 $fq2 $out1 ${fq1}_trimmed_unpaired.fq.gz $out2 ${fq2}_unpaired.fq.gz ILLUMINACLIP:/global/scratch/users/skyungyong/Software/anaconda3/envs/mamba/envs/snp/share/trimmomatic/adapters/TruSeq3-PE-2.fa:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36 SLIDINGWINDOW:4:20
+                trimmomatic PE $fq1 $fq2 $out1 ${fq1}_trimmed_unpaired.fq.gz $out2 ${fq2}_unpaired.fq.gz ILLUMINACLIP:TruSeq3-PE-2.fa:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 MINLEN:36 SLIDINGWINDOW:4:20
         fi
 done
 ```
 
 ### 5A. Merging Redundant Libraries
 
-No mutant data were merged. 
+Although some Kronos mutants were sequenced multiple times, we did not concatenate redundant libraries into single files, unlike the approach taken for the exome capture data. Each batch and the mutant libraries within it were clearly defined by Junli et al., and we wanted to preserve this original structure. As a result, datasets generated from the same mutant were only merged at the final processing stage. Overall, 1,472 mutants have a single associated sequencing dataset, and 84 mutants have two. 
+
+For GATK outputs, finish running Step 6B. Then, the vcf files can be merged by looking for unions of mutations:
+```
+awk '{print $2}' promoter_MAPS_group.list | grep 'Kronos' | sort | uniq -c | awk '$1 != 1 {print $2}' > redundant.list
+while read -r accession; do
+    libs=$(ls */${accession}.reformatted.vcf)
+    for lib in ${libs}; do
+            bgzip -c $lib > ${lib}.gz
+            tabix --csi -p vcf ${lib}.gz
+    done
+    
+    bcftools isec -o merged/${accession}.merged.reformatted.vcf.gz -w 1 -Oz -n =2 ${libs}
+    bcftools norm -m -both merged/${accession}.merged.reformatted.vcf.gz -f Kronos.collapsed.chromosomes.masked.v1.1.fa -Ov -o merged/${accession}.merged.norm.reformatted.vcf
+done < redundant.list
+```
 
 ### 6A. Preparing for MAPS Pipeline
 
