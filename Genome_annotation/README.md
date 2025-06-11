@@ -5,9 +5,9 @@
 Protein coding genes can be downloaded from Zenodo.  
 • `v1.0 annotation`: [https://zenodo.org/records/10215402](https://zenodo.org/records/10215402)  
 • `v2.0 annotation`: [https://zenodo.org/records/14189805](https://zenodo.org/records/14189805)  
-• `v2.1 annotation [Final]`: [https://zenodo.org/records/15539216](https://zenodo.org/records/14189805) 
+• `v2.1 annotation [Final]`: [https://zenodo.org/records/15539216](https://zenodo.org/records/14189805)   
 
-Pretrained ab initio parameters in `abinitio_parameters`.
+Pretrained ab initio parameters in `abinitio_parameters`.  
 
 
 ## Software version
@@ -16,7 +16,6 @@ trim_galore v0.6.6
 cutadapt v3.7
 sratoolkit v3.1.1
 hisat v2.2.1
-samtools v1.9
 stringtie v2.1.7
 trinity v2.15.1
 pasa v2.5.3
@@ -30,6 +29,10 @@ ginger v1.0.1
 miniprot v0.12
 evidencemodeler v2.1.0
 blast v2.15.0
+minimap v2.28-r1209
+samtools v1.20
+isoquant v3.5.2
+```
 ```
 
 ---
@@ -402,17 +405,8 @@ python generate_v1.0_annot.py
 ----
 
 ## Annotation v2.0
-# Protein-coding Gene Preidction: v2.0 annotation
 
-```
-sratoolkit v3.1.1
-minimap v2.28-r1209
-samtools v1.20
-stringtie v2.1.7
-isoquant v3.5.2
-```
-
-The second version of genome annotation integrates publicly available long-read sequencing data for Triticum.
+Annotation v2.0 integrates publicly available long-read transcriptome data (e.g., PacBio CCS) to improve transcript structure accuracy and splicing resolution for Triticum turgidum ssp. durum (cv. Kronos). Assemblies were performed with both StringTie and IsoQuant, incorporating short-read evidence for improved splice junction support.
 
 ### 1. Long-read Transcriptome Data Download
 
