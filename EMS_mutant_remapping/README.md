@@ -359,7 +359,7 @@ done
 
 ### 5A. Merging Redundant Libraries
 
-Although some Kronos mutants were sequenced multiple times, we did not concatenate redundant libraries into single files, unlike the approach taken for the exome capture data. Each batch and the mutant libraries within it were clearly defined by Junli et al., and we wanted to preserve this original structure. As a result, datasets generated from the same mutant were only merged at the final processing stage. Overall, 1,472 mutants have a single associated sequencing dataset, and 84 mutants have two. 
+Although some Kronos mutants were sequenced multiple times, we did not concatenate redundant libraries into single files, unlike the approach taken for the exome capture data. Each batch and the mutant libraries within it were clearly defined by Junli et al., and we wanted to preserve this original structure. As a result, datasets generated from the same mutant were only merged at the final processing stage. Overall, 1,518 mutants have a single associated sequencing dataset, and 38 mutants have two. 
 
 For GATK outputs, finish running Step 6B. Then, the vcf files can be merged by looking for unions of mutations:
 ```
