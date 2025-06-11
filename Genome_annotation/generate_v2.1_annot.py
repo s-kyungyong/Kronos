@@ -85,8 +85,8 @@ def process_gff3(v2_annot, nlr_annot, nlr_confidence, output_gff3):
     to_be_added   = {}
     for line in open(nlr_confidence, 'r'):
         fields = line.split()
-        nlr_confidence[ fields[0] ] = fields[2]
-        if fields[2] in ["High", "Medium"]:
+        nlr_confidence[ fields[0] ] = fields[1]
+        if fields[1] in ["High", "Medium"]:
             to_be_added[ fields[0] ] = ''
 
     _, _, nlr_entries, _ = load_coordinates(nlr_annot)
