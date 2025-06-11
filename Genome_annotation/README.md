@@ -32,6 +32,7 @@ blast v2.15.0
 minimap v2.28-r1209
 samtools v1.20
 isoquant v3.5.2
+mikado v2.3.4
 ```
 
 ---
@@ -413,10 +414,10 @@ Annotation v2.0 integrates publicly available long-read transcriptome data for *
 • `v2_rnaseq.list`: List of NCBI SRA accessions  
 
 **📥 Outputs**  
-• `fastq files`: long-read transcriptome data
+• `fastq files`: long-read transcriptome data  
 
 ---
-⚙️ **Data Download**  
+⚙️ **Data Download**    
 ```
 while read -r accession; do 
     sratoolkit.3.1.1-centos_linux64/bin/prefetch ${accession}
@@ -424,17 +425,17 @@ while read -r accession; do
 done < v2_rnaseq.list
 ```
 ---
-### 2. Long-Read Alignment with Minimap2
+### 2. Long-Read Alignment with Minimap2  
 
 **📥 Inputs**  
-• `fastq files`: long-read transcriptome data
-• `Kronos.collapsed.chromosomes.masked.v1.1.broken.fa`: broken Kronos reference genome v1.1 (masked)  
+• `fastq files`: long-read transcriptome data  
+• `Kronos.collapsed.chromosomes.masked.v1.1.broken.fa`: broken Kronos reference genome v1.1 (masked)    
 
 **📥 Outputs**  
-• `all.long-read.merged.bam`: long-read transcriptome alignments
+• `all.long-read.merged.bam`: long-read transcriptome alignments  
 
 ---
-⚙️ **Alignment with Minimap2**  
+⚙️ **Alignment with Minimap2**   
 ```
 for fq in *.fq; do
   prefix=$(echo $fq | cut -d "." -f 1)
@@ -443,12 +444,12 @@ for fq in *.fq; do
 done
 ```
 • Merge all bam files 
-```
+``` 
 #merge all bam files
 samtools merge -@56 -h ERR11193282.bam all.long-read.merged.bam *.bam
 samtools index -@56 all.long-read.merged.bam
 ```
-• Split chromosomes for parallel processing 
+• Split chromosomes for parallel processing   
 ```
 #separate for each chromosome
 for chromosome in \
@@ -460,37 +461,68 @@ for chromosome in \
 done
 ```
 
-### 3. Transcript Assembly with StringTie & IsoQuant
+### 3. Transcript Assembly with StringTie & IsoQuant  
 
 **📥 Inputs**  
-• `all.merged.sorted.*.bam`: Filtered short-read transcriptome alignments produced during v1.0 anotation
-• `all.long-read.merged.*.bam`: long-read transcriptome alignments
-• `Kronos.collapsed.chromosomes.masked.v1.1.broken.fa`: broken Kronos reference genome v1.1 (masked)  
+• `all.merged.sorted.*.bam`: Filtered short-read transcriptome alignments produced during v1.0 anotation  
+• `all.long-read.merged.*.bam`: long-read transcriptome alignments  
+• `Kronos.collapsed.chromosomes.masked.v1.1.broken.fa`: broken Kronos reference genome v1.1 (masked)    
 
 **📥 Outputs**  
-• `all.long-read.merged.*.bam`: long-read transcriptome alignments
-
+• `stringtie.denovo.transcript_models.gtf`: transcripts from StringTie
+• `isoquant.OUT.transcript_models.gtf`: transcripts from Isoquant
 
 ---
 ⚙️ **Assembly with StringTie**  
 ```
-#de novo assembly using stringtie
+#make sure to adjust the coordinates for the original genome
 stringtie -p 4 -v -o Kronos.${chromosome}.stringtie.denovo.gtf \
          --mix all.short-read.merged.${chromosome}.bam all.long-read.merged.${chromosome}.bam
-
-#reference-annotation guided using stringtie
-stringtie -p -4 -o Kronos.${chromosome}.stringtie.guided.gtf \
-         -p 4 -G Kronos.v1.0.all.gff3 --mix all.short-read.merged.${chromosome}.bam all.long-read.merged.${chromosome}.bam
 ```
 
 ⚙️ **Assembly with Isoquant**  
-
 ```
+#make sure to adjust the coordinates for the original genome
 isoquant.py --threads 56 --reference Kronos.collapsed.chromosomes.masked.v1.1.broken.fa \
             --illumina_bam all.merged.sorted.all.bam --output Isoquant_Kronos --data_type pacbio_ccs --bam $bam #a list of unmerged bamfiles was given
 ```
 
-### 4. Updating Annotations
+### 4. Combining Annotations
+**📥 Inputs**  
+• `stringtie.denovo.transcript_models.gtf`: transcripts from StringTie
+• `isoquant.OUT.transcript_models.gtf`: transcripts from Isoquant
+• `all.merged.sorted.bam`: Filtered short-read transcriptome alignments produced during v1.0 anotation  
+• `all.evidnece.fa`: protein evidence datasets from Ensembl Plants used during v1.0 anntotation (step 8)
+• `Kronos.collapsed.chromosomes.masked.v1.1.fa`: broken Kronos reference genome v1.1 (masked)    
+
+
+**📥 Outputs** 
+
+---
+⚙️ **Set Up Mikado**
+```
+mikado configure --list list.txt --reference Kronos.collapsed.chromosomes.masked.v1.1.fa --mode STRINGENT --scoring plants.yaml  --copy-scoring plants.yaml –junctions junctions.bed -bt all.evidence.clean.fa configuration.yaml
+mikado prepare --json-conf configuration.yaml
+```
+⚙️ **Create Intermediate Inputs**
+```
+#get ORFs
+prodigal -i mikado_prepared.fasta -g 1 -o mikado.orfs.gff3 -f gff
+
+#get homology
+blastx -max_target_seqs 5 -query mikado_prepared.fasta \ #this file is from mikado
+        -db all.evidence.fa -out mikado_prepared.blast.tsv \
+        -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore ppos btop” -num_threads 56
+
+#get junction
+portcullis full -o all_merged.repositioned.bed -t 20 Kronos.collapsed.chromosomes.masked.v1.1.broken.fa all.merged.sorted.bam;
+```
+⚙️ **Finish Mikado**
+```
+mikado serialise --genome Kronos.collapsed.chromosomes.masked.v1.1.fa -p 56 --junctions all_merged.repositioned.bed --orfs mikado.orfs.gff3 -bt all.evidence.clean.fa
+mikado pick --configuration configuration.yaml -p 56 --scoring-file plant.yaml --subloci-out mikado.subloci.gff3 --loci-out mikado.loci.out
+```
+
 
 ---
 ## Annotation v2.1  
