@@ -33,7 +33,6 @@ minimap v2.28-r1209
 samtools v1.20
 isoquant v3.5.2
 ```
-```
 
 ---
 
@@ -406,11 +405,20 @@ python generate_v1.0_annot.py
 
 ## Annotation v2.0
 
-Annotation v2.0 integrates publicly available long-read transcriptome data (e.g., PacBio CCS) to improve transcript structure accuracy and splicing resolution for Triticum turgidum ssp. durum (cv. Kronos). Assemblies were performed with both StringTie and IsoQuant, incorporating short-read evidence for improved splice junction support.
+Annotation v2.0 integrates publicly available long-read transcriptome data for *Triticum* to improve annotation accuracy. Assemblies were performed with both StringTie and IsoQuant, incorporating short-read evidence for improved splice junction support.
 
-### 1. Long-read Transcriptome Data Download
+### 1. Long-read Transcriptome Assembly
 
-We donwloaded the long-read RNA-seq data from the NCBI. The list can be found in **v2_rnaseq.list**. 
+**📥 Inputs**  
+• `v2_rnaseq.list`: List of NCBI SRA accessions  
+• `Kronos.collapsed.chromosomes.fa`: Kronos reference genome  
+• `Kronos.collapsed.chromosomes.masked.v1.1.broken.fa`: broken Kronos reference genome v1.1 (masked)  
+
+**📥 Outputs**  
+
+
+---
+⚙️ **Long-Read Transcriptome Data Download**  
 ```
 while read -r accession; do 
     sratoolkit.3.1.1-centos_linux64/bin/prefetch ${accession}
@@ -418,20 +426,24 @@ while read -r accession; do
 done < v2_rnaseq.list
 ```
 
-### 2. Alignment
-
-These long-reads were aligned to the genome.
+⚙️ **Long-Read Alignment with Minimap2**  
+• Align to the genome  
 ```
 for fq in *.fq; do
   prefix=$(echo $fq | cut -d "." -f 1)
   minimap2 -I 12G -t 56 -x splice:hq -a -o "${prefix}.sam" Kronos.collapsed.chromosomes.masked.v1.1.broken.fa ${fq}
   samtools view -@56 -h -b "${prefix}.sam" | samtools sort -@ 56 > "${prefix}.bam"
 done
-
+```
+• Merge all bam files 
+```
 #merge all bam files
 samtools merge -@56 -h ERR11193282.bam all.long-read.merged.bam *.bam
 samtools index -@56 all.long-read.merged.bam
+```
 
+• Split chromosomes for parallel processing 
+```
 #separate for each chromosome
 for chromosome in \
   1A 1A_296625417 1B 1B_362283996 2A 2A_389606086 2B 2B_416081101 \
