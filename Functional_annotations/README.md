@@ -6,7 +6,7 @@ The functional annotations can be downloaded from Zenodo.
 https://zenodo.org/records/15539216: Functional annotations for annotation v2.1
 ```
 
-## Method
+## Methods
 
 Functional annotations were performed using eggNOG-mapper v2.1.12 and InterProScan v5.68.100. 
 
