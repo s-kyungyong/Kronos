@@ -46,6 +46,7 @@ This step processes publicly available RNA-seq datasets for Kronos. Reads were d
 • `transcripts.fasta`: Trinity-assembled transcripts (de novo + genome-guided)   
 • `stringtie.gtf`: Genome-guided transcript models from StringTie  
 • `sample_mydb_pasa.sqlite.assemblies.fasta`: PASA-refined transcript structures  
+• `sample_mydb_pasa.sqlite.assemblies.fasta.transdecoder.genome.gff3`: Translated ORFs from PASA
 
 ---
 
@@ -142,6 +143,7 @@ BRAKER was used to generate gene models using both RNA-seq alignment evidence an
 **📥 Inputs**  
 • `all.merged.sorted.bam`: Filtered transcriptome alignments (HISAT2 + SAMtools)  
 • `uniprotkb_38820.fasta`: 2.85 million Poales proteins  
+• `Kronos.collapsed.chromosomes.masked.fa`: Kronos reference genome (masked)  
 
 **📥 Outputs**  
 • `braker.gtf`: Gene models predicted by BRAKER  
@@ -161,14 +163,15 @@ singularity exec -B $PWD braker3.sif braker.pl --verbosity=3 \
 ```
 ---
 
-### 3. Gene Prediction with Funannotate  
+### 4. Gene Prediction with Funannotate  
 Funannotate integrates transcriptome evidence. Although it automatically trains ab initio prediction tools, we provided manually trained SNAP and AUGUSTUS models for better accuracy. Training sets were derived from BRAKER models filtered against known references.
 
 **📥 Inputs**  
-• `transcripts.fasta`: Trinity (de novo + genome-guided) assemblies
-• `stringtie.gtf`: StringTie transcript models
-• `all.merged.sorted.bam`: Filtered transcriptome alignments (HISAT2 + SAMtools)  
-• `braker.gtf, braker.aa`: BRAKER gene models and proteins
+• `transcripts.fasta`: Trinity (de novo + genome-guided) assemblies  
+• `stringtie.gtf`: StringTie transcript models  
+• `all.merged.sorted.bam`: Filtered transcriptome alignments (HISAT2 + SAMtools)    
+• `braker.gtf, braker.aa`: BRAKER gene models and proteins  
+• `Kronos.collapsed.chromosomes.masked.fa`: Kronos reference genome (masked)  
 
 **📥 Outputs**  
 • `Triticum_kronos.filtered.gff3`: Funannotate gene models
@@ -217,10 +220,11 @@ python filter_genes_funannotate.py
 GINGER uses Nextflow to integrate multiple gene prediction modules. We modified two steps. `denovo.nf`: transcript assembles with oases/velvet were not performed, as this required 17,000,000 Gb memory. `abinitio.nf`: Augustus and SNAP were trained manually.
 
 **📥 Inputs**  
-• `transcripts.fasta`: Trinity (de novo + genome-guided) assemblies
-• `all.merged.sorted.bam`: Filtered transcriptome alignments (HISAT2 + SAMtools)  
-• `braker.gtf, braker.aa`: BRAKER gene models and proteins
-• `Protein sequence`: protein sequences downloaded from Ensembl for T. aestivum, T. turgidum, T. dicoccoides, T. spelta, T. urartu
+• `transcripts.fasta`: Trinity (de novo + genome-guided) assemblies  
+• `all.merged.sorted.bam`: Filtered transcriptome alignments (HISAT2 + SAMtools)    
+• `braker.gtf, braker.aa`: BRAKER gene models and proteins  
+• `Protein sequence`: protein sequences downloaded from Ensembl for T. aestivum, T. turgidum, T. dicoccoides, T. spelta, T. urartu 
+• `Kronos.collapsed.chromosomes.masked.fa`: Kronos reference genome (masked)  
 
 **📥 Outputs**  
 • `ginger_phase2.gff`: GINGER-predicted gene models
@@ -228,7 +232,7 @@ GINGER uses Nextflow to integrate multiple gene prediction modules. We modified 
 
 ---
 ⚙️**Manual Training**  
-Gene models from BRAKER were filtered to retain only: genes with start & stop codons, full-length hits to IWGSC or translated Trinity transcripts, ≥99.5% sequence identity, and protein length ≥ 350 aa. This time, 8,500 genes were randomly selected for Augustus and SNAP, respectively. 
+Gene models from BRAKER were filtered to retain only: genes with start & stop codons, full-length hits to IWGSC or translated Trinity transcripts, ≥99.5% sequence identity, and protein length ≥ 350 aa. This time, 8,500 genes were randomly selected for Augustus and SNAP, respectively.   
 • Select gene models
 ```
 blastp -query braker.aa -db trinity -max_target_seqs -max_hsps 1 -num_threads 56 -evalue 1e-10 -outfmt "6 std qlen slen" -out braker_vs_trinity.blast.out
@@ -271,49 +275,68 @@ phase2.sh 50
 summary.sh nextflow.config
 ```
 
+---
+### 5. Protein Homology Mapping with Miniprot
+Miniprot was used to align 2.85 million Poales protein sequences from UniProt to the Kronos genome to provide homology-based evidence for gene prediction.
 
-### 5. Miniprot
-```
-inputs:
-uniprotkb_38820.fasta: 2,850,097 protein sequences from Poales (TAXID: 38820) downloaded from UniProt
+**📥 Inputs** 
+• `uniprotkb_38820.fasta`: 2,850,097 protein sequences (TAXID: 38820)
+• `Kronos.collapsed.chromosomes.masked.fa`: Kronos reference genome (masked)  
 
-outputs:
-miniprot.gff3: protein evidence alignments
-```
+**📥 Outputs** 
+• `miniprot.gff3`: Protein alignments
 
-We used miniprot to align the protein sequences from UniProt. 
+---
+⚙️**Run MiniProt**  
 ```
 miniprot -t 56 --gff --outc=0.95 -N 0 Kronos.collapsed.chromosomes.fa uniprotkb_38820.fasta > miniprot.gff3
 ```
 
+---
+### 6. Integration with EvidenceModeler (EVM)
+All gene prediction, transcript, and protein evidence was integrated using EvidenceModeler (EVM) to produce consensus gene models.  
 
+**📥 Inputs** 
+• `braker.gff`: BRAKER gene models
+• `Triticum_kronos.filtered.gff3`: Funannotate gene models
+• `ginger_phase2.gff`: GINGER gene models
+• `ginger_spaln.gff`: protein alignment models from GINGER
+• `miniprot.gff3`: Protein evidence (Miniprot)
+• `sample_mydb_pasa.sqlite.pasa_assemblies.gff3`: PASA transcript assemblies
+• `sample_mydb_pasa.sqlite.assemblies.fasta.transdecoder.genome.gff3`: Translated ORFs from PASA
+• `repeat.gff3`: repeat annotations from HiTE
+• `Kronos.collapsed.chromosomes.fa`: Kronos reference genome
 
-### 6. EvidenceModler
-```
-inputs:
-braker.gff: braker gene models
-Triticum_kronos.filtered.gff3: funannotate gene models
-ginger_phase2.gff: ginger gene models
-miniprot.gff3: protein evidence alignments
-sample_mydb_pasa.sqlite.pasa_assemblies.gff3: pasa transcript assemblies
-sample_mydb_pasa.sqlite.assemblies.fasta.transdecoder.genome.gff3: pasa transcript assembles translated by transdecoder
+**📥 Outputs** 
+• `Kronos.EVM.gff3`: Consensus gene models
 
-outputs:
-Kronos.EVM.gff3: evidencemodeler gene models
+---
+⚙️**Input Preprocessing**  
+```
+# Combine ab initio predictions
+cat braker.gff Triticum_kronos.filtered.gff3 ginger_phase2.gff \
+  sample_mydb_pasa.sqlite.assemblies.fasta.transdecoder.genome.gff > abinitio.gff3
+
+# Combine protein alignments
+cat miniprot.gff3 ginger_spaln.gff > homology.gff3
+
+# PASA transcript assemblies
+cp sample_mydb_pasa.sqlite.pasa_assemblies.gff3 transcripts.gff3
 ```
 
-Finally, all evidence was combined by EvidenceModeler. There were some modifications within the inputs.
-```
-abinitio.gff3: this combines braker.gff, Triticum_kronos.filtered.gff3, ginger_phase2.gff and sample_mydb_pasa.sqlite.assemblies.fasta.transdecoder.genome.gff
-homology.gff3: this includes miniprot.gff3 and an intermediate output from ginger (spaln alignments) 
-transcripts.gff3: this includes sample_mydb_pasa.sqlite.pasa_assemblies.gff3
-```
+---
+⚙️**Run EVM**  
 
 EvidenceModeler was run as below with the specified weights. 
 ```
-singularity exec EVidenceModeler.v2.1.0.simg EVidenceModeler --sample_id Kronos --genome genome.fa --weights weights.txt --gene_predictions abinitio.gff3 --protein_alignments homology.gff3 --transcript_alignments transcripts.gff3 --repeats repeat.gff3 --CPU 56 -S --segmentSize 100000 --overlapSize 10000
+singularity exec EVidenceModeler.v2.1.0.simg EVidenceModeler --sample_id Kronos \
+            --genome Kronos.collapsed.chromosomes.fa --weights weights.txt --gene_predictions abinitio.gff3 \
+            --protein_alignments homology.gff3 --transcript_alignments transcripts.gff3 \
+            --repeats repeat.gff3 --CPU 56 -S --segmentSize 100000 --overlapSize 10000
+```
 
-#weight.txt
+• weights.txt
+```
 ABINITIO_PREDICTION     funannotate   3       #funannotat gene models
 ABINITIO_PREDICTION     braker  3             #braker gene models
 ABINITIO_PREDICTION     ginger  3             #ginger gene models
@@ -323,52 +346,50 @@ PROTEIN                  miniprot       1     #protein mapping with miniprot
 OTHER_PREDICTION        transdecoder    2.5   #pasa transcript assembles translated by transdecoder
 TRANSCRIPT               pasa  8              #pasa transcript assemblies
 ```
+---
+### 7. UTR and Isoform Refinement with PASA
+PASA was rerun to update the EVM models with untranslated regions (UTRs) and alternative splicing isoforms.
 
-### 7. PASA
+**📥 Inputs** 
+• `Kronos.EVM.gff3`: Consensus gene models
+• `transcripts.fasta`: Trinity (de novo + genome-guided) assemblies  
+• `stringtie.gtf`: StringTie transcript models  
+
+**📥 Outputs** 
+• `Kronos.EVM.pasa.gff3`: Final annotation with UTRs and isoforms
+
+---
+⚙️**Run PASA**  
+
 ```
-Inputs:
-Kronos.EVM.gff3: evidencemodeler gene models
-
-Outputs:
-Kronos.EVM.pasa.gff3: evidencemodeler gene models updated by pasa
+#create DB
+singularity exec pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl \
+            -C -R -c alignAssembly.config -g Kronos.collapsed.chromosomes.masked.fa \
+            -t transcripts.fasta --trans_gtf stringtie.gtf --TRANSDECODER --ALT_SPLICE --ALIGNERS gmap
+#update annotations
+singularity exec pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl \
+            -A -L -c compare.config  -g Kronos.collapsed.chromosomes.masked.fa \
+            -t transcripts.fasta --annots Kronos.EVM.gff3
 ```
 
-PASA was run one more time to update UTRs and isoforms. 
-```
-singularity exec pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl -C -R -c alignAssembly.config -g Kronos.collapsed.chromosomes.masked.v1.1.fa -t transcripts.fasta --trans_gtf stringtie.gtf --TRANSDECODER --ALT_SPLICE --ALIGNERS gmap
-singularity exec pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl -A -L -c compare.config  -g Kronos.collapsed.chromosomes.masked.v1.1.fa -t transcripts.fasta --annots Kronos.EVM.gff3
-```
+---
+### 8. Final Gene Model Selection
+High-confidence genes were selected by searching final annotations against a panel of known proteins from related grass species.
 
-### 8. Gene Model Selection
-```
-Inputs:
-Kronos.EVM.pasa.gff3: evidencemodeler gene models updated by pasa
-pasa.transdecoder.pep.complete.fa: pasa transcript assemblies translated with transdecoder. These all have start and stop codons. 
+**📥 Inputs** 
+• `Kronos.EVM.pasa.gff3 Kronos.EVM.pasa.pep.fa`: Final PASA-refined annotations
+• `pasa.transdecoder.pep.complete.fa`: Complete ORFs (start + stop codons)
+• `protein evidence datasets`: from Ensembl Plants
+  • `Aegilops_tauschii.Aet_v4.0.pep.all.fa Avena_sativa_ot3098.Oat_OT3098_v2.pep.all.fa Avena_sativa_sang.Asativa_sang.v1.1.pep.all.fa Brachypodium_distachyon.Brachypodium_distachyon_v3.0.pep.all.fa`
+  • `Triticum_aestivum.IWGSC.pep.all.fa Triticum_urartu.IGDB.pep.all.fa Triticum_dicoccoides.WEWSeq_v.1.0.pep.all.fa Triticum_spelta.PGSBv2.0.pep.all.fa Triticum_turgidum.Svevo.v1.pep.all.fa`  
+  • `Lolium_perenne.MPB_Lper_Kyuss_1697.pep.all.fa Secale_cereale.Rye_Lo7_2018_v1p1p1.pep.all.fa Hordeum_vulgare.MorexV3_pseudomolecules_assembly.pep.all.fa Hordeum_vulgare_goldenpromise.GPv1.pep.all.fa`
 
-protein databases:
-Aegilops_tauschii.Aet_v4.0.pep.all.fa
-Hordeum_vulgare.MorexV3_pseudomolecules_assembly.pep.all.fa
-Triticum_aestivum.IWGSC.pep.all.fa
-Triticum_urartu.IGDB.pep.all.fa
-Avena_sativa_ot3098.Oat_OT3098_v2.pep.all.fa                    
-Hordeum_vulgare_goldenpromise.GPv1.pep.all.fa
-Triticum_dicoccoides.WEWSeq_v.1.0.pep.all.fa  all.prot.evidence.fa
-Avena_sativa_sang.Asativa_sang.v1.1.pep.all.fa
-Lolium_perenne.MPB_Lper_Kyuss_1697.pep.all.fa
-Triticum_spelta.PGSBv2.0.pep.all.fa
-Brachypodium_distachyon.Brachypodium_distachyon_v3.0.pep.all.fa
-Secale_cereale.Rye_Lo7_2018_v1p1p1.pep.all.fa
-Triticum_turgidum.Svevo.v1.pep.all.fa
-
-Outputs:
-Kronos.EVM.pasa.gff3: evidencemodeler gene models updated by pasa
-```
-Lastly, high-confidence genes were selected based on the evidence. 
-
+---
+⚙️**Pick annotations**  
 ```
 #search against the protein databases
-blastp -query Kronos.EVM.pasa..pep.fa -num_threads 56 -evalue 1e-10 -max_target_seqs 10 -max_hsps 1 -outfmt "6 std qlen slen" -out Kronos.v1.0.against.all.all_prot.max10 -db all_prot 
-blastp -query Kronos.EVM.pasa..pep.fa -num_threads 56 -evalue 1e-10 -max_target_seqs 10 -max_hsps 1 -outfmt "6 std qlen slen" -out Kronos.v1.0.against.all.pasa_orf.max10 -db pasa_orf
+blastp -query Kronos.EVM.pasa.pep.fa -num_threads 56 -evalue 1e-10 -max_target_seqs 10 -max_hsps 1 -outfmt "6 std qlen slen" -out Kronos.v1.0.against.all.all_prot.max10 -db all_prot 
+blastp -query Kronos.EVM.pasa.pep.fa -num_threads 56 -evalue 1e-10 -max_target_seqs 10 -max_hsps 1 -outfmt "6 std qlen slen" -out Kronos.v1.0.against.all.pasa_orf.max10 -db pasa_orf
 
 #create version 1 annotations
 #the input gff has to be correctly sorted first
