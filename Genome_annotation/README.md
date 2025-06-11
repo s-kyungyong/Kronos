@@ -1,5 +1,5 @@
 
-# Protein-coding Gene Preidction: v1.0 annotation
+# Protein-coding Gene Preidction
 
 ## Data availability 
 Protein coding genes can be downloaded from Zenodo.  
@@ -398,6 +398,7 @@ python generate_v1.0_annot.py
 
 ----
 
+## Annotation v2.0
 # Protein-coding Gene Preidction: v2.0 annotation
 
 ```
@@ -460,21 +461,43 @@ isoquant.py --threads 56 --reference Kronos.collapsed.chromosomes.masked.v1.1.br
 
 ### 4. Updating Annotations
 
-
-
-# Protein-coding Gene Preidction: v2.1 annotation
-
+---
+## Annotation v2.1
 In this version, existing genes in the v2.0 annotation that overlap with low-confidence NLRs were discarded. High and medium-confidence NLRs were added instead. 
+
+**📥 Inputs** 
+• `Kronos.v2.0.gff3`: Kronos annotation v2.0
+• `Kronos_all.NLRs.final.gff3`: Kronos NLR annotations: https://zenodo.org/records/15539721
+
+**📥 Outputs** 
+• `Kronos.v2.1.gff3`: Kronos annotation v2.1
+
+---
+⚙️ **Generate annotation**  
+• Get NLR confidence
 ```
-#input:
-v2.0 annotations
-nlr annotations
-nlr confidence (high/medium/low)
-
-#generate v2.1 annotation
-generate_v2.1_annot.py
-
-#sort gff
+awk -F'\t' '{
+  split($9, info, ";")
+  id = ""; conf = ""
+  for (i in info) {
+    if (info[i] ~ /^ID=/) {
+      sub(/^ID=/, "", info[i])
+      id = info[i]
+    }
+    if (info[i] ~ /^Confidenice=/) {
+      sub(/^Confidenice=/, "", info[i])
+      conf = info[i]
+    }
+  }
+  if (id != "" && conf != "") print id "\t" conf
+}' Kronos_all.NLRs.final.gff3 > Kronos_all.NLRs.final.conf.list
+```
+• create annotation v2.1
+```
+python generate_v2.1_annot.py
+```
+• Sort gff
+```
 grep -v '^#' Kronos.v2.1.initial.gff3 | \
 awk 'BEGIN {OFS="\t"} { 
     if ($3 == "gene") type = 1;
@@ -484,48 +507,4 @@ awk 'BEGIN {OFS="\t"} {
     else type = 5;
     print $0, type 
 }' | sort -k1,1 -k4,4n -k10,10n | cut -f1-9 > Kronos.v2.1.gff3  # Sort by chromosome, start, then type order
-
 ```
-
-
-# None-coding RNA Preidction: 
-
-```
-cmscan v1.1.5
-```
-
-
-## RFAM search
-
-
-```
-#download the databases: rfam v15.0
-wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz
-gunzip Rfam.cm.gz
-wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.clanin
-cmpress Rfam.cm
-
-#preparezvalues for each chromosome
-cat zvalue.list
-1A 1200.879162
-1B 1417.658372
-2A 1591.626378
-2B 1657.049066
-3A 1518.249256
-3B 1728.269574
-4A 1535.707034
-4B 1399.361912
-5A 1440.551718
-5B 1462.269252
-6A 1248.596746
-6B 1467.16489
-7A 1506.943932
-7B 1532.01879
-Un 421.039088
-
-#for each chromosome
-while read -r chromosome zvalue; do
-  cmscan -Z ${zvalue} --cut_ga --rfam --nohmmonly --tblout ${chromosome}.Rfam.tblout --fmt 2 --cpu 56 --clanin Rfam.clanin Rfam.cm Kronos.v1.1.${chromosome}.fa
-done < seqLengths.list
-
-./tRNAscan-SE_installed/bin/tRNAscan-SE -E -o tRNAscan-SE.out -f tRNAscan-SE.ss -s tRNAscan-SE.iso -m tRNAscan-SE.stats -c ./tRNAscan-SE_installed/bin/tRNAscan-SE.conf ../Final/Kronos.collapsed.chromosomes.v1.1.fa
