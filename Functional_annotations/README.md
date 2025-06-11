@@ -83,15 +83,19 @@ NCBIfam (14.0) : NCBIfam is a collection of protein families based on Hidden Mar
 We also added descriptions for each protein through annotation transfer. These annotations come from RefSeqs curated by the NCBI. For annotation transfer, query and hit coverage > 90%, sequence ideneity > 90% and E-value < 1e-10 were required. For sequences that fail to meet these criteria, annotations were lifted from eggNOG-mapper if present. Otherwise, sequences were annotated as hypothetical proteins. 
 
 ```
+#download proteins
 wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/018/294/505/GCF_018294505.1_IWGSC_CS_RefSeq_v2.1/GCF_018294505.1_IWGSC_CS_RefSeq_v2.1_protein.faa.gz
 wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/162/155/GCF_002162155.2_WEW_v2.1/GCF_002162155.2_WEW_v2.1_protein.faa.gz
 wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/003/073/215/GCF_003073215.2_Tu2.1/GCF_003073215.2_Tu2.1_protein.faa.gz
 gunzip *.gz 
 
+#concatnate all proteins
 cat *_protein.faa > NCBI_refseq.aa.fa 
 
+#run dimaond
 diamond makedb --in NCBI_refseq.aa.fa --db NCBI_refseq.aa
-diamond blastp --masking 0 -d NCBI_refseq.aa --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen --evalue 1-e04 --max-target-seqs 5 --query /global/scratch/projects/vector_kvklab/KS-Kronos_Final_datasets/02.Annotations/00.Proteins/v2.1/Kronos.v2.1.pep.fa --out Kronos.v2.1.against.NCBI.refseq.dmnd.out
+diamond blastp --masking 0 -d NCBI_refseq.aa --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen --evalue 1-e04 --max-target-seqs 5 --query Kronos.v2.1.pep.fa --out Kronos.v2.1.against.NCBI.refseq.dmnd.out
 
+#annottion transfer
 python transfer_annotations.py
 ```
