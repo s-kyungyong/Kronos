@@ -29,18 +29,16 @@ blast v2.15.0
 
 This step processes publicly available RNA-seq datasets for Kronos. Reads were downloaded, adapter-trimmed, aligned to the Kronos genome, and assembled both genome-guided and de novo to support gene structure prediction.
 
-Inputs---  
-
+**Inputs**
 `v1_rnaseq.list`: List of NCBI SRA accessions  
-
 `Kronos.collapsed.chromosomes.fa`: Kronos reference genome  
 
 
-Outputs---
-`all.merged.sorted.bam`: Merged and sorted RNA-seq alignments
-`transcripts.fasta`: Trinity-assembled transcripts (de novo + genome-guided)
-`stringtie.gtf`: Genome-guided transcript models from StringTie
-`sample_mydb_pasa.sqlite.assemblies.fasta`: PASA-refined transcript structures
+**Outputs**  
+`all.merged.sorted.bam`: Merged and sorted RNA-seq alignments  
+`transcripts.fasta`: Trinity-assembled transcripts (de novo + genome-guided)  
+`stringtie.gtf`: Genome-guided transcript models from StringTie  
+`sample_mydb_pasa.sqlite.assemblies.fasta`: PASA-refined transcript structures  
 
 
 We donwloaded the paired-end RNA-seq data from the NCBI. The list can be found in **v1_rnaseq.list**. 
