@@ -1,6 +1,13 @@
 
 # Protein-coding Gene Preidction: v1.0 annotation
 
+## Data availability 
+Protein coding genes can be downloaded from Zenodo
+• `v1.0 annotation`: https://zenodo.org/records/10215402
+• `v2.0 annotation`: https://zenodo.org/records/14189805
+• `v2.1 annotation [Final]`: https://zenodo.org/records/15539216
+
+## Software version
 ```
 trim_galore v0.6.6
 cutadapt v3.7
