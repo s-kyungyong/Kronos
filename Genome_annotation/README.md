@@ -7,6 +7,9 @@ Protein coding genes can be downloaded from Zenodo.
 • `v2.0 annotation`: [https://zenodo.org/records/14189805](https://zenodo.org/records/14189805)  
 • `v2.1 annotation [Final]`: [https://zenodo.org/records/15539216](https://zenodo.org/records/14189805) 
 
+Pretrained ab initio parameters in `abinitio_parameters`.
+
+
 ## Software version
 ```
 trim_galore v0.6.6
