@@ -52,36 +52,35 @@ for db in $DATABASES; do
         --output-dir $prefix \
         --cpu 16 \
         --goterms \
-        --pathways \
         --appl $db  # Run only the specific database
 done
 ```
 
 The commandline above enables the following analyses
 ```
-                       FunFam (4.3.0) : Prediction of functional annotations for novel, uncharacterized sequences.
-                         SFLD (4) : SFLD is a database of protein families based on hidden Markov models (HMMs).
-                      PANTHER (18.0) : The PANTHER (Protein ANalysis THrough Evolutionary Relationships) Classification System is a unique resource that classifies genes by their functions, using published scientific experimental evidence and evolutionary relationships to predict function even in the absence of direct experimental evidence.
-                       Gene3D (4.3.0) : Structural assignment for whole genes and genomes using the CATH domain structure database.
-                        Hamap (2023_05) : High-quality Automated and Manual Annotation of Microbial Proteomes.
-                       PRINTS (42.0) : A compendium of protein fingerprints - a fingerprint is a group of conserved motifs used to characterise a protein family.
-              ProSiteProfiles (2023_05) : PROSITE consists of documentation entries describing protein domains, families and functional sites as well as associated patterns and profiles to identify them.
-                        Coils (2.2.1) : Prediction of coiled coil regions in proteins.
-                  SUPERFAMILY (1.75) : SUPERFAMILY is a database of structural and functional annotations for all proteins and genomes.
-                        SMART (9.0) : SMART allows the identification and analysis of domain architectures based on hidden Markov models (HMMs).
-                          CDD (3.20) : CDD predicts protein domains and families based on a collection of well-annotated multiple sequence alignment models.
-                        PIRSR (2023_05) : PIRSR is a database of protein families based on hidden Markov models (HMMs) and Site Rules.
-              ProSitePatterns (2023_05) : PROSITE consists of documentation entries describing protein domains, families and functional sites as well as associated patterns and profiles to identify them.
-                      AntiFam (7.0) : AntiFam is a resource of profile-HMMs designed to identify spurious protein predictions.
-                         Pfam (37.0) : A large collection of protein families, each represented by multiple sequence alignments and hidden Markov models (HMMs).
-                   MobiDBLite (2.0) : Prediction of intrinsically disordered regions in proteins.
-                        PIRSF (3.10) : The PIRSF concept is used as a guiding principle to provide comprehensive and non-overlapping clustering of UniProtKB sequences into a hierarchical order to reflect their evolutionary relationships.
-                      NCBIfam (14.0) : NCBIfam is a collection of protein families based on Hidden Markov Models (HMMs).
+FunFam (4.3.0) : Prediction of functional annotations for novel, uncharacterized sequences.
+SFLD (4) : SFLD is a database of protein families based on hidden Markov models (HMMs).
+PANTHER (18.0) : The PANTHER (Protein ANalysis THrough Evolutionary Relationships) Classification System is a unique resource that classifies genes by their functions, using published scientific experimental evidence and evolutionary relationships to predict function even in the absence of direct experimental evidence.
+Gene3D (4.3.0) : Structural assignment for whole genes and genomes using the CATH domain structure database.
+Hamap (2023_05) : High-quality Automated and Manual Annotation of Microbial Proteomes.
+PRINTS (42.0) : A compendium of protein fingerprints - a fingerprint is a group of conserved motifs used to characterise a protein family.
+ProSiteProfiles (2023_05) : PROSITE consists of documentation entries describing protein domains, families and functional sites as well as associated patterns and profiles to identify them.
+Coils (2.2.1) : Prediction of coiled coil regions in proteins.
+SUPERFAMILY (1.75) : SUPERFAMILY is a database of structural and functional annotations for all proteins and genomes.
+SMART (9.0) : SMART allows the identification and analysis of domain architectures based on hidden Markov models (HMMs).
+CDD (3.20) : CDD predicts protein domains and families based on a collection of well-annotated multiple sequence alignment models.
+PIRSR (2023_05) : PIRSR is a database of protein families based on hidden Markov models (HMMs) and Site Rules.
+ProSitePatterns (2023_05) : PROSITE consists of documentation entries describing protein domains, families and functional sites as well as associated patterns and profiles to identify them.
+AntiFam (7.0) : AntiFam is a resource of profile-HMMs designed to identify spurious protein predictions.
+Pfam (37.0) : A large collection of protein families, each represented by multiple sequence alignments and hidden Markov models (HMMs).
+MobiDBLite (2.0) : Prediction of intrinsically disordered regions in proteins.
+PIRSF (3.10) : The PIRSF concept is used as a guiding principle to provide comprehensive and non-overlapping clustering of UniProtKB sequences into a hierarchical order to reflect their evolutionary relationships.
+NCBIfam (14.0) : NCBIfam is a collection of protein families based on Hidden Markov Models (HMMs).
 ```
 
 
 ## Annotation Transfer
-We also added descriptions for each protein through annotation transfer. These annotations come from RefSeqs curated by the NCBI. For annotation transfer, query and hit coverage > 90%, sequence ideneity > 90% and E-value < 1e-10 were required. If sequences fail to meet these criteria, annotations were lifted from EggNog Mapper. Otherwise, sequences were annotated as hypothetical proteins. 
+We also added descriptions for each protein through annotation transfer. These annotations come from RefSeqs curated by the NCBI. For annotation transfer, query and hit coverage > 90%, sequence ideneity > 90% and E-value < 1e-10 were required. For sequences that fail to meet these criteria, annotations were lifted from eggNOG-mapper if present. Otherwise, sequences were annotated as hypothetical proteins. 
 
 ```
 wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/018/294/505/GCF_018294505.1_IWGSC_CS_RefSeq_v2.1/GCF_018294505.1_IWGSC_CS_RefSeq_v2.1_protein.faa.gz
