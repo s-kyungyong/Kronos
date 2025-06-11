@@ -1,17 +1,26 @@
 # Functional Annotations
 
 ## Data Availability
+The functional annotations can be downloaded from Zenodo. 
+```
+https://zenodo.org/records/15539216: Functional annotations for annotation v2.1
+```
 
 ## Method
 
-Functional annotations were performed using eggNOG-mapper v2.1.12 and InterProScan v5.68.100 (Cantalapiedra et al., 2021; Jones et al., 2014).
+Functional annotations were performed using eggNOG-mapper v2.1.12 and InterProScan v5.68.100. 
 
+## Software version
+```
+eggNOG-mapper v2.1.12
+InterProScan v5.68.100
+```
 ---
 
 
 ## eggNOG-mapper
 
-Functional annotations are from eggNOG-MAPPER v2.1.12. All the parameters were set default, and the sequences were submitted to [the eggNOG-mapper server](http://eggnog-mapper.embl.de/).
+All the parameters were set default, and the sequences were submitted to [the eggNOG-mapper server](http://eggnog-mapper.embl.de/).
 ```
 Minimum hit e-value:  0.001
 Minimum hit bit-score:  60
@@ -29,7 +38,7 @@ SMART annotation: Skip SMART annotations
 
 ## InterProScan
 
-Domain annotations are from InterProScan. Due to memory issues, each database was searched and then all outputs were concatnated. 
+Due to memory issues, each database was searched and then all outputs were concatnated. 
 ```
 DATABASES="FunFam-4.3.0 SFLD-4 PANTHER-18.0 Gene3D-4.3.0 Hamap-2023_05 PRINTS-42.0 ProSiteProfiles-2023_05 Coils-2.2.1 SUPERFAMILY-1.75 SMART-9.0 CDD-3.20 PIRSR-2023_05 ProSitePatterns-2023_05 AntiFam-7.0 Pfam-37.0 MobiDBLite-2.0 PIRSF-3.10 NCBIfam-14.0"
 
@@ -48,7 +57,7 @@ for db in $DATABASES; do
 done
 ```
 
-The commandline above will enable the following analyses
+The commandline above enables the following analyses
 ```
                        FunFam (4.3.0) : Prediction of functional annotations for novel, uncharacterized sequences.
                          SFLD (4) : SFLD is a database of protein families based on hidden Markov models (HMMs).
@@ -72,7 +81,7 @@ The commandline above will enable the following analyses
 
 
 ## Annotation Transfer
-
+We also added descriptions for each protein through annotation transfer. These annotations come from RefSeqs curated by the NCBI. For annotation transfer, query and hit coverage > 90%, sequence ideneity > 90% and E-value < 1e-10 were required. If sequences fail to meet these criteria, annotations were lifted from EggNog Mapper. Otherwise, sequences were annotated as hypothetical proteins. 
 
 ```
 wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/018/294/505/GCF_018294505.1_IWGSC_CS_RefSeq_v2.1/GCF_018294505.1_IWGSC_CS_RefSeq_v2.1_protein.faa.gz
