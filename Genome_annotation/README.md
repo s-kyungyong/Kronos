@@ -163,7 +163,7 @@ singularity exec -B $PWD braker3.sif braker.pl --verbosity=3 \
 ```
 ---
 
-### 4. Gene Prediction with Funannotate  
+### 3. Gene Prediction with Funannotate  
 Funannotate integrates transcriptome evidence. Although it automatically trains ab initio prediction tools, we provided manually trained SNAP and AUGUSTUS models for better accuracy. Training sets were derived from BRAKER models filtered against known references.
 
 **📥 Inputs**  
@@ -216,7 +216,7 @@ segmasker -in Triticum_kronos.proteins.fa -out Triticum_kronos.proteins.segmakse
 python filter_genes_funannotate.py
 ```
 ---
-### 3. Gene Prediction with GINGER  
+### 4. Gene Prediction with GINGER  
 GINGER uses Nextflow to integrate multiple gene prediction modules. We modified two steps. `denovo.nf`: transcript assembles with oases/velvet were not performed, as this required 17,000,000 Gb memory. `abinitio.nf`: Augustus and SNAP were trained manually.
 
 **📥 Inputs**  
@@ -297,15 +297,15 @@ miniprot -t 56 --gff --outc=0.95 -N 0 Kronos.collapsed.chromosomes.fa uniprotkb_
 All gene prediction, transcript, and protein evidence was integrated using EvidenceModeler (EVM) to produce consensus gene models.  
 
 **📥 Inputs** 
-• `braker.gff`: BRAKER gene models
-• `Triticum_kronos.filtered.gff3`: Funannotate gene models
-• `ginger_phase2.gff`: GINGER gene models
-• `ginger_spaln.gff`: protein alignment models from GINGER
-• `miniprot.gff3`: Protein evidence (Miniprot)
-• `sample_mydb_pasa.sqlite.pasa_assemblies.gff3`: PASA transcript assemblies
-• `sample_mydb_pasa.sqlite.assemblies.fasta.transdecoder.genome.gff3`: Translated ORFs from PASA
-• `repeat.gff3`: repeat annotations from HiTE
-• `Kronos.collapsed.chromosomes.fa`: Kronos reference genome
+• `braker.gff`: BRAKER gene models  
+• `Triticum_kronos.filtered.gff3`: Funannotate gene models  
+• `ginger_phase2.gff`: GINGER gene models  
+• `ginger_spaln.gff`: protein alignment models from GINGER  
+• `miniprot.gff3`: Protein evidence (Miniprot)  
+• `sample_mydb_pasa.sqlite.pasa_assemblies.gff3`: PASA transcript assemblies  
+• `sample_mydb_pasa.sqlite.assemblies.fasta.transdecoder.genome.gff3`: Translated ORFs from PASA  
+• `repeat.gff3`: repeat annotations from HiTE  
+• `Kronos.collapsed.chromosomes.fa`: Kronos reference genome  
 
 **📥 Outputs** 
 • `Kronos.EVM.gff3`: Consensus gene models
@@ -351,9 +351,9 @@ TRANSCRIPT               pasa  8              #pasa transcript assemblies
 PASA was rerun to update the EVM models with untranslated regions (UTRs) and alternative splicing isoforms.
 
 **📥 Inputs** 
-• `Kronos.EVM.gff3`: Consensus gene models
-• `transcripts.fasta`: Trinity (de novo + genome-guided) assemblies  
-• `stringtie.gtf`: StringTie transcript models  
+• `Kronos.EVM.gff3`: Consensus gene models  
+• `transcripts.fasta`: Trinity (de novo + genome-guided) assemblies    
+• `stringtie.gtf`: StringTie transcript models    
 
 **📥 Outputs** 
 • `Kronos.EVM.pasa.gff3`: Final annotation with UTRs and isoforms
@@ -377,12 +377,12 @@ singularity exec pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PAS
 High-confidence genes were selected by searching final annotations against a panel of known proteins from related grass species.
 
 **📥 Inputs** 
-• `Kronos.EVM.pasa.gff3 Kronos.EVM.pasa.pep.fa`: Final PASA-refined annotations
-• `pasa.transdecoder.pep.complete.fa`: Complete ORFs (start + stop codons)
-• `protein evidence datasets`: from Ensembl Plants
-  • `Aegilops_tauschii.Aet_v4.0.pep.all.fa Avena_sativa_ot3098.Oat_OT3098_v2.pep.all.fa Avena_sativa_sang.Asativa_sang.v1.1.pep.all.fa Brachypodium_distachyon.Brachypodium_distachyon_v3.0.pep.all.fa`
-  • `Triticum_aestivum.IWGSC.pep.all.fa Triticum_urartu.IGDB.pep.all.fa Triticum_dicoccoides.WEWSeq_v.1.0.pep.all.fa Triticum_spelta.PGSBv2.0.pep.all.fa Triticum_turgidum.Svevo.v1.pep.all.fa`  
-  • `Lolium_perenne.MPB_Lper_Kyuss_1697.pep.all.fa Secale_cereale.Rye_Lo7_2018_v1p1p1.pep.all.fa Hordeum_vulgare.MorexV3_pseudomolecules_assembly.pep.all.fa Hordeum_vulgare_goldenpromise.GPv1.pep.all.fa`
+• `Kronos.EVM.pasa.gff3 Kronos.EVM.pasa.pep.fa`: Final PASA-refined annotations  
+• `pasa.transdecoder.pep.complete.fa`: Complete ORFs (start + stop codons)  
+• `protein evidence datasets`: from Ensembl Plants  
+  • `Aegilops_tauschii.Aet_v4.0.pep.all.fa Avena_sativa_ot3098.Oat_OT3098_v2.pep.all.fa Avena_sativa_sang.Asativa_sang.v1.1.pep.all.fa Brachypodium_distachyon.Brachypodium_distachyon_v3.0.pep.all.fa`  
+  • `Triticum_aestivum.IWGSC.pep.all.fa Triticum_urartu.IGDB.pep.all.fa Triticum_dicoccoides.WEWSeq_v.1.0.pep.all.fa Triticum_spelta.PGSBv2.0.pep.all.fa Triticum_turgidum.Svevo.v1.pep.all.fa`    
+  • `Lolium_perenne.MPB_Lper_Kyuss_1697.pep.all.fa Secale_cereale.Rye_Lo7_2018_v1p1p1.pep.all.fa Hordeum_vulgare.MorexV3_pseudomolecules_assembly.pep.all.fa Hordeum_vulgare_goldenpromise.GPv1.pep.all.fa`  
 
 ---
 ⚙️**Pick annotations**  
