@@ -49,7 +49,7 @@ This step processes publicly available RNA-seq datasets for Kronos. Reads were d
 
 ---
 
-**Download RNA-seq datasets from NCBI**
+**Download RNA-seq datasets from NCBI**  
 ```
 while read -r accession; do 
     sratoolkit.3.1.1-centos_linux64/bin/prefetch ${accession}
@@ -59,14 +59,14 @@ done < v1_rnaseq.list
 
 ---
 
-**Adapter trimming and quality filtering**
+**Adapter trimming and quality filtering**  
 ```
 ls *.fastq | cut -d "_" -f 1 | sort -u | while read accession; do 
     trim_galore --paired -j 8 -a "${accession}_1.fastq" "${accession}_2.fastq"
 done
 ```
-
-**Genome-guided mapping and transcript assembly**
+---
+**Genome-guided mapping and transcript assembly**  
 • Build genome index
 ```
 hisat2-build -p 20 Kronos.collapsed.chromosomes.fa Kronos #v1.0 genome was used 
@@ -97,14 +97,18 @@ samtools sort -@ 56 all.merged.bam > all.merged.sorted.bam
 
 stringtie -o stringtie.gtf -p 56 --conservative all.merged.sorted.bam
 ```
+---
+**De novo and genome-guided transcriptome assembly with Trinity**  
+Note: Due to memory limitations (>1.6 TB input), Trinity was run on individually normalized libraries.  
+
+• Normalize each library
 ```
-
-
-De novo assembly was done using Trinity v2.15.1. We initially tried running Trinity on the 1.6 Tb of paired-end fastq files all at once. After two weeks, Trinity was still stuck at the insilico normalization step with about 35-45% progress. We, therefore, had to take some other ways around. Each pair will be normalized first, and then Trinity was run. This took a few days, producing transcripts of ~1 Gb. 
+#run for for each pair 
+singularity run trinity.sif Trinity --verbose --max_memory 90G --just_normalize_reads \
+                                    --seqType fq --CPU 40 --left $left --right $right --output trinity_$prefix
 ```
-#for each pair 
-singularity run trinity.sif Trinity --verbose --max_memory 90G --just_normalize_reads --seqType fq --CPU 40 --left $left --right $right --output trinity_$prefix
-
+• Create sample list of normalized reads
+```
 #list all normalized reads
 ls -d trinity_* | while read folder; do
     prefix=$(echo $folder | cut -d "_" -f 2)
@@ -112,28 +116,27 @@ ls -d trinity_* | while read folder; do
     right=$(ls $(pwd)\/$folder\/insilico_read_normalization/*_2_val_2*.fq)
     echo $prefix $prefix $left $right
 done > sample.list
-
+```
+• Run Trinity (de novo and genome-guided)
+```
+#merge all outputs into transcripts.fasta
 #run trinity de novo
 singularity run trinity.sif Trinity --verbose --seqType fq --max_memory 1500G --CPU 56 --samples_file sample.list
 
 #run trinity genome-guided
 singularity run trinity.sif Trinity --verbose --max_memory 250G --CPU 56 --genome_guided_max_intron 10000 --genome_guided_bam all.merged.sorted.bam
-
-#combine the oututs to transcripts.fa
-#process assemblies
-TransDecoder.LongOrfs -t transcripts.fa
-TransDecoder.Predict -t TransDecoder.LongOrfs -t transcripts.fa
 ```
-
-Finally, these assembled transcripts was processed by PASA, and orfs were predicted by transdecoder.
+---
+**Transcript refinement with PASA**  
+• Assemble all transcripts
 ```
-singularity exec pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl -c /usr/local/src/PASApipeline/sample_data/sqlite.confs/alignAssembly.config -r -C -R --CPU 56 --ALIGNERS gmap --TRANSDECODER -ALT_SPLICE -g Kronos.collapsed.chromosomes.masked.fa -t transcripts.fasta --trans_gtf stringtie.gtf
-
-#process assemblies
-TransDecoder.LongOrfs -t sample_mydb_pasa.sqlite.assemblies.fasta
-TransDecoder.Predict -t TransDecoder.LongOrfs -t sample_mydb_pasa.sqlite.assemblies.fasta
+singularity exec pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl \
+            -c /usr/local/src/PASApipeline/sample_data/sqlite.confs/alignAssembly.config -r -C -R \
+            --CPU 56 --ALIGNERS gmap --TRANSDECODER -g Kronos.collapsed.chromosomes.fa \
+            -t transcripts.fasta \ #this includes all trinity-assembled transcripts (genome-guided and de novo)
+            --trans_gtf stringtie.gtf #stringtie-based assembly outputs
 ```
-
+---
 
 ### 2. BRAKER
 ```
