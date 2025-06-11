@@ -50,7 +50,7 @@ This step processes publicly available RNA-seq datasets for Kronos. Reads were d
 
 ---
 
-⚙️**Download RNA-seq datasets from NCBI**  
+⚙️ **Download RNA-seq datasets from NCBI**  
 ```
 while read -r accession; do 
     sratoolkit.3.1.1-centos_linux64/bin/prefetch ${accession}
@@ -60,14 +60,14 @@ done < v1_rnaseq.list
 
 ---
 
-⚙️**Adapter trimming and quality filtering**  
+⚙️ **Adapter trimming and quality filtering**  
 ```
 ls *.fastq | cut -d "_" -f 1 | sort -u | while read accession; do 
     trim_galore --paired -j 8 -a "${accession}_1.fastq" "${accession}_2.fastq"
 done
 ```
 ---
-⚙️**Genome-guided mapping and transcript assembly**  
+⚙️ **Genome-guided mapping and transcript assembly**  
 • Build genome index
 ```
 hisat2-build -p 20 Kronos.collapsed.chromosomes.fa Kronos #v1.0 genome was used 
@@ -99,7 +99,7 @@ samtools sort -@ 56 all.merged.bam > all.merged.sorted.bam
 stringtie -o stringtie.gtf -p 56 --conservative all.merged.sorted.bam
 ```
 ---
-⚙️**De novo and genome-guided transcriptome assembly with Trinity**  
+⚙️ **De novo and genome-guided transcriptome assembly with Trinity**  
 Note: Due to memory limitations (>1.6 TB input), Trinity was run on individually normalized libraries.  
 
 • Normalize each library
@@ -128,7 +128,7 @@ singularity run trinity.sif Trinity --verbose --seqType fq --max_memory 1500G --
 singularity run trinity.sif Trinity --verbose --max_memory 250G --CPU 56 --genome_guided_max_intron 10000 --genome_guided_bam all.merged.sorted.bam
 ```
 ---
-⚙️**Transcript refinement with PASA**  
+⚙️ **Transcript refinement with PASA**  
 ```
 singularity exec pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl \
             -c /usr/local/src/PASApipeline/sample_data/sqlite.confs/alignAssembly.config -r -C -R \
@@ -151,7 +151,7 @@ BRAKER was used to generate gene models using both RNA-seq alignment evidence an
 
 ---
 
-⚙️**Run BRAKER**  
+⚙️ **Run BRAKER**  
 ```
 singularity exec -B $PWD braker3.sif braker.pl --verbosity=3 \
     --genome=Kronos.collapsed.chromosomes.masked.fa \
@@ -190,7 +190,7 @@ cat  braker_vs_trinity.blast.out braker_vs_iwgsc.blast.out > braker.blast.out
 python select_genes_for_training.py 6000 
 ```
 ---
-⚙️**Run Funannotate**  
+⚙️ **Run Funannotate**  
 ```
 funannotate predict \
 -i Kronos.collapsed.chromosomes.masked.fa \
@@ -209,7 +209,7 @@ funannotate predict \
 --GENEMARK_PATH /global/scratch/users/skyungyong/Software/gmes_linux_64_4 \
 ```
 ---
-⚙️**Filter annotations**  
+⚙️ **Filter annotations**  
 Funannotate produced ~137,000 gene models. Low-complexity ones were filtered post hoc to reduce nosies. 
 ```
 segmasker -in Triticum_kronos.proteins.fa -out Triticum_kronos.proteins.segmakser.out
@@ -231,7 +231,7 @@ GINGER uses Nextflow to integrate multiple gene prediction modules. We modified 
 
 
 ---
-⚙️**Manual Training**  
+⚙️ **Manual Training**  
 Gene models from BRAKER were filtered to retain only: genes with start & stop codons, full-length hits to IWGSC or translated Trinity transcripts, ≥99.5% sequence identity, and protein length ≥ 350 aa. This time, 8,500 genes were randomly selected for Augustus and SNAP, respectively.   
 • Select gene models
 ```
@@ -263,7 +263,7 @@ hmm-assembler.pl Kronos . > Kronos_manual.hmm
 ```
 
 ---
-⚙️**Run GINGER**  
+⚙️ **Run GINGER**  
 ```
 nextflow -C nextflow.config run mapping.nf
 nextflow -C nextflow.config run denovo.nf #with modification
@@ -287,7 +287,7 @@ Miniprot was used to align 2.85 million Poales protein sequences from UniProt to
 • `miniprot.gff3`: Protein alignments
 
 ---
-⚙️**Run MiniProt**  
+⚙️ **Run MiniProt**  
 ```
 miniprot -t 56 --gff --outc=0.95 -N 0 Kronos.collapsed.chromosomes.fa uniprotkb_38820.fasta > miniprot.gff3
 ```
@@ -311,7 +311,7 @@ All gene prediction, transcript, and protein evidence was integrated using Evide
 • `Kronos.EVM.gff3`: Consensus gene models
 
 ---
-⚙️**Input Preprocessing**  
+⚙️ **Input Preprocessing**  
 ```
 # Combine ab initio predictions
 cat braker.gff Triticum_kronos.filtered.gff3 ginger_phase2.gff \
@@ -325,7 +325,7 @@ cp sample_mydb_pasa.sqlite.pasa_assemblies.gff3 transcripts.gff3
 ```
 
 ---
-⚙️**Run EVM**  
+⚙️ **Run EVM**  
 
 EvidenceModeler was run as below with the specified weights. 
 ```
@@ -359,7 +359,7 @@ PASA was rerun to update the EVM models with untranslated regions (UTRs) and alt
 • `Kronos.EVM.pasa.gff3`: Final annotation with UTRs and isoforms
 
 ---
-⚙️**Run PASA**  
+⚙️ **Run PASA**  
 
 ```
 #create DB
@@ -385,7 +385,7 @@ High-confidence genes were selected by searching final annotations against a pan
   • `Lolium_perenne.MPB_Lper_Kyuss_1697.pep.all.fa Secale_cereale.Rye_Lo7_2018_v1p1p1.pep.all.fa Hordeum_vulgare.MorexV3_pseudomolecules_assembly.pep.all.fa Hordeum_vulgare_goldenpromise.GPv1.pep.all.fa`  
 
 ---
-⚙️**Pick annotations**  
+⚙️ **Pick annotations**  
 ```
 #search against the protein databases
 blastp -query Kronos.EVM.pasa.pep.fa -num_threads 56 -evalue 1e-10 -max_target_seqs 10 -max_hsps 1 -outfmt "6 std qlen slen" -out Kronos.v1.0.against.all.all_prot.max10 -db all_prot 
