@@ -407,27 +407,34 @@ python generate_v1.0_annot.py
 
 Annotation v2.0 integrates publicly available long-read transcriptome data for *Triticum* to improve annotation accuracy. Assemblies were performed with both StringTie and IsoQuant, incorporating short-read evidence for improved splice junction support.
 
-### 1. Long-read Transcriptome Assembly
+### 1. Long-read Transcriptome Data Download
 
 **📥 Inputs**  
 • `v2_rnaseq.list`: List of NCBI SRA accessions  
-• `Kronos.collapsed.chromosomes.fa`: Kronos reference genome  
-• `Kronos.collapsed.chromosomes.masked.v1.1.broken.fa`: broken Kronos reference genome v1.1 (masked)  
 
 **📥 Outputs**  
-
+• `fastq files`: long-read transcriptome data
 
 ---
-⚙️ **Long-Read Transcriptome Data Download**  
+⚙️ **Data Download**  
 ```
 while read -r accession; do 
     sratoolkit.3.1.1-centos_linux64/bin/prefetch ${accession}
     sratoolkit.3.1.1-centos_linux64/bin/fasterq-dump -O . -e ${Numthreads} ${accession}
 done < v2_rnaseq.list
 ```
+---
+### 2. Long-Read Alignment with Minimap2
 
-⚙️ **Long-Read Alignment with Minimap2**  
-• Align to the genome  
+**📥 Inputs**  
+• `fastq files`: long-read transcriptome data
+• `Kronos.collapsed.chromosomes.masked.v1.1.broken.fa`: broken Kronos reference genome v1.1 (masked)  
+
+**📥 Outputs**  
+• `all.long-read.merged.bam`: long-read transcriptome alignments
+
+---
+⚙️ **Alignment with Minimap2**  
 ```
 for fq in *.fq; do
   prefix=$(echo $fq | cut -d "." -f 1)
@@ -441,7 +448,6 @@ done
 samtools merge -@56 -h ERR11193282.bam all.long-read.merged.bam *.bam
 samtools index -@56 all.long-read.merged.bam
 ```
-
 • Split chromosomes for parallel processing 
 ```
 #separate for each chromosome
@@ -454,18 +460,34 @@ for chromosome in \
 done
 ```
 
-### 3. Assembly
+### 3. Transcript Assembly with StringTie & IsoQuant
 
-Transcripts were then assemblied, using stringtie and isoquant. The short-read transcriptome alignments obtained during the first version of annotation was included to enhance splicing site detection.
+**📥 Inputs**  
+• `all.merged.sorted.*.bam`: Filtered short-read transcriptome alignments produced during v1.0 anotation
+• `all.long-read.merged.*.bam`: long-read transcriptome alignments
+• `Kronos.collapsed.chromosomes.masked.v1.1.broken.fa`: broken Kronos reference genome v1.1 (masked)  
+
+**📥 Outputs**  
+• `all.long-read.merged.*.bam`: long-read transcriptome alignments
+
+
+---
+⚙️ **Assembly with StringTie**  
 ```
 #de novo assembly using stringtie
-stringtie -p 4 -v -o Kronos.${chromosome}.stringtie.denovo.gtf --mix all.short-read.merged.${chromosome}.bam all.long-read.merged.${chromosome}.bam
+stringtie -p 4 -v -o Kronos.${chromosome}.stringtie.denovo.gtf \
+         --mix all.short-read.merged.${chromosome}.bam all.long-read.merged.${chromosome}.bam
 
 #reference-annotation guided using stringtie
-stringtie -p -4 -o Kronos.${chromosome}.stringtie.guided.gtf -p 4 -G Kronos.v1.0.all.gff3 --mix all.short-read.merged.${chromosome}.bam all.long-read.merged.${chromosome}.bam
+stringtie -p -4 -o Kronos.${chromosome}.stringtie.guided.gtf \
+         -p 4 -G Kronos.v1.0.all.gff3 --mix all.short-read.merged.${chromosome}.bam all.long-read.merged.${chromosome}.bam
+```
 
-#assemblies using isoquant
-isoquant.py --threads 56 --reference Kronos.collapsed.chromosomes.masked.v1.1.broken.fa --illumina_bam all.short-read.merged.bam --output Isoquant_Kronos --data_type pacbio_ccs --bam $bam
+⚙️ **Assembly with Isoquant**  
+
+```
+isoquant.py --threads 56 --reference Kronos.collapsed.chromosomes.masked.v1.1.broken.fa \
+            --illumina_bam all.merged.sorted.all.bam --output Isoquant_Kronos --data_type pacbio_ccs --bam $bam #a list of unmerged bamfiles was given
 ```
 
 ### 4. Updating Annotations
