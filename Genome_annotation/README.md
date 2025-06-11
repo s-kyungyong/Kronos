@@ -36,12 +36,12 @@ blast v2.15.0
 
 This step processes publicly available RNA-seq datasets for Kronos. Reads were downloaded, adapter-trimmed, aligned to the Kronos genome, and assembled both genome-guided and de novo to support gene structure prediction.
 
-**Inputs**  
+**📥 Inputs**  
 • `v1_rnaseq.list`: List of NCBI SRA accessions  
 • `Kronos.collapsed.chromosomes.fa`: Kronos reference genome  
+• `Kronos.collapsed.chromosomes.masked.fa`: Kronos reference genome (masked)  
 
-
-**Outputs**  
+**📥 Outputs**  
 • `all.merged.sorted.bam`: Merged and sorted RNA-seq alignments by mapping  
 • `transcripts.fasta`: Trinity-assembled transcripts (de novo + genome-guided)   
 • `stringtie.gtf`: Genome-guided transcript models from StringTie  
@@ -128,7 +128,6 @@ singularity run trinity.sif Trinity --verbose --max_memory 250G --CPU 56 --genom
 ```
 ---
 **Transcript refinement with PASA**  
-• Assemble all transcripts
 ```
 singularity exec pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl \
             -c /usr/local/src/PASApipeline/sample_data/sqlite.confs/alignAssembly.config -r -C -R \
@@ -137,19 +136,19 @@ singularity exec pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PAS
             --trans_gtf stringtie.gtf #stringtie-based assembly outputs
 ```
 ---
+### 2. Gene Prediction with BRAKER  
+BRAKER was used to generate gene models using both RNA-seq alignment evidence and protein homology. Protein sequences from the Poales clade (TAXID: 38820) were downloaded from UniProt.  
 
-### 2. BRAKER
-```
-inputs:
-all.merged.sorted.bam: filtered transcritpome alignments produced using hisat and samtools
-uniprotkb_38820.fasta: 2,850,097 protein sequences from Poales (TAXID: 38820) downloaded from UniProt
+**📥 Inputs**  
+• `all.merged.sorted.bam`: Filtered transcriptome alignments (HISAT2 + SAMtools)  
+• `uniprotkb_38820.fasta`: 2.85 million Poales proteins  
 
-outputs:
-braker.gtf: braker gene models
-braker.aa: protein sequences of braker gene models
-```
+**📥 Outputs**  
+• `braker.gtf`: Gene models predicted by BRAKER  
 
-BRAKER was run as below.
+---
+
+**Run BRAKER**  
 ```
 singularity exec -B $PWD braker3.sif braker.pl --verbosity=3 \
     --genome=Kronos.collapsed.chromosomes.masked.fa \
@@ -158,10 +157,6 @@ singularity exec -B $PWD braker3.sif braker.pl --verbosity=3 \
     --species=Kronos --threads 48 --gff3 \
     --workingdir=$wd/braker \
     --AUGUSTUS_CONFIG_PATH=$wd/config
-
-#decorate utr
-#utr is deleted during evidencemodler step, so this is not needed.
-python stringtie2utr.py -g braker.gtf -s GeneMark-ETP/rnaseq/stringtie/transcripts_all.merged.sorted.gff -o braker.utr.gtf
 ```
 
 ### 3. Funannotate
