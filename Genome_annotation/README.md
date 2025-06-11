@@ -49,7 +49,7 @@ This step processes publicly available RNA-seq datasets for Kronos. Reads were d
 
 ---
 
-**Download RNA-seq datasets from NCBI**  
+⚙️**Download RNA-seq datasets from NCBI**  
 ```
 while read -r accession; do 
     sratoolkit.3.1.1-centos_linux64/bin/prefetch ${accession}
@@ -59,14 +59,14 @@ done < v1_rnaseq.list
 
 ---
 
-**Adapter trimming and quality filtering**  
+⚙️**Adapter trimming and quality filtering**  
 ```
 ls *.fastq | cut -d "_" -f 1 | sort -u | while read accession; do 
     trim_galore --paired -j 8 -a "${accession}_1.fastq" "${accession}_2.fastq"
 done
 ```
 ---
-**Genome-guided mapping and transcript assembly**  
+⚙️**Genome-guided mapping and transcript assembly**  
 • Build genome index
 ```
 hisat2-build -p 20 Kronos.collapsed.chromosomes.fa Kronos #v1.0 genome was used 
@@ -98,7 +98,7 @@ samtools sort -@ 56 all.merged.bam > all.merged.sorted.bam
 stringtie -o stringtie.gtf -p 56 --conservative all.merged.sorted.bam
 ```
 ---
-**De novo and genome-guided transcriptome assembly with Trinity**  
+⚙️**De novo and genome-guided transcriptome assembly with Trinity**  
 Note: Due to memory limitations (>1.6 TB input), Trinity was run on individually normalized libraries.  
 
 • Normalize each library
@@ -127,7 +127,7 @@ singularity run trinity.sif Trinity --verbose --seqType fq --max_memory 1500G --
 singularity run trinity.sif Trinity --verbose --max_memory 250G --CPU 56 --genome_guided_max_intron 10000 --genome_guided_bam all.merged.sorted.bam
 ```
 ---
-**Transcript refinement with PASA**  
+⚙️**Transcript refinement with PASA**  
 ```
 singularity exec pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl \
             -c /usr/local/src/PASApipeline/sample_data/sqlite.confs/alignAssembly.config -r -C -R \
@@ -145,10 +145,11 @@ BRAKER was used to generate gene models using both RNA-seq alignment evidence an
 
 **📥 Outputs**  
 • `braker.gtf`: Gene models predicted by BRAKER  
+• `braker.aa`: protein sequences predicted by BRAKER  
 
 ---
 
-**Run BRAKER**  
+⚙️**Run BRAKER**  
 ```
 singularity exec -B $PWD braker3.sif braker.pl --verbosity=3 \
     --genome=Kronos.collapsed.chromosomes.masked.fa \
@@ -158,22 +159,26 @@ singularity exec -B $PWD braker3.sif braker.pl --verbosity=3 \
     --workingdir=$wd/braker \
     --AUGUSTUS_CONFIG_PATH=$wd/config
 ```
+---
 
-### 3. Funannotate
-```
-inputs:
-transcripts.fasta: de novo and genome-guided transcript assemblies from trinity
-all.merged.sorted.bam: filtered transcritpome alignments produced using hisat and samtools
-stringtie.gtf: transcript assemblies from stringtie
-braker.gtf: braker gene models
-braker.aa: protein sequences of braker gene models
+### 3. Gene Prediction with Funannotate  
+Funannotate integrates transcriptome evidence. Although it automatically trains ab initio prediction tools, we provided manually trained SNAP and AUGUSTUS models for better accuracy. Training sets were derived from BRAKER models filtered against known references.
 
-outputs:
-Triticum_kronos.filtered.gff3: funannotate gene models
-```
+**📥 Inputs**  
+• `transcripts.fasta`: Trinity (de novo + genome-guided) assemblies
+• `stringtie.gtf`: StringTie transcript models
+• `all.merged.sorted.bam`: Filtered transcriptome alignments (HISAT2 + SAMtools)  
+• `braker.gtf, braker.aa`: BRAKER gene models and proteins
 
-Funannotate internally trains augustus and snap. However, we manually trained them and provided those parameters to funannotate. Gene models from BRAKER were searched against the IWGSC reference annotation (v1.0) and transcript assemblies from Trinity (protein sequences from transdecoder). Then, genes were selected if they had start and stop codons, having the same length with hits, sequence ideneity ≥ 99.5% and minimum protein lengths of 350. 6,000 genes were randomly selected for Augustus and SNAP, respectively. For Augustus, 5,700 were used as trainning set and 300 for testing. The worflow we followed is identical to the one described below in the GINGER section. 
+**📥 Outputs**  
+• `Triticum_kronos.filtered.gff3`: Funannotate gene models
+
+
+---
+⚙️**Manual Training**  
+Gene models from BRAKER were filtered to retain only: genes with start & stop codons, full-length hits to the IWGSC reference annotation or translated Trinity transcripts, ≥99.5% sequence identity, and protein length ≥ 350 aa. 6,000 genes were randomly selected for training. See **4. Gene Prediction with Funannotate** for how to train. 
 ```
+#search against trinity or chinese spring protein annotation set
 blastp -query braker.aa -db trinity -max_target_seqs -max_hsps 1 -num_threads 56 -evalue 1e-10 -outfmt "6 std qlen slen" -out braker_vs_trinity.blast.out
 blastp -query braker.aa -db iwgsc -max_target_seqs -max_hsps 1 -num_threads 56 -evalue 1e-10 -outfmt "6 std qlen slen" -out braker_vs_iwgsc.blast.out
 cat  braker_vs_trinity.blast.out braker_vs_iwgsc.blast.out > braker.blast.out
@@ -181,8 +186,8 @@ cat  braker_vs_trinity.blast.out braker_vs_iwgsc.blast.out > braker.blast.out
 #select genes
 python select_genes_for_training.py 6000 
 ```
-
-Funannotate was run as below. We made it to pick up the pre-trained SNAP parameters. 
+---
+⚙️**Run Funannotate**  
 ```
 funannotate predict \
 -i Kronos.collapsed.chromosomes.masked.fa \
@@ -194,47 +199,37 @@ funannotate predict \
 --ploidy 2 \ #2 was used as Kronos is homozygous and can be collapsed 
 --rna_bam all.merged.sorted.bam \
 --stringtie stringtie.gtf \
---augustus_species Kronos_maker \
+--augustus_species Kronos_manual \
 --AUGUSTUS_CONFIG_PATH /global/scratch/users/skyungyong/Software/anaconda3/envs/funannotate/config/ \
 --organism other \
 --EVM_HOME /global/scratch/users/skyungyong/Software/anaconda3/envs/funannotate/opt/evidencemodeler-1.1.1/ \
 --GENEMARK_PATH /global/scratch/users/skyungyong/Software/gmes_linux_64_4 \
 ```
-
-Funannotate produced a lot of gene models than expected (137,303!). Gene models with high portion of low complexity regions were removed. This was not perfect filtering, but as different evidence would be combined at a later step, we did not dig in for further filtering. 
+---
+⚙️**Filter annotations**  
+Funannotate produced ~137,000 gene models. Low-complexity ones were filtered post hoc to reduce nosies. 
 ```
 segmasker -in Triticum_kronos.proteins.fa -out Triticum_kronos.proteins.segmakser.out
 python filter_genes_funannotate.py
 ```
+---
+### 3. Gene Prediction with GINGER  
+GINGER uses Nextflow to integrate multiple gene prediction modules. We modified two steps. `denovo.nf`: transcript assembles with oases/velvet were not performed, as this required 17,000,000 Gb memory. `abinitio.nf`: Augustus and SNAP were trained manually.
 
-### 4. GINGER
-```
-inputs:
-transcripts.fasta: de novo and genome-guided transcript assemblies from trinity
-all.merged.sorted.bam: filtered transcritpome alignments produced using hisat and samtools
-left.norm.norm.fq: pre-normalized rnaseq data
-right.norm.norm.fq: pre-normalized rnaseq data
-braker.gtf: braker gene models
-braker.aa: protein sequences of braker gene models
+**📥 Inputs**  
+• `transcripts.fasta`: Trinity (de novo + genome-guided) assemblies
+• `all.merged.sorted.bam`: Filtered transcriptome alignments (HISAT2 + SAMtools)  
+• `braker.gtf, braker.aa`: BRAKER gene models and proteins
+• `Protein sequence`: protein sequences downloaded from Ensembl for T. aestivum, T. turgidum, T. dicoccoides, T. spelta, T. urartu
 
-#protein evidence for SPALN (tritaest)
-Triticum_aestivum.IWGSC.pep.all.fa
-Triticum_turgidum.Svevo.v1.pep.all.fa
-Triticum_dicoccoides.WEWSeq_v.1.0.pep.all.fa
-Triticum_spelta.PGSBv2.0.pep.all.fa
-Triticum_urartu.IGDB.pep.all.fa
+**📥 Outputs**  
+• `ginger_phase2.gff`: GINGER-predicted gene models
 
-outputs:
-ginger_phase2.gff: ginger gene models
-```
 
-GINGER uses Nextflow to streamline annotations. We made a few changes here in the workflow
-```
-denovo.nf: transcript assembles with oases/velvet were not performed, as this required 17,000,000 Gb memory. 
-abinitio.nf: Augustus and SNAP were trained manually
-```
-
-Augustus and SNAP were trainned similarly. Gene models from BRAKER were searched against the IWGSC reference annotation (v1.0) and transcript assemblies from Trinity. Then, genes were selected if they had start and stop codons, having the same length with hits, sequence ideneity ≥ 99.5% and minimum protein lengths of 350. This time, 8,500 genes were randomly selected for Augustus and SNAP, respectively. For Augustus, 5,700 were used as trainning set and 300 for testing. 
+---
+⚙️**Manual Training**  
+Gene models from BRAKER were filtered to retain only: genes with start & stop codons, full-length hits to IWGSC or translated Trinity transcripts, ≥99.5% sequence identity, and protein length ≥ 350 aa. This time, 8,500 genes were randomly selected for Augustus and SNAP, respectively. 
+• Select gene models
 ```
 blastp -query braker.aa -db trinity -max_target_seqs -max_hsps 1 -num_threads 56 -evalue 1e-10 -outfmt "6 std qlen slen" -out braker_vs_trinity.blast.out
 blastp -query braker.aa -db iwgsc -max_target_seqs -max_hsps 1 -num_threads 56 -evalue 1e-10 -outfmt "6 std qlen slen" -out braker_vs_iwgsc.blast.out
@@ -244,7 +239,7 @@ cat  braker_vs_trinity.blast.out braker_vs_iwgsc.blast.out > braker.blast.out
 python select_genes_for_training.py 8500 
 ```
 
-AUGUSTUS was trained as below.
+• Train Augustus
 ```
 gff2gbSmallDNA.pl augustus.gff3 Kronos.collapsed.chromosomes.masked.fa 2000 genes.gb
 randomSplit.pl genes.gb 400 # 400 test set
@@ -253,7 +248,7 @@ etraining -species=Kronos_manual genes.gb.train
 optimize_augustus.pl --species=Kronos_manual --cpus=48 --UTR=off genes.gb.train
 ```
 
-SNAP was trained as below.
+• Train SNAP
 ```
 gff3_to_zff.pl genome.dna snap.gff3 > genome.ann # genome.dna = Kronos.collapsed.chromosomes.masked.fa
 fathom -validate genome.ann genome.dna 
@@ -263,11 +258,12 @@ forge export.ann export.dna
 hmm-assembler.pl Kronos . > Kronos_manual.hmm
 ```
 
-GINGER was run roughly as below. Note that we had to make changes in the next flow modules for the modifications mentioned earlier in this section.
+---
+⚙️**Run GINGER**  
 ```
 nextflow -C nextflow.config run mapping.nf
-nextflow -C nextflow.config run denovo.nf
-nextflow -C nextflow.config run abinitio.nf
+nextflow -C nextflow.config run denovo.nf #with modification
+nextflow -C nextflow.config run abinitio.nf #with modification
 nextflow -C nextflow.config run homology.nf
 phase0.sh nextflow.config
 phase1.sh nextflow.config > phase1.log
