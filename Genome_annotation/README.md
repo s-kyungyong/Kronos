@@ -22,8 +22,10 @@ evidencemodeler v2.1.0
 blast v2.15.0
 ```
 
+---
 
-The first version of genome annotation largely focused on the integration of short-read sequencing data produced for Kronos and the consensus of multiple gene prediction software
+## v1.0
+The first version of genome annotation largely focused on the integrating short-read sequencing data produced for Kronos and the consensus of multiple gene prediction tools.
 
 ### 1. Paired-end Short-read Transcriptome Data Processing
 ```
