@@ -489,14 +489,15 @@ isoquant.py --threads 56 --reference Kronos.collapsed.chromosomes.masked.v1.1.br
 
 ### 4. Combining Annotations
 **📥 Inputs**  
-• `stringtie.denovo.transcript_models.gtf`: transcripts from StringTie
-• `isoquant.OUT.transcript_models.gtf`: transcripts from Isoquant
-• `all.merged.sorted.bam`: Filtered short-read transcriptome alignments produced during v1.0 anotation  
-• `all.evidnece.fa`: protein evidence datasets from Ensembl Plants used during v1.0 anntotation (step 8)
-• `Kronos.collapsed.chromosomes.masked.v1.1.fa`: broken Kronos reference genome v1.1 (masked)    
-
+• `stringtie.denovo.transcript_models.gtf`: transcripts from StringTie  
+• `isoquant.OUT.transcript_models.gtf`: transcripts from Isoquant  
+• `all.merged.sorted.bam`: Filtered short-read transcriptome alignments produced during v1.0 anotation    
+• `all.evidnece.fa`: protein evidence datasets from Ensembl Plants used during v1.0 anntotation (step 8)  
+• `Kronos.collapsed.chromosomes.masked.v1.1.fa`: broken Kronos reference genome v1.1 (masked)      
+ 
 
 **📥 Outputs** 
+• `mikado.loci.coding.gff3`: protein-coding genes from mikado  
 
 ---
 ⚙️ **Set Up Mikado**
