@@ -462,19 +462,19 @@ isoquant.py --threads 56 --reference Kronos.collapsed.chromosomes.masked.v1.1.br
 ### 4. Updating Annotations
 
 ---
-## Annotation v2.1
-In this version, existing genes in the v2.0 annotation that overlap with low-confidence NLRs were discarded. High and medium-confidence NLRs were added instead. 
+## Annotation v2.1  
+In this version, existing genes in the v2.0 annotation that overlap with low-confidence NLRs were discarded. High and medium-confidence NLRs were added instead.   
 
-**📥 Inputs** 
-• `Kronos.v2.0.gff3`: Kronos annotation v2.0
-• `Kronos_all.NLRs.final.gff3`: Kronos NLR annotations: https://zenodo.org/records/15539721
+**📥 Inputs**   
+• `Kronos.v2.0.gff3`: Kronos annotation v2.0  
+• `Kronos_all.NLRs.final.gff3`: Kronos NLR annotations: https://zenodo.org/records/15539721  
 
-**📥 Outputs** 
-• `Kronos.v2.1.gff3`: Kronos annotation v2.1
+**📥 Outputs**   
+• `Kronos.v2.1.gff3`: Kronos annotation v2.1  
 
 ---
 ⚙️ **Generate annotation**  
-• Get NLR confidence
+• Get NLR confidence  
 ```
 awk -F'\t' '{
   split($9, info, ";")
@@ -492,11 +492,11 @@ awk -F'\t' '{
   if (id != "" && conf != "") print id "\t" conf
 }' Kronos_all.NLRs.final.gff3 > Kronos_all.NLRs.final.conf.list
 ```
-• create annotation v2.1
+• create annotation v2.1  
 ```
 python generate_v2.1_annot.py
 ```
-• Sort gff
+• Sort gff  
 ```
 grep -v '^#' Kronos.v2.1.initial.gff3 | \
 awk 'BEGIN {OFS="\t"} { 
