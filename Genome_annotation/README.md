@@ -29,9 +29,12 @@ blast v2.15.0
 
 This step processes publicly available RNA-seq datasets for Kronos. Reads were downloaded, adapter-trimmed, aligned to the Kronos genome, and assembled both genome-guided and de novo to support gene structure prediction.
 
-Inputs---
-`v1_rnaseq.list`: List of NCBI SRA accessions
-`Kronos.collapsed.chromosomes.fa`: Kronos reference genome
+Inputs---  
+
+`v1_rnaseq.list`: List of NCBI SRA accessions  
+
+`Kronos.collapsed.chromosomes.fa`: Kronos reference genome  
+
 
 Outputs---
 `all.merged.sorted.bam`: Merged and sorted RNA-seq alignments
