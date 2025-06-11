@@ -42,32 +42,37 @@ This step processes publicly available RNA-seq datasets for Kronos. Reads were d
 
 
 **Outputs**  
-• `all.merged.sorted.bam`: Merged and sorted RNA-seq alignments  
+• `all.merged.sorted.bam`: Merged and sorted RNA-seq alignments by mapping  
 • `transcripts.fasta`: Trinity-assembled transcripts (de novo + genome-guided)   
 • `stringtie.gtf`: Genome-guided transcript models from StringTie  
 • `sample_mydb_pasa.sqlite.assemblies.fasta`: PASA-refined transcript structures  
 
+---
 
-####Download RNA-seq datasets from NCBI  
+**Download RNA-seq datasets from NCBI**
 ```
 while read -r accession; do 
     sratoolkit.3.1.1-centos_linux64/bin/prefetch ${accession}
     sratoolkit.3.1.1-centos_linux64/bin/fasterq-dump -O . -e ${Numthreads} ${accession}
 done < v1_rnaseq.list
 ```
-Remove adapters and low-quality reads from the datasets, using trim_galore and cutadapt. This generated about 1.6 Tb of fastq files.
+
+---
+
+**Adapter trimming and quality filtering**
 ```
 ls *.fastq | cut -d "_" -f 1 | sort -u | while read accession; do 
     trim_galore --paired -j 8 -a "${accession}_1.fastq" "${accession}_2.fastq"
 done
 ```
 
-The RNA-seq data were mapped to the genome by hisat, processed by samtools and assembled by stringtie. 
+**Genome-guided mapping and transcript assembly**
+• Build genome index
 ```
-# index the genome (v1.0)
-hisat2-build -p 20 Kronos.collapsed.chromosomes.fa Kronos
-
-# align the reads
+hisat2-build -p 20 Kronos.collapsed.chromosomes.fa Kronos #v1.0 genome was used 
+```
+• Map RNA-seq reads
+```
 for lib in $(ls *_val_1.fq); do
   prefix=$(echo $lib | cut -d "_" -f 1)
   read_1=$lib
@@ -75,20 +80,23 @@ for lib in $(ls *_val_1.fq); do
   hisat2 -p 56 -x Kronos -1 $read_1 -2 $read_2 --dta -S $prefix.mapped.sam
   echo 'done' > $prefix.done
 done
-
-# filter and sort with samtools
+```
+• Sort and filter alignments
+```
 for sam in *.mapped.sam; do
   bam="${sam%.sam}.bam"
-  samtools view -@ 56 -q 20 -h -b -F 260 "$sam" | samtools sort -@ 56 -o "$bam"
+  #get primary alignments 
+  samtools view -@ 56 -q 20 -h -b -F 260 "$sam" | samtools sort -@ 56 -o "$bam" 
   samtools index "$bam"
 done
-
-#merge all bamfiles
-samtools merge -@ 56 -h SRX10965366.mapped.bam -o all.merged.bam *.mapped.bam
+```
+• Merge and assemble with StringTie
+```
+samtools merge -@ 56 -h SRX10965366.mapped.bam -o all.merged.bam *.mapped.bam #make sure to heve an header
 samtools sort -@ 56 all.merged.bam > all.merged.sorted.bam
 
-#assemble with stringtie
 stringtie -o stringtie.gtf -p 56 --conservative all.merged.sorted.bam
+```
 ```
 
 
