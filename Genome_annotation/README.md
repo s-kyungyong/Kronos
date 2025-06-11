@@ -4,7 +4,7 @@
 ## Data availability 
 Protein coding genes can be downloaded from Zenodo.  
 • `v1.0 annotation`: [https://zenodo.org/records/10215402](https://zenodo.org/records/10215402)  
-• `v2.0 annotation`: [https://zenodo.org/records/14189805](https://zenodo.org/records/14189805) 
+• `v2.0 annotation`: [https://zenodo.org/records/14189805](https://zenodo.org/records/14189805)  
 • `v2.1 annotation [Final]`: [https://zenodo.org/records/15539216](https://zenodo.org/records/14189805) 
 
 ## Software version
@@ -48,7 +48,7 @@ This step processes publicly available RNA-seq datasets for Kronos. Reads were d
 • `sample_mydb_pasa.sqlite.assemblies.fasta`: PASA-refined transcript structures  
 
 
-We donwloaded the paired-end RNA-seq data from the NCBI. The list can be found in **v1_rnaseq.list**. 
+####Download RNA-seq datasets from NCBI  
 ```
 while read -r accession; do 
     sratoolkit.3.1.1-centos_linux64/bin/prefetch ${accession}
