@@ -223,9 +223,7 @@ Haplotype-collapsed assembly was scaffolded with Hi-C datasets.
 • `*.fastq.gz`: Hi-C data in fastq format (for haplotype-resolved assembly)
 
 **📥 Outputs**  
-• `*Kronos.draft.fa`: Haplotype-collapsed assembly
-• `Kronos.haplotype_resolved.HAP1.contigs.v1.0.fa`: Haplotype-resolved assembly (Haplotype 1)
-• `Kronos.haplotype_resolved.HAP2.contigs.v1.0.fa`: Haplotype-resolved assembly (Haplotype 2)
+• `YaHS_scaffolds_final.fa`: Haplotype-collapsed scaffolds
 
 ⚙️ **Indexing and Alignment** 
 ```
@@ -252,7 +250,8 @@ samtools index mapped.PT.bam
 yahs -o YaHS -e GATC,GANTC,CTNAG,TTAA Kronos.draft.fa mapped.PT.bam
 ```
 
-Let's check the scaffold lengths. We expect 14 largest scaffolds to correspond to 7 chromosomes from A and B subgenomes. 
+⚙️ **Chromosome Recovery** 
+We expected 14 largest scaffolds to correspond to 7 chromosomes from A and B subgenomes. 
 ```
 python -c "from Bio import SeqIO; print('\n'.join([f'{record.id} {round(len(record.seq)/1000000, 3)} Mb' for record in SeqIO.parse('YaHS_scaffolds_final.fa', 'fasta')]))" | sort -r -nk 2 | head -n 20
 
@@ -269,17 +268,16 @@ scaffold_10 720.28 Mb
 scaffold_11 708.843 Mb
 scaffold_12 699.697 Mb
 scaffold_13 624.303 Mb
-scaffold_14 600.444 Mb
-scaffold_15 3.636 Mb
+scaffold_14 600.444 Mb  # It looks like the largest 14 scaffolds are the chromosomes! 
+scaffold_15 3.636 Mb    # all the other sequences are all smaller than 4 Mb. 
 scaffold_16 3.606 Mb
 scaffold_17 2.687 Mb
 scaffold_18 2.63 Mb
 scaffold_19 2.481 Mb
 scaffold_20 2.432 Mb
 ```
-It looks like the largest 14 scaffolds are the chromosomes! The other anchored sequences are all smaller than 4 Mb. 
-
-Let's generate a contact map and visualize through JuiceBox. The two outputs, out_JBAT.hic and out_JBAT.assembly, can be loaded into [Juicebox](https://github.com/aidenlab/Juicebox/wiki/Download). Set the scale as below. We did not observe any significant abnormality, so we did not manually change anything.
+⚙️ **Visual insection** 
+The Hi-C contact map was visually inspected, but no manual changes were introduced. 
 ```
 ./yahs/juicer pre -a -o out_JBAT YaHS.bin YaHS_scaffolds_final.agp Kronos.draft.fa.fai > out_JBAT.log 2>&1
 java -jar juicer_tools.1.9.9_jcuda.0.8.jar pre out_JBAT.txt out_JBAT.hic <(cat out_JBAT.log  | grep PRE_C_SIZE | awk '{print $2" "$3}')
@@ -288,36 +286,37 @@ grep 'scale factor' out_JBAT.log
 [I::main_pre] scale factor: 8
 ```
 
-### 3C. Final Processing
+### 5. Plasmid Separation and Renaming
+**📥 Inputs**  
+• `YaHS_scaffolds_final.fa`: Haplotype-collapsed scaffolds  
+• `Triticum_aestivum.plasmids.fa`: chloroplast (NC_002762.1) and mitochondria (NC_036024.1) sequences  
+• `Triticum_aestivum.IWGSC.dna.toplevel.fa`: Chinese Spring reference genome  
 
-Remove chloroplast and mitocondiral genomes into separate files and reassign the scaffold names. For the plasmids, we will download these two accessions from the NCBI below. The wheat reference genome can be downloaded from [EnsemblPlants](https://plants.ensembl.org/Triticum_aestivum/Info/Index).
-```
-Triticum aestivum chloroplast, complete genome: NC_002762.1
-Triticum aestivum cultivar Chinese Yumai mitochondrion, complete genome: NC_036024.1
-Triticum_aestivum.IWGSC.dna.toplevel.fa
-```
 
+**📥 Outputs**  
+• `Kronos.collapsed.chromosomes.fa'`: Haplotype-collapsed scaffolds (v1.0)
+• `Kronos.collapsed.chloroplasts.fa'`: Haplotype-collapsed scaffolds
+• `Kronos.collapsed.mitochondria.fa'`: Haplotype-collapsed scaffolds
+
+
+⚙️ **Similarity Search with Minimap** 
 As the scaffolds are too large, minimap runs slow. Let's break the assemblies first. 
 ```
+#break large genomes
 python break_fa.py YaHS_scaffolds_final.fa
 python break_fa.py Triticum_aestivum.IWGSC.dna.toplevel.fa
+
+minimap2 -x asm5 -t 52 Triticum_aestivum.IWGSC.dna.toplevel.broken.fa YaHS_scaffolds_final.broken.fa |
+         sort -k1,1 -k3,3n  > minimap.ref.sorted.paf
+minimap2 -x asm5 -t 52 Triticum_aestivum.plasmids.fa YaHS_scaffolds_final.fa |
+         sort -k1,1 -k3,3n > minimap.plasmid.sorted.paf
 ```
 
-We can then run minimap v2.24-r1122. This step took > 72 hours. It is recommended to split the query and submit multiple jobs.
-```
-cat NC_002762.1.fasta NC_036024.1.fasta > Triticum_aestivum.plasmids.fa
-minimap2 -x asm5 -t 52 Triticum_aestivum.IWGSC.dna.toplevel.broken.fa YaHS_scaffolds_final.broken.fa > minimap.ref.paf
-sort -k1,1 -k3,3n minimap.ref.paf > minimap.ref.sorted.paf
-minimap2 -x asm5 -t 52 ../Triticum_aestivum.plasmids.fa YaHS_scaffolds_final.fa > minimap.plasmid.paf
-sort -k1,1 -k3,3n minimap.plasmid.paf > minimap.plasmid.sorted.paf
-```
-
-Run the following script to reassign the scaffold names and separate plasmid DNAs. This will compare 14 Kronos scaffolds and 21 Wheat chromosomes and transfer the chromosome IDs. 
+⚙️ **Rename Chromosomes** 
+This step creates the Kronos reference v1.0, with the following statistics. 
 ```
 python process_scaffolds.py minimap.plasmid.sorted.paf minimap.ref.sorted.paf YaHS_scaffolds_final.fa Kronos.collapsed
 ```
-
-This step creates the Kronos reference v1.0, with the following statistics. 
 
 | Chromosomes  | 1A | 1B | 2A | 2B | 3A | 3B | 4A | 4B | 5A | 5B | 6A | 6B | 7A | 7B | Un | 
 |----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|
@@ -326,78 +325,42 @@ This step creates the Kronos reference v1.0, with the following statistics.
 | N's | 4400| 16000| 7400| 18400| 3800| 20400| 13400| 18600| 4400| 21400| 5200| 20400| 5200| 20000| 731600 | 
 | unambiguous base pairs | 600439581| 708826986| 795812989| 828523133| 759124428| 864131987| 767852317| 699678356| 720275659| 731131626| 624298173| 733579245| 753471566| 766006795| 210519344 |
 
-That's our genome v1.0! In the version 1.1, chromosomes 1B, 2A, 2B, 3A, 3B, 5A, 6A and 6B are flipped to make their orientations consistent with the Chinese Spring genome. 
+⚙️ **Genome v1.1** 
+In the version 1.1, chromosomes 1B, 2A, 2B, 3A, 3B, 5A, 6A and 6B are flipped to make their orientations consistent with the Chinese Spring genome. 
 
 
-##4. Synteny analyses
+### 6. Synteny analyses
+Genome synteny was compared between reference genomes.
+**📥 Inputs**  
+• `Kronos.collapsed.chromosomes.masked.v1.1.fa`: Haplotype-collapsed scaffolds v1.1  
+• `Triticum_turgidum.Svevo.v1.dna.toplevel.fa`:  Svevo reference genome (Plant Ensembl)
+• `GCF_002162155.2_WEW_v2.1_genomic.fna`:  Zavitan reference genome (NCBI)
+• `Triticum_aestivum.IWGSC.dna.toplevel.fa`: Chinese Spring reference genome (Plant Ensembl)
 
-The Kronos reference genome was compared to Svevo and Chinese Spring (IWGSC v1.0), which were downloaded from Plant Ensembl. For global synteny, the similarity search was performed using minimap.
+⚙️ **Run Minimap** 
 ```
 #run minimap
 minimap2 --eqx -c -f 0.05 -K4g -t 30 -x asm5 Kronos.collapsed.chromosomes.masked.v1.1.fa Triticum_turgidum.Svevo.v1.dna.toplevel.fa -o Kronos_vs_Svevo.eqx_asm5.paf
 minimap2 --eqx -c -f 0.05 -K4g -t 30 -x asm5 Kronos.collapsed.chromosomes.masked.v1.1.fa Triticum_aestivum.IWGSC.dna.toplevel.fa -o Kronos_vs_CS.eqx_asm5.paf
-
-#filter
-awk '$1 != "Un" && $1 !~ /[0-9]+D/' Kronos_vs_Svevo.eqx_asm5.paf > Kronos_vs_Svevo.eqx_asm5.filtered.paf
-awk '$1 != "Un" && $1 !~ /[0-9]+D/' Kronos_vs_CS.eqx_asm5.paf > Kronos_vs_CS.eqx_asm5.filtered.paf
-
-#plot
-python synteny_minimap_synteny.py Kronos_vs_Svevo.eqx_asm5.filtered.paf 1A 1A
+minimap2 --eqx -c -f 0.05 -K4g -t 30 -x asm5 GCF_002162155.2_WEW_v2.1_genomic.fna Kronos.collapsed.chromosomes.masked.v1.1.fa -o Zavitan_vs_Kronos.eqx_asm5.paf
 ```
 
-Structural variants were detecte using syri.
+⚙️ **Visualize Global Synteny with SyRi** 
 ```
-#analyze genomic variants
 syri -r Kronos.collapsed.chromosomes.masked.v1.1.fa -q Triticum_turgidum.Svevo.v1.dna.toplevel.fa -c Kronos_vs_Svevo.eqx_asm5.filtered.paf -F P -k --prefix Kronos_vs_Svevo.
-syri -r Kronos.collapsed.chromosomes.masked.v1.1.fa -q Triticum_aestivum.IWGSC.dna.toplevel.fa -c Kronos_vs_CS.eqx_asm5.filtered.paf -F P -k --prefix Kronos_vs_CS.
-
-#visualize as plots
-#genomeList files simply have location of each genome and its name as two columns
-plotsr --sr Kronos_vs_Svevo.syri.out --genomes genomeList.1.txt -o Kronos_vs_Svevo.pdf
-plotsr --sr Kronos_vs_CS.syri.out --genomes genomeList.2.txt -o Kronos_vs_CS.pdf
+syri -r  GCF_002162155.2_WEW_v2.1_genomic.fna -q Kronos.collapsed.chromosomes.masked.v1.1.fa -c Zavitan_vs_Kronos.eqx_asm5.filtered.paf -F P -k --prefix Zavitan_vs_Kronos.
+plotsr --sr Zavitan_vs_Kronos.syri.out --sr Kronos_vs_Svevo.syri.out --genomes genome.list --cfg base.cfg -o syri.plot.pdf -b pdf -S 0.5 -W 7 -H 10 -f 8 -v
 ```
 
-For local synteny, BLAST v2.15.0 was used.
+⚙️ **Visualize Global Synteny with Dotplot** 
+```
+#for each chromosome
+python synteny_minimap_synteny.py Kronos_vs_Svevo.eqx_asm5.paf 1A 1A
+```
+
+⚙️ **Visualize Local synteny with dotplot** 
 ```
 makeblastdb -in db.fa -out db -dbtype 'nucl'
 blastn -query query.fa -db db -outfmt "6 std qlen slen" -out query_vs_hit.blast.out -evalue 1e-6
 python synteny_blast_synteny.py query_vs_hit.blast.out 1A_start 1A_start --alignment_length 10000 --hstart 0 --hend 20000000
 ```
-
-for chromosome in 1A 1B 2A 2B 3A 3B 4A 4B 5A 5B 6A 6B 7A 7B; do
-  fasta=GCF_002162155.2_WEW_v2.1_genomic.renamed.fa
-  length=$(awk -v chr=$chromosome '$1 == chr {print $2}' ${fasta}.fai)
-  tail_start=$((length - 20000000 + 1))
-
-  samtools faidx $fasta ${chromosome}:1-20000000 > Zavitan_${chromosome}.head.fa
-  samtools faidx $fasta ${chromosome}:${tail_start}-${length} > Zavitan_${chromosome}.tail.fa
-done
-
-for fa in Svevo*fa; do makeblastdb -in ${fa} -out $(echo $fa | cut -d "." -f -2) -dbtype 'nucl'; done
-
-for fa in Kronos*.fa; do 
-  # Extract base name
-  base=$(basename $fa .fa)
-  region=$(echo $base | cut -d "_" -f 2)
-
-  # Svevo comparison
-  svevo_db=$(echo $fa | sed 's/Kronos/Svevo/')
-  blastn -query ${fa} -db ${svevo_db} -num_threads 48 \
-    -outfmt "6 std qlen slen" \
-    -out Kronos_vs_Svevo.${region}.blastn.out -evalue 1e-4
-
-  # Zavitan comparison
-  zavitan_db=$(echo $fa | sed 's/Kronos/Zavitan/')
-  blastn -query ${fa} -db ${zavitan_db} -num_threads 48 \
-    -outfmt "6 std qlen slen" \
-    -out Kronos_vs_Zavitan.${region}.blastn.out -evalue 1e-4
-done
-
-
-for fa in Kronos*.fa; do 
-  base=$(basename $fa | sed "s/.fa//g")
-  region=$(echo $base | cut -d "_" -f 2)
-  minimap2 -x asm5 -t 40 -o Kronos_vs_Svevo.${region}.minimap.out ../0.Syri/Triticum_turgidum.Svevo.v1.dna.toplevel.fa ${fa}
-  minimap2 -x asm5 -t 40 -o Kronos_vs_Zavitan.${region}.minimap.out ../0.Syri/GCF_002162155.2_WEW_v2.1_genomic.renamed.fa ${fa}
-done
-
