@@ -10,7 +10,7 @@ The Kronos reference genome can be assessed through the NCBI and Zenodo.
 • `v1.0 genome`: https://zenodo.org/records/10215402  
 • `v1.1 genome [Final]`: https://zenodo.org/records/11106422  
 • `v1.1 genome [no Un]`: JBLYQA000000000  
-• `Haplotype resolved assembly (contigs)`:   
+• `Haplotype resolved assembly (contigs)`: https://zenodo.org/records/15644987
 
 Note that the genome acessible through the NCBI does not have **Un** sequences. Furthermore, the following genome regions were hard-masked due to some similarity to mitochondria.
 ```
