@@ -59,7 +59,6 @@ This step removes adapters from sequencing data.
 • `Kronos.HiFi.filt.fastq.gz`: HiFi data in fastq format
 • `*.filtered.fastq.gz`: trimmed filtered Hi-C data in fastq format  
 
----
 ⚙️ **Convert to FastQ**  
 About 50X HiFi reads were obtained from Revio. 
 ```
@@ -118,22 +117,22 @@ fastqc -t 54 $out1 $out2
 
 ---
 ### 2. Genome Assessment
-GenomeScope was used to assess genomic characteristics of Kronos
+GenomeScope was used to assess genomic characteristics of Kronos.
 
 **📥 Inputs**  
-• `*.hifi.fastq`: HiFi data in bam format
+• `Kronos.HiFi.filt.fastq.gz`: HiFi data in bam format
 
----
+
 ⚙️ **Run GenomeScope**  
 ```
 #count k-mer
-jellyfish count -C -m 21 -s 50000000000 -t 20 Kronos.HiFi.fastq -o kmer_counts.jf
+jellyfish count -C -m 21 -s 50000000000 -t 20 Kronos.HiFi.filt.fastq -o kmer_counts.jf
 jellyfish histo -h 5000000 -t 20 kmer_counts.jf > reads.histo
 
 genomescope2 -p 4 -i reads.histo -o genomescope --verbose  
 ```
 ⚙️ **Comparison to Svevo**    
-The same analysis was performed for Svevo for comparison
+The same analysis was performed for Svevo for comparison.
 ```
 #download sequencing data
 while read -r accession; do 
@@ -183,16 +182,16 @@ Note: The statistics for bread weak comes Fig. S21 from [this paper](https://www
 ---
 
 ### 3. Genome Assembly
+Both haplotype-collapsed and haplotype-resolved assemblies were generated. 
 
 **📥 Inputs**  
-• `*Kronos.HiFi.filt.fastq.gz`: HiFi data in fastq format
+• `Kronos.HiFi.filt.fastq.gz`: HiFi data in fastq format
 • `*.fastq.gz`: Hi-C data in fastq format (for haplotype-resolved assembly)
 
 **📥 Outputs**  
-• `*.hifi.fastq`: HiFi data in fastq format
-• `*.filtered.fastq.gz`: trimmed filtered Hi-C data in fastq format  
-
----
+• `*Kronos.draft.fa`: Haplotype-collapsed assembly
+• `Kronos.haplotype_resolved.HAP1.contigs.v1.0.fa`: Haplotype-resolved assembly (Haplotype 1)
+• `Kronos.haplotype_resolved.HAP2.contigs.v1.0.fa`: Haplotype-resolved assembly (Haplotype 2)
 
 ⚙️ **Create Haplotype-collapsed Assembly**  
 As Kronos' heterozygosity is low, and we aimed to generate collapsed haplotypes (AB). This took 61 hours and 615 Gb of a peak memory.
@@ -216,29 +215,40 @@ awk '/^S/{print ">"$2"\n"$3}' l0.bp.p_ctg.gfa | fold > Kronos.haplotype_resolved
 awk '/^S/{print ">"$2"\n"$3}' l0.bp.a_ctg.gfa | fold > Kronos.haplotype_resolved.HAP2.contigs.v1.0.fa
 ```
 
+### 4. Scaffolding 
+Haplotype-collapsed assembly was scaffolded with Hi-C datasets. 
 
-### 3B. Scaffolding
+**📥 Inputs**  
+• `*Kronos.draft.fa`: Haplotype-collapsed assembly
+• `*.fastq.gz`: Hi-C data in fastq format (for haplotype-resolved assembly)
 
-Now, we scaffold contigs with our Hi-C data. We follow [this Omni-C protocol](https://omni-c.readthedocs.io/en/latest/index.html) for mapping and use yahs for scaffolding. 
+**📥 Outputs**  
+• `*Kronos.draft.fa`: Haplotype-collapsed assembly
+• `Kronos.haplotype_resolved.HAP1.contigs.v1.0.fa`: Haplotype-resolved assembly (Haplotype 1)
+• `Kronos.haplotype_resolved.HAP2.contigs.v1.0.fa`: Haplotype-resolved assembly (Haplotype 2)
 
+⚙️ **Indexing and Alignment** 
 ```
-#index
 samtools faidx Kronos.draft.fa
 bwa index Kronos.draft.fa
 
 #align Hi-C read pairs
 bwa mem -o aligned.sam -5SP -T0 -t52 Kronos.draft.fa <(zcat 0.HiC/KVK-*/*R1*trimmed.fq.gz) <(zcat 0.HiC/KVK-*/*R2*trimmed.fq.gz)
-
-#process the alignments
+```
+⚙️ **Omni-C pipeline** 
+```
+#instruction: https://omni-c.readthedocs.io/en/latest/index.html
 samtools view -@56 -h aligned.sam  \
 pairtools parse --min-mapq 30 --walks-policy 5unique \
 --max-inter-align-gap 30 --nproc-in 56 --nproc-out 56 --chroms-path Kronos.draft.fa | \
 pairtools sort --tmpdir=./tmp --nproc 56 | pairtools dedup --nproc-in 56 \
 --nproc-out 56 --mark-dups --output-stats stats.txt | pairtools split --nproc-in 56 \
 --nproc-out 56 --output-pairs mapped.pairs --output-sam - |samtools view -bS -@56 | \
-samtools sort -@56 -o mapped.PT.bam ; samtools index mapped.PT.bam
-
-#run yahs
+samtools sort -@56 -o mapped.PT.bam 
+samtools index mapped.PT.bam
+```
+⚙️ **Scaffolding** 
+```
 yahs -o YaHS -e GATC,GANTC,CTNAG,TTAA Kronos.draft.fa mapped.PT.bam
 ```
 
