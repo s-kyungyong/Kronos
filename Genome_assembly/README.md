@@ -182,19 +182,19 @@ Note: The statistics for bread weak comes Fig. S21 from [this paper](https://www
 ---
 
 ### 3. Genome Assembly
-Both haplotype-collapsed and haplotype-resolved assemblies were generated. 
+Both haplotype-collapsed and haplotype-resolved assemblies were generated.  
 
 **📥 Inputs**  
-• `Kronos.HiFi.filt.fastq.gz`: HiFi data in fastq format
-• `*.fastq.gz`: Hi-C data in fastq format (for haplotype-resolved assembly)
+• `Kronos.HiFi.filt.fastq.gz`: HiFi data in fastq format  
+• `*.fastq.gz`: Hi-C data in fastq format (for haplotype-resolved assembly)  
 
 **📥 Outputs**  
-• `*Kronos.draft.fa`: Haplotype-collapsed assembly
-• `Kronos.haplotype_resolved.HAP1.contigs.v1.0.fa`: Haplotype-resolved assembly (Haplotype 1)
-• `Kronos.haplotype_resolved.HAP2.contigs.v1.0.fa`: Haplotype-resolved assembly (Haplotype 2)
+• `*Kronos.draft.fa`: Haplotype-collapsed assembly  
+• `Kronos.haplotype_resolved.HAP1.contigs.v1.0.fa`: Haplotype-resolved assembly (Haplotype 1)  
+• `Kronos.haplotype_resolved.HAP2.contigs.v1.0.fa`: Haplotype-resolved assembly (Haplotype 2)  
 
 ⚙️ **Create Haplotype-collapsed Assembly**  
-As Kronos' heterozygosity is low, and we aimed to generate collapsed haplotypes (AB). This took 61 hours and 615 Gb of a peak memory.
+As Kronos' heterozygosity is low, and we aimed to generate collapsed haplotypes (AB). This took 61 hours and 615 Gb of a peak memory.  
 ```
 hifiasm -l0 -t 54 -o l0 Kronos.HiFi.filt.fastq.gz
 
@@ -214,16 +214,16 @@ hifiasm -l0 -t 54 -o l0-hic --s-base -1 -h1 $hic_pair1 --h2 $hic_pair2 Kronos.Hi
 awk '/^S/{print ">"$2"\n"$3}' l0.bp.p_ctg.gfa | fold > Kronos.haplotype_resolved.HAP1.contigs.v1.0.fa
 awk '/^S/{print ">"$2"\n"$3}' l0.bp.a_ctg.gfa | fold > Kronos.haplotype_resolved.HAP2.contigs.v1.0.fa
 ```
-
-### 4. Scaffolding 
-Haplotype-collapsed assembly was scaffolded with Hi-C datasets. 
+---
+### 4. Scaffolding   
+Haplotype-collapsed assembly was scaffolded with Hi-C datasets.   
 
 **📥 Inputs**  
-• `*Kronos.draft.fa`: Haplotype-collapsed assembly
-• `*.fastq.gz`: Hi-C data in fastq format (for haplotype-resolved assembly)
+• `*Kronos.draft.fa`: Haplotype-collapsed assembly  
+• `*.fastq.gz`: Hi-C data in fastq format (for haplotype-resolved assembly)  
 
 **📥 Outputs**  
-• `YaHS_scaffolds_final.fa`: Haplotype-collapsed scaffolds
+• `YaHS_scaffolds_final.fa`: Haplotype-collapsed scaffolds  
 
 ⚙️ **Indexing and Alignment** 
 ```
@@ -250,8 +250,8 @@ samtools index mapped.PT.bam
 yahs -o YaHS -e GATC,GANTC,CTNAG,TTAA Kronos.draft.fa mapped.PT.bam
 ```
 
-⚙️ **Chromosome Recovery** 
-We expected 14 largest scaffolds to correspond to 7 chromosomes from A and B subgenomes. 
+⚙️ **Chromosome Recovery**   
+We expected 14 largest scaffolds to correspond to 7 chromosomes from A and B subgenomes.   
 ```
 python -c "from Bio import SeqIO; print('\n'.join([f'{record.id} {round(len(record.seq)/1000000, 3)} Mb' for record in SeqIO.parse('YaHS_scaffolds_final.fa', 'fasta')]))" | sort -r -nk 2 | head -n 20
 
@@ -276,8 +276,8 @@ scaffold_18 2.63 Mb
 scaffold_19 2.481 Mb
 scaffold_20 2.432 Mb
 ```
-⚙️ **Visual insection** 
-The Hi-C contact map was visually inspected, but no manual changes were introduced. 
+⚙️ **Visual insection**   
+The Hi-C contact map was visually inspected, but no manual changes were introduced.   
 ```
 ./yahs/juicer pre -a -o out_JBAT YaHS.bin YaHS_scaffolds_final.agp Kronos.draft.fa.fai > out_JBAT.log 2>&1
 java -jar juicer_tools.1.9.9_jcuda.0.8.jar pre out_JBAT.txt out_JBAT.hic <(cat out_JBAT.log  | grep PRE_C_SIZE | awk '{print $2" "$3}')
@@ -286,17 +286,18 @@ grep 'scale factor' out_JBAT.log
 [I::main_pre] scale factor: 8
 ```
 
+---
 ### 5. Plasmid Separation and Renaming
 **📥 Inputs**  
 • `YaHS_scaffolds_final.fa`: Haplotype-collapsed scaffolds  
-• `Triticum_aestivum.plasmids.fa`: chloroplast (NC_002762.1) and mitochondria (NC_036024.1) sequences  
-• `Triticum_aestivum.IWGSC.dna.toplevel.fa`: Chinese Spring reference genome  
+• `Triticum_aestivum.plasmids.fa`: chloroplast (NC_002762.1) and mitochondria (NC_036024.1) sequences    
+• `Triticum_aestivum.IWGSC.dna.toplevel.fa`: Chinese Spring reference genome    
 
 
 **📥 Outputs**  
-• `Kronos.collapsed.chromosomes.fa'`: Haplotype-collapsed scaffolds (v1.0)
-• `Kronos.collapsed.chloroplasts.fa'`: Haplotype-collapsed scaffolds
-• `Kronos.collapsed.mitochondria.fa'`: Haplotype-collapsed scaffolds
+• `Kronos.collapsed.chromosomes.fa'`: Haplotype-collapsed scaffolds (v1.0)  
+• `Kronos.collapsed.chloroplasts.fa'`: Haplotype-collapsed scaffolds  
+• `Kronos.collapsed.mitochondria.fa'`: Haplotype-collapsed scaffolds  
 
 
 ⚙️ **Similarity Search with Minimap** 
@@ -325,17 +326,17 @@ python process_scaffolds.py minimap.plasmid.sorted.paf minimap.ref.sorted.paf Ya
 | N's | 4400| 16000| 7400| 18400| 3800| 20400| 13400| 18600| 4400| 21400| 5200| 20400| 5200| 20000| 731600 | 
 | unambiguous base pairs | 600439581| 708826986| 795812989| 828523133| 759124428| 864131987| 767852317| 699678356| 720275659| 731131626| 624298173| 733579245| 753471566| 766006795| 210519344 |
 
-⚙️ **Genome v1.1** 
-In the version 1.1, chromosomes 1B, 2A, 2B, 3A, 3B, 5A, 6A and 6B are flipped to make their orientations consistent with the Chinese Spring genome. 
+⚙️ **Genome v1.1**   
+In the version 1.1, chromosomes 1B, 2A, 2B, 3A, 3B, 5A, 6A and 6B are flipped to make their orientations consistent with the Chinese Spring genome.  
 
-
-### 6. Synteny analyses
-Genome synteny was compared between reference genomes.
+---
+### 6. Synteny analyses  
+Genome synteny was compared between reference genomes.  
 **📥 Inputs**  
-• `Kronos.collapsed.chromosomes.masked.v1.1.fa`: Haplotype-collapsed scaffolds v1.1  
-• `Triticum_turgidum.Svevo.v1.dna.toplevel.fa`:  Svevo reference genome (Plant Ensembl)
-• `GCF_002162155.2_WEW_v2.1_genomic.fna`:  Zavitan reference genome (NCBI)
-• `Triticum_aestivum.IWGSC.dna.toplevel.fa`: Chinese Spring reference genome (Plant Ensembl)
+• `Kronos.collapsed.chromosomes.masked.v1.1.fa`: Haplotype-collapsed scaffolds v1.1    
+• `Triticum_turgidum.Svevo.v1.dna.toplevel.fa`:  Svevo reference genome (Plant Ensembl)  
+• `GCF_002162155.2_WEW_v2.1_genomic.fna`:  Zavitan reference genome (NCBI)  
+• `Triticum_aestivum.IWGSC.dna.toplevel.fa`: Chinese Spring reference genome (Plant Ensembl)  
 
 ⚙️ **Run Minimap** 
 ```
