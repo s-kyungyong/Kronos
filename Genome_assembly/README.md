@@ -52,12 +52,12 @@ plotsr v1.1.0
 This step removes adapters from sequencing data. 
 
 **📥 Inputs**  
-• `*.hifi_reads.default.bam`: HiFi data in bam format
-• `*.fastq.gz`: Hi-C data in fastq format  
+• `*.hifi_reads.default.bam`: HiFi data in bam format  
+• `*.fastq.gz`: Hi-C data in fastq format    
 
 **📥 Outputs**  
-• `Kronos.HiFi.filt.fastq.gz`: HiFi data in fastq format
-• `*.filtered.fastq.gz`: trimmed filtered Hi-C data in fastq format  
+• `Kronos.HiFi.filt.fastq.gz`: HiFi data in fastq format  
+• `*.filtered.fastq.gz`: trimmed filtered Hi-C data in fastq format    
 
 ⚙️ **Convert to FastQ**  
 About 50X HiFi reads were obtained from Revio. 
