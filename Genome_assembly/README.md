@@ -8,8 +8,8 @@ Sequencing data were deposted in the NCBI under the BioProject assession, PRJNA1
 
 The Kronos reference genome can be assessed through the NCBI and Zenodo.   
 • `v1.0 genome`: https://zenodo.org/records/10215402  
-• `v1.1 genome [Final] `: https://zenodo.org/records/11106422  
-• `v1.1 genome [no Un] `: JBLYQA000000000  
+• `v1.1 genome [Final]`: https://zenodo.org/records/11106422  
+• `v1.1 genome [no Un]`: JBLYQA000000000  
 • `Haplotype resolved assembly (contigs)`:   
 
 Note that the genome acessible through the NCBI does not have **Un** sequences. Furthermore, the following genome regions were hard-masked due to some similarity to mitochondria.
@@ -56,7 +56,7 @@ This step removes adapters from sequencing data.
 • `*.fastq.gz`: Hi-C data in fastq format  
 
 **📥 Outputs**  
-• `*.hifi.fastq`: HiFi data in fastq format
+• `Kronos.HiFi.filt.fastq.gz`: HiFi data in fastq format
 • `*.filtered.fastq.gz`: trimmed filtered Hi-C data in fastq format  
 
 ---
@@ -83,6 +83,7 @@ bam2fastq -o Kronos.HiFi -j 52 $reads
 ```
 
 ⚙️ **Remove Adapters (optional)**  
+Here, all filtered reads were combined.
 ```
 HiFiAdapterFilt/hifiadapterfilt.sh -p Kronos -t 54
 
@@ -151,7 +152,7 @@ jellyfish histo -h 5000000 -t 56 svevo.kmer_counts.jf > svevo.reads.histo
 genomescope2 -p 4 -i svevo.reads.histo -o svevo.genomescope --verbose
 ```
 
-⚙️ **Statistics**  
+⚙️ **Statistics (Kronos vs Svevo)**  
 |    | Kronos             ||              Svevo ||
 |----|---------|-----------|---------|-----------|
 |    | min | max | min | max |
@@ -167,9 +168,8 @@ genomescope2 -p 4 -i svevo.reads.histo -o svevo.genomescope --verbose
 |Model Fit                 |    28.7973%       |   89.812% | 26.1724%    |      82.8801% |
 |Read Error Rate            |   0.0707465%     |   0.0707465% | 0.190909%    |     0.190909% |
 
-
-We can compare our Kronos statistics to the GenomeScope result for the hexaploid wheat in [this paper](https://www.nature.com/articles/s41467-020-14998-3). The data is in Fig. S21. Here, the genome size is esimated as haplotype size x ploidy. Although this isn't technically correct, it seems to give the right estimate. See the discussion [here](https://github.com/schatzlab/genomescope/issues/107).
-
+⚙️ **Statistics (Kronos vs Chinese Spring)**  
+Note: The statistics for bread weak comes Fig. S21 from [this paper](https://www.nature.com/articles/s41467-020-14998-3). Here, the genome size was esimated as haplotype size x ploidy. Although this isn't technically correct, it seems to give the right estimate. See the discussion [here](https://github.com/schatzlab/genomescope/issues/107).  
 |    | Kronos | Svevo| Bread wheat |
 |----|---------|-----------| -----------|
 | ploidy (p) | 4 | 4 | 6 | 
@@ -180,29 +180,42 @@ We can compare our Kronos statistics to the GenomeScope result for the hexaploid
 | err (%) | 0.0707 | 0.191 | 0.506 |
 | dup | 0.654 | 2.67 | 0.836 | 
 
-All the statistics look fairly similar. I believe that just like other reference wheat genomes, we can generate collapsed haplotypes (AB) for our Kronos genome. 
+---
 
+### 3. Genome Assembly
 
+**📥 Inputs**  
+• `*Kronos.HiFi.filt.fastq.gz`: HiFi data in fastq format
+• `*.fastq.gz`: Hi-C data in fastq format (for haplotype-resolved assembly)
 
-## 3. Genome Assembly and Scaffolding
+**📥 Outputs**  
+• `*.hifi.fastq`: HiFi data in fastq format
+• `*.filtered.fastq.gz`: trimmed filtered Hi-C data in fastq format  
 
-### 3A. Genome Assembly
+---
 
-Genome assembly is done with hifiasm. Because the residual heterozygosity is low, and we aim to generate collapsed haplotypes (AB), we will only use the HiFi reads at the assembly stage. This took 61 hours and 615 Gb of a peak memory.
+⚙️ **Create Haplotype-collapsed Assembly**  
+As Kronos' heterozygosity is low, and we aimed to generate collapsed haplotypes (AB). This took 61 hours and 615 Gb of a peak memory.
 ```
-hifi=Kronos.HiFi.filt.fastq.gz
-hifiasm -l0 -t 54 -o l0-hic $hifi
-```
+hifiasm -l0 -t 54 -o l0 Kronos.HiFi.filt.fastq.gz
 
-The associate contigs (a_ctg) include a lot of fragments that are potentially not useful. Most of these are likeley plasmids or repeats, which will be later discarded. Some might have been separated based on residual hetrozygosity. For now, let's combine the primary and associate contigs into a single file. 
-
-```
 #convert gfa to fasta files
 awk '/^S/{print ">"$2"\n"$3}' l0.bp.p_ctg.gfa | fold > Kronos.p_ctg.fa
 awk '/^S/{print ">"$2"\n"$3}' l0.bp.a_ctg.gfa | fold > Kronos.a_ctg.fa
 
+#concatnate primary and associate contigs
 cat Kronos.p_ctg.fa Kronos.a_ctg.fa > Kronos.draft.fa
 ```
+
+⚙️ **Create Haplotype-resolved Assembly**  
+```
+hifiasm -l0 -t 54 -o l0-hic --s-base -1 -h1 $hic_pair1 --h2 $hic_pair2 Kronos.HiFi.filt.fastq.gz
+
+#convert gfa to fasta files
+awk '/^S/{print ">"$2"\n"$3}' l0.bp.p_ctg.gfa | fold > Kronos.haplotype_resolved.HAP1.contigs.v1.0.fa
+awk '/^S/{print ">"$2"\n"$3}' l0.bp.a_ctg.gfa | fold > Kronos.haplotype_resolved.HAP2.contigs.v1.0.fa
+```
+
 
 ### 3B. Scaffolding
 
