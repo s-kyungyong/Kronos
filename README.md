@@ -39,11 +39,11 @@ Sequencing data were deposted in the NCBI under the BioProject assession, PRJNA1
 ## Final Versions
 For clarity, here are the final versions of our datasets.
 
-• `Genome assembly v1.1`: Zenodo:11106422
-• `Genome annoation v2.1`: Zenodo:15539216
-• `Repeat annotation`: Zenodo:15399687
-• `NLR annotation`: Zenodo:15539721
-• `Exome capture`: Zenodo:
-• `promoter capture`: Zenodo:
+• `Genome assembly v1.1`: Zenodo:11106422  
+• `Genome annoation v2.1`: Zenodo:15539216  
+• `Repeat annotation`: Zenodo:15399687  
+• `NLR annotation`: Zenodo:15539721  
+• `Exome capture`: Zenodo:  
+• `promoter capture`: Zenodo:  
 
 
