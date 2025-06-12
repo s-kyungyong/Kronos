@@ -5,9 +5,9 @@
 Protein coding genes can be downloaded from Zenodo.  
 • `v1.0 annotation`: [https://zenodo.org/records/10215402](https://zenodo.org/records/10215402)  
 • `v2.0 annotation`: [https://zenodo.org/records/14189805](https://zenodo.org/records/14189805)  
-• `v2.1 annotation [Final]`: [https://zenodo.org/records/15539216](https://zenodo.org/records/14189805)   
+• `v2.1 annotation [✨Final✨]`: [https://zenodo.org/records/15539216](https://zenodo.org/records/14189805)   
 
-Pretrained ab initio parameters in `abinitio_parameters`.  
+Pretrained ab initio parameters in `Genome_annotation/abinitio_parameters`.  
 
 
 ## Software version
@@ -33,6 +33,8 @@ minimap v2.28-r1209
 samtools v1.20
 isoquant v3.5.2
 mikado v2.3.4
+busco v5.4.2
+omark v0.3.0
 ```
 
 ---
