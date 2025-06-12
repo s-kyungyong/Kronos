@@ -17,11 +17,11 @@ Repeative elements annotated in the Kronos reference genome v1.0 and v1.1 were p
 
 📥 Inputs  
 
-• `Kronos.collapsed.chromosomes.fa`: Haplotype-collapsed scaffolds (v1.0)  
+• `Kronos.collapsed.chromosomes.fa`: Haplotype-collapsed chromosomes (v1.0)  
 
 📥 Outputs  
 
-• `Kronos.collapsed.chromosomes.masked.fa`: Haplotype-collapsed scaffolds (v1.0)  
+• `Kronos.collapsed.chromosomes.masked.fa`: Haplotype-collapsed masked chromosomes (v1.0)  
 
 ⚙️ **Run HiTE**  
 ```
@@ -42,13 +42,10 @@ RepeatMasker -xsmall -e ncbi -pa 56 -q -no_is -norna -nolow -div 40 -gff -lib co
 The next version of repeat annotations was produced using EDTA v2.2.2. 
 
 📥 Inputs
-• `Kronos.collapsed.chromosomes.v1.1.fa`: Haplotype-collapsed scaffolds (v1.1)
+• `Kronos.collapsed.chromosomes.v1.1.fa`: Haplotype-collapsed chromosomes (v1.1)
 • `trep-db_complete_Rel-19.fasta`: Curated repeat database
 • `confident_TE.cons.fa.classified`: HiTE-derived repeat annotation
 • `Kronos.v2.0.pep.fa Kronos.v2.0.cds.fa`: Kronos v2.0 annotaion
-
-📥 Outputs
-• `Kronos.collapsed.chromosomes.masked.fa`: Haplotype-collapsed scaffolds (v1.0)
 
 
 ⚙️ **Generate Databases**  
