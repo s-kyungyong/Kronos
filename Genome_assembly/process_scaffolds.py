@@ -206,7 +206,7 @@ def write_sequences(fasta_file, chr_dict, chloroplasts, mitochondira, outfile_pr
         SeqIO.write(item, output_file, 'fasta')
 
   with open(f'{outfile_prefix}.chloroplasts.fa', 'w') as chlo_file, open(
-            f'{outfile_prefix}.mitochondira.fa', 'w') as mito_file:
+            f'{outfile_prefix}.mitochondria.fa', 'w') as mito_file:
     SeqIO.write(categorized_records['chlo'], chlo_file, 'fasta')
     SeqIO.write(categorized_records['mito'], mito_file, 'fasta')
 
