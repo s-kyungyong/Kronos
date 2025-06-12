@@ -41,11 +41,12 @@ RepeatMasker -xsmall -e ncbi -pa 56 -q -no_is -norna -nolow -div 40 -gff -lib co
 ## 2. Repeat Identification with EDTA
 The next version of repeat annotations was produced using EDTA v2.2.2. 
 
-📥 Inputs
-• `Kronos.collapsed.chromosomes.v1.1.fa`: Haplotype-collapsed chromosomes (v1.1)
-• `trep-db_complete_Rel-19.fasta`: Curated repeat database
-• `confident_TE.cons.fa.classified`: HiTE-derived repeat annotation
-• `Kronos.v2.0.pep.fa Kronos.v2.0.cds.fa`: Kronos v2.0 annotaion
+📥 Inputs  
+
+• `Kronos.collapsed.chromosomes.v1.1.fa`: Haplotype-collapsed chromosomes (v1.1)  
+• `trep-db_complete_Rel-19.fasta`: Curated repeat database  
+• `confident_TE.cons.fa.classified`: HiTE-derived repeat annotation  
+• `Kronos.v2.0.pep.fa Kronos.v2.0.cds.fa`: Kronos v2.0 annotaion  
 
 
 ⚙️ **Generate Databases**  
