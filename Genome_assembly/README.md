@@ -59,7 +59,7 @@ This step removes adapters from sequencing data.
 • `Kronos.HiFi.filt.fastq.gz`: HiFi data in fastq format  
 • `*.trimmed.fq.gz`: trimmed filtered Hi-C data in fastq format    
 
-⚙️ **Convert to FastQ**  
+⚙️ **Convert to Fastq**  
 About 50X HiFi reads were obtained from Revio. 
 ```
 ls -lha m84066_2305*
