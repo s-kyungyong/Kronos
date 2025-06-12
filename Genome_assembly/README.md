@@ -295,9 +295,9 @@ grep 'scale factor' out_JBAT.log
 
 
 **📥 Outputs**  
-• `Kronos.collapsed.chromosomes.fa'`: Haplotype-collapsed scaffolds (v1.0)  
-• `Kronos.collapsed.chloroplasts.fa'`: Haplotype-collapsed scaffolds  
-• `Kronos.collapsed.mitochondria.fa'`: Haplotype-collapsed scaffolds  
+• `Kronos.collapsed.chromosomes.fa`: Haplotype-collapsed scaffolds (v1.0)  
+• `Kronos.collapsed.chloroplasts.fa`: Haplotype-collapsed scaffolds  
+• `Kronos.collapsed.mitochondria.fa`: Haplotype-collapsed scaffolds  
 
 
 ⚙️ **Similarity Search with Minimap** 
