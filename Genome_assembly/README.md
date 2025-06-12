@@ -1,19 +1,16 @@
 # Genome assembly
 
 ## Data availability 
-Sequencing data were deposted in the NCBI under the BioProject assession, PRJNA1213727. The following runs include: 
-```
-SRR32063042: HiFi reads
-SRR32063043: PacBio sequencing data
-SRR32063044: Hi-C sequencing data
-```
+Sequencing data were deposted in the NCBI under the BioProject assession, PRJNA1213727. The following runs include:  
+• `HiFi reads`: SRR32063042  
+• `PacBio sequencing data (bam)`: SRR32063043  
+• `Hi-C data`: SRR32063044  
 
-The Kronos reference genome can be assessed through the NCBI and Zenodo. In v1.1, the following chromosomes are reversed and complemented: 1B, 2A, 2B, 3A, 3B, 5A, 6A and 6B. This adjustment was made to ensure the alignment (orientation) of the chromosomes remains consistent with that of the Chinese Spring reference genome. Unless specified, all analyses were performed on the v1.1 genome. 
-```
-https://zenodo.org/records/10215402: the Kronos reference genome v1.0
-https://zenodo.org/records/11106422: the Kronos reference genome v1.1
-JBLYQA000000000: the Kronos reference genome v1.1
-```
+The Kronos reference genome can be assessed through the NCBI and Zenodo.   
+• `v1.0 genome`: https://zenodo.org/records/10215402  
+• `v1.1 genome [Final] `: https://zenodo.org/records/11106422  
+• `v1.1 genome [no Un] `: JBLYQA000000000  
+• `Haplotype resolved assembly (contigs)`:   
 
 Note that the genome acessible through the NCBI does not have **Un** sequences. Furthermore, the following genome regions were hard-masked due to some similarity to mitochondria.
 ```
@@ -28,22 +25,6 @@ Note that the genome acessible through the NCBI does not have **Un** sequences. 
 6B	733599645	394769564..394869826
 7B	766026795	742909075..742941679
 ```
-
-## Methods
-
-**Genome assessment**: 
-
-We assessed the genomic characteristics of Kronos using GenomeScope v2.0 (Ranallo-Benavidez et al., 2020). K-mers (21-mers) were analyzed from HiFi reads with Jellyfish v2.2.10 (-C -m 21), and a histogram was generated (-h 5000000) (Marcais et al., 2011). GenomeScope was run on the histogram for tetraploidy (-p 4). For comparison to the Svevo genome, we downloaded paired-end Illumina sequencing data from PRJEB22687, trimmed the reads with trim_galore v0.6.6 and cutadapt v3.7 (--illumina) (Martin, 2011), and repeated the GenomeScope analysis on the filtered reads.
-
-**Genome assembly and scaffolding**:
-
-We used hifiasm v0.19.5-r587 to assemble a haplotype-collapsed (AB) genome (-l0) (Cheng et al., 2021). A small size of associate contigs were concatenated with primary contigs to create an initial assembly. We followed the Omni-C pipeline for scaffolding (https://omni-c.readthedocs.io). The filtered paired-end Hi-C reads were mapped to the initial assembly with bwa v0.7.17-r1188 (-5SP -T0) (Li et al., 2013). With pairtools v1.0.2 (Open2C et al, 2023), ligation pairs were searched from the alignments (--min-mapq 40 --walks-policy 5unique --max-inter-align-gap 30), and PCR and optical duplicates were removed. The filtered alignments were sorted with samtools v1.15.1 (Li et al., 2009) and processed with yahs v1.2a.2 to scaffold the initial assembly (-e GATC, GANTC, CTNAG, TTAA) (Zhou et al., 2023). The Hi-C contact map was generated with juicer v1.9.9 and visualized with Juicebox v2.20.00 (Robinson et al., 2018). The final scaffolds were compared to the reference genome of T. aestivum cv. Chinese Spring (The International Wheat Genome Sequencing Consortium (IWGSC), 2014). Due to their large sizes, all sequences were first fragmented to have a maximum size of 100 Mb, and the Kronos genome sequences were mapped to the reference sequences, as well as complete chloroplast (NC_002762.1) and mitochondrial (NC_036024.1) genomes with minimap v2.24-r1122 (-x asm5) (Heng, 2018). The 14 largest scaffolds were renamed, following the notation of the reference wheat genome. A small number of unassigned contigs were concatenated with 300 N’s and placed together into a single scaffold. Plasmids were separated.
-
-**Syntenic analyses**: 
-
-The Kronos reference genome was compared to the Svevo and Chinese Spring genomes, which were downloaded from Ensembl Plants v60, using minimap v2.24-r1122 (-eqx -c -f 0.05 -K4g -x asm5) (The International Wheat Genome Sequencing Consortium (IWGSC), 2014; Heng, 2018; Maccaferri et al., 2019; Yates et al., 2022). Genomic variations were identified by SyRI v1.7.0 and visualized by plotsr v1.1.0 (Goel et al., 2019; Goel et al., 2022). To analyze local genomic variants, pairwise genome comparisons were performed using BLAST v2.15.0 (Camacho et al., 2009).
-
-
 
 ## Software version
 
@@ -67,12 +48,20 @@ SyRI v1.7.0
 plotsr v1.1.0
 ```
 ---
+### 1. Quality Control
+This step removes adapters from sequencing data. 
 
-## 1. Quality Control
+**📥 Inputs**  
+• `*.hifi_reads.default.bam`: HiFi data in bam format
+• `*.fastq.gz`: Hi-C data in fastq format  
 
-#### HiFi Reads
+**📥 Outputs**  
+• `*.hifi.fastq`: HiFi data in fastq format
+• `*.filtered.fastq.gz`: trimmed filtered Hi-C data in fastq format  
 
-We obtained about 50X HiFi reads from Revio as BAM files. In this step, BAM files are converted into FASTQ format, and reads are filtered to remove potential contaminants.
+---
+⚙️ **Convert to FastQ**  
+About 50X HiFi reads were obtained from Revio. 
 ```
 ls -lha m84066_2305*
 -rwxr-xr-x 1 skyungyong ucb  45G Jun 12 20:07 m84066_230503_201048_s2.hifi_reads.default.bam
@@ -88,14 +77,12 @@ ls -lha m84066_2305*
 -rwxr-xr-x 1 skyungyong ucb 341G Jun 13 04:38 m84066_230523_181907_s2.hifi_reads.default.bam
 -rwxr-xr-x 1 skyungyong ucb  69M Jun 13 04:38 m84066_230523_181907_s2.hifi_reads.default.bam.pbi
 ```
-
-Convert the bam files into a single fasta file with bam2fastq v3.0.0.
 ```
 reads=$(ls *.default.bam)
 bam2fastq -o Kronos.HiFi -j 52 $reads
 ```
 
-While HiFi reads are generally clean, adapter contamination can occasionally occur. HiFiAdapterFilt is used to remove reads with adapter sequences. This step is not necessary. As can be seen from the statistics below, possible contaminants are extremely rare. 
+⚙️ **Remove Adapters (optional)**  
 ```
 HiFiAdapterFilt/hifiadapterfilt.sh -p Kronos -t 54
 
@@ -110,10 +97,7 @@ Number of adapter contaminated ccs reads: 13 (3.30025e-05% of total)
 Number of ccs reads retained: 39390892 (100% of total)
 ```
 
-#### Hi-C Data
-
-We have the following paired-end libraries from the Hi-C protocol. 
-
+⚙️ **Trim Hi-C datasets**  
 ```
 ls -lha  KVK-KRONOS-*/*.fastq.gz
 -rwxr-xr-x 1 skyungyong ucb 49G Jul 26 11:06 KVK-KRONOS-874809/kvk-kronos-874809_S3HiC_R1.fastq.gz
@@ -123,36 +107,51 @@ ls -lha  KVK-KRONOS-*/*.fastq.gz
 -rwxr-xr-x 1 skyungyong ucb 60G Jul 26 12:27 KVK-KRONOS-HIC2-1067017/kvk-kronos-hic2-1067017_S3HiC_R1.fastq.gz
 -rwxr-xr-x 1 skyungyong ucb 62G Jul 26 12:01 KVK-KRONOS-HIC2-1067017/kvk-kronos-hic2-1067017_S3HiC_R2.fastq.gz
 ```
-
-We use fastp for quality control, enabling automatic adapter detection and polyG trimming. Rreads with < 20 quality scores or < 50 bp are discarded.
-
 ```
-fastp --thread 54 -g --detect_adapter_for_pe -q 20 -l 50 --in1 $read1 --in2 $read2 --out1 $out1 --out2 $out2 -h bssh1.html &> bssh1.log
+#out can be formatted as *.filtered.fastq.gz
+fastp --thread 54 -g --detect_adapter_for_pe -q 20 -l 50  \
+      --in1 $read1 --in2 $read2 --out1 $out1 --out2 $out2 \
+      -h bssh1.html &> bssh1.log
 fastqc -t 54 $out1 $out2
 ```
 
+---
+### 2. Genome Assessment
+GenomeScope was used to assess genomic characteristics of Kronos
 
-## 2. Genome Assessment
+**📥 Inputs**  
+• `*.hifi.fastq`: HiFi data in bam format
 
-Kronos is an allotetraploid wheat (AABB) with high homozygosity due to self-pollination. An available Durum wheat genome ([Svevo](https://www.nature.com/articles/s41588-019-0381-3)) is 10.45G in size. We also roughly estimate that the Kronos genome would be similar in size. To confirm this, we use GenomeScope v2.0 along with jellyfish.
+---
+⚙️ **Run GenomeScope**  
 ```
+#count k-mer
 jellyfish count -C -m 21 -s 50000000000 -t 20 Kronos.HiFi.fastq -o kmer_counts.jf
 jellyfish histo -h 5000000 -t 20 kmer_counts.jf > reads.histo
+
 genomescope2 -p 4 -i reads.histo -o genomescope --verbose  
 ```
-
-We can also perform a similar analysis for Svevo. We first downloaded the paired-end short reads from the NCBI, filtered them and evaluated k-mer. 
+⚙️ **Comparison to Svevo**    
+The same analysis was performed for Svevo for comparison
 ```
-cat Svevo_SRA.list | while read accession; do fasterq-dump-orig.2.11.2 -e 40 -t ./tmp $accession; done
-ls *.fastq | cut -d "_" -f 1 | sort -u |  while read accession; do trim_galore --illumina -j 8 --paired $accession\_1.fastq $accession\_2.fastq ; done
+#download sequencing data
+while read -r accession; do 
+    sratoolkit.3.1.1-centos_linux64/bin/prefetch ${accession}
+    sratoolkit.3.1.1-centos_linux64/bin/fasterq-dump -O . -e ${Numthreads} ${accession}
+done < Svevo_SRA.list
 
+#trim
+ls *.fastq | cut -d "_" -f 1 | sort -u |  while read accession; do
+    trim_galore --illumina -j 8 --paired $accession\_1.fastq $accession\_2.fastq
+done
+
+#genomescope
 jellyfish count -C -m 21 -s 50000000000 -t 56 *.fq -o svevo.kmer_counts.jf
 jellyfish histo -h 5000000 -t 56 svevo.kmer_counts.jf > svevo.reads.histo
 genomescope2 -p 4 -i svevo.reads.histo -o svevo.genomescope --verbose
 ```
 
-This is the GenomeScope statistics.  
-
+⚙️ **Statistics**  
 |    | Kronos             ||              Svevo ||
 |----|---------|-----------|---------|-----------|
 |    | min | max | min | max |
