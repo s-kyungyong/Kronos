@@ -57,7 +57,7 @@ This step removes adapters from sequencing data.
 
 **📥 Outputs**  
 • `Kronos.HiFi.filt.fastq.gz`: HiFi data in fastq format  
-• `*.filtered.fastq.gz`: trimmed filtered Hi-C data in fastq format    
+• `*.trimmed.fq.gz`: trimmed filtered Hi-C data in fastq format    
 
 ⚙️ **Convert to FastQ**  
 About 50X HiFi reads were obtained from Revio. 
@@ -108,7 +108,7 @@ ls -lha  KVK-KRONOS-*/*.fastq.gz
 -rwxr-xr-x 1 skyungyong ucb 62G Jul 26 12:01 KVK-KRONOS-HIC2-1067017/kvk-kronos-hic2-1067017_S3HiC_R2.fastq.gz
 ```
 ```
-#out can be formatted as *.filtered.fastq.gz
+#out can be formatted as *.trimmed.fq.gz
 fastp --thread 54 -g --detect_adapter_for_pe -q 20 -l 50  \
       --in1 $read1 --in2 $read2 --out1 $out1 --out2 $out2 \
       -h bssh1.html &> bssh1.log
@@ -186,10 +186,10 @@ Both haplotype-collapsed and haplotype-resolved assemblies were generated.
 
 **📥 Inputs**  
 • `Kronos.HiFi.filt.fastq.gz`: HiFi data in fastq format  
-• `*.fastq.gz`: Hi-C data in fastq format (for haplotype-resolved assembly)  
+• `*.trimmed.fq.gz`: filtered Hi-C data in fastq format (for haplotype-resolved assembly)  
 
 **📥 Outputs**  
-• `*Kronos.draft.fa`: Haplotype-collapsed assembly  
+• `Kronos.draft.fa`: Haplotype-collapsed assembly  
 • `Kronos.haplotype_resolved.HAP1.contigs.v1.0.fa`: Haplotype-resolved assembly (Haplotype 1)  
 • `Kronos.haplotype_resolved.HAP2.contigs.v1.0.fa`: Haplotype-resolved assembly (Haplotype 2)  
 
@@ -219,8 +219,8 @@ awk '/^S/{print ">"$2"\n"$3}' l0.bp.a_ctg.gfa | fold > Kronos.haplotype_resolved
 Haplotype-collapsed assembly was scaffolded with Hi-C datasets.   
 
 **📥 Inputs**  
-• `*Kronos.draft.fa`: Haplotype-collapsed assembly  
-• `*.fastq.gz`: Hi-C data in fastq format (for haplotype-resolved assembly)  
+• `Kronos.draft.fa`: Haplotype-collapsed assembly  
+• `*.trimmed.fq.gz`: filtered Hi-C data in fastq format
 
 **📥 Outputs**  
 • `YaHS_scaffolds_final.fa`: Haplotype-collapsed scaffolds  
