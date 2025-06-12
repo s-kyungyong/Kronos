@@ -327,11 +327,12 @@ python process_scaffolds.py minimap.plasmid.sorted.paf minimap.ref.sorted.paf Ya
 | unambiguous base pairs | 600439581| 708826986| 795812989| 828523133| 759124428| 864131987| 767852317| 699678356| 720275659| 731131626| 624298173| 733579245| 753471566| 766006795| 210519344 |
 
 ⚙️ **Genome v1.1**   
-In the version 1.1, chromosomes 1B, 2A, 2B, 3A, 3B, 5A, 6A and 6B are flipped to make their orientations consistent with the Chinese Spring genome.  
+To generate the genome version 1.1, chromosomes 1B, 2A, 2B, 3A, 3B, 5A, 6A and 6B were flipped to make their orientations consistent with the Chinese Spring genome.  
 
 ---
 ### 6. Synteny analyses  
 Genome synteny was compared between reference genomes.  
+
 **📥 Inputs**  
 • `Kronos.collapsed.chromosomes.masked.v1.1.fa`: Haplotype-collapsed scaffolds v1.1    
 • `Triticum_turgidum.Svevo.v1.dna.toplevel.fa`:  Svevo reference genome (Plant Ensembl)  
