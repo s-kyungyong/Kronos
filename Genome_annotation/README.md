@@ -46,12 +46,12 @@ This step processes publicly available RNA-seq datasets for Kronos. Reads were d
 
 **📥 Inputs**  
 • `v1_rnaseq.list`: List of NCBI SRA accessions  
-• `Kronos.collapsed.chromosomes.fa`: Kronos reference genome  
-• `Kronos.collapsed.chromosomes.masked.fa`: Kronos reference genome (masked)  
+• `Kronos.collapsed.chromosomes.fa`: Kronos reference genome v1.0
+• `Kronos.collapsed.chromosomes.masked.fa`: Kronos reference genome (masked) v1.0
 
 **📥 Outputs**  
-• `all.merged.sorted.bam`: Merged and sorted RNA-seq alignments by mapping  
-• `transcripts.fasta`: Trinity-assembled transcripts (de novo + genome-guided)   
+• `all.short-read.rnaseq.merged.sorted.bam`: Merged and sorted RNA-seq alignments by mapping  
+• `trinity.transcripts.fasta`: Trinity-assembled transcripts (de novo + genome-guided)   
 • `stringtie.gtf`: Genome-guided transcript models from StringTie  
 • `sample_mydb_pasa.sqlite.assemblies.fasta`: PASA-refined transcript structures  
 • `sample_mydb_pasa.sqlite.assemblies.fasta.transdecoder.genome.gff3`: Translated ORFs from PASA
@@ -78,7 +78,7 @@ done
 ⚙️ **Genome-guided mapping and transcript assembly**  
 • Build genome index
 ```
-hisat2-build -p 20 Kronos.collapsed.chromosomes.fa Kronos #v1.0 genome was used 
+hisat2-build -p 20 Kronos.collapsed.chromosomes.fa Kronos
 ```
 • Map RNA-seq reads
 ```
@@ -102,9 +102,9 @@ done
 • Merge and assemble with StringTie
 ```
 samtools merge -@ 56 -h SRX10965366.mapped.bam -o all.merged.bam *.mapped.bam #make sure to heve an header
-samtools sort -@ 56 all.merged.bam > all.merged.sorted.bam
+samtools sort -@ 56 all.merged.bam > all.short-read.rnaseq.merged.sorted.bam
 
-stringtie -o stringtie.gtf -p 56 --conservative all.merged.sorted.bam
+stringtie -o stringtie.gtf -p 56 --conservative all.short-read.rnaseq.merged.sorted.bam
 ```
 ---
 ⚙️ **De novo and genome-guided transcriptome assembly with Trinity**  
@@ -128,7 +128,7 @@ done > sample.list
 ```
 • Run Trinity (de novo and genome-guided)
 ```
-#merge all outputs into transcripts.fasta
+#merge all outputs into trinity.transcripts.fasta
 #run trinity de novo
 singularity run trinity.sif Trinity --verbose --seqType fq --max_memory 1500G --CPU 56 --samples_file sample.list
 
@@ -141,17 +141,17 @@ singularity run trinity.sif Trinity --verbose --max_memory 250G --CPU 56 --genom
 singularity exec pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl \
             -c /usr/local/src/PASApipeline/sample_data/sqlite.confs/alignAssembly.config -r -C -R \
             --CPU 56 --ALIGNERS gmap --TRANSDECODER -g Kronos.collapsed.chromosomes.fa \
-            -t transcripts.fasta \ #this includes all trinity-assembled transcripts (genome-guided and de novo)
-            --trans_gtf stringtie.gtf #stringtie-based assembly outputs
+            -t trinity.transcripts.fasta \ 
+            --trans_gtf stringtie.gtf
 ```
 ---
 ### 2. Gene Prediction with BRAKER  
 BRAKER was used to generate gene models using both RNA-seq alignment evidence and protein homology. Protein sequences from the Poales clade (TAXID: 38820) were downloaded from UniProt.  
 
 **📥 Inputs**  
-• `all.merged.sorted.bam`: Filtered transcriptome alignments (HISAT2 + SAMtools)  
+• `all.short-read.rnaseq.merged.sorted.bam`: Filtered transcriptome alignments (HISAT2 + SAMtools)  
 • `uniprotkb_38820.fasta`: 2.85 million Poales proteins  
-• `Kronos.collapsed.chromosomes.masked.fa`: Kronos reference genome (masked)  
+• `Kronos.collapsed.chromosomes.masked.fa`: Kronos reference genome (masked) v1.0
 
 **📥 Outputs**  
 • `braker.gtf`: Gene models predicted by BRAKER  
@@ -163,7 +163,7 @@ BRAKER was used to generate gene models using both RNA-seq alignment evidence an
 ```
 singularity exec -B $PWD braker3.sif braker.pl --verbosity=3 \
     --genome=Kronos.collapsed.chromosomes.masked.fa \
-    --bam=all.merged.sorted.bam \
+    --bam=all.short-read.rnaseq.merged.sorted.bam \
     --prot_seq=uniprotkb_38820.fasta \
     --species=Kronos --threads 48 --gff3 \
     --workingdir=$wd/braker \
@@ -175,11 +175,11 @@ singularity exec -B $PWD braker3.sif braker.pl --verbosity=3 \
 Funannotate integrates transcriptome evidence. Although it automatically trains ab initio prediction tools, we provided manually trained SNAP and AUGUSTUS models for better accuracy. Training sets were derived from BRAKER models filtered against known references.
 
 **📥 Inputs**  
-• `transcripts.fasta`: Trinity (de novo + genome-guided) assemblies  
+• `trinity.transcripts.fasta`: Trinity (de novo + genome-guided) assemblies  
 • `stringtie.gtf`: StringTie transcript models  
-• `all.merged.sorted.bam`: Filtered transcriptome alignments (HISAT2 + SAMtools)    
-• `braker.gtf, braker.aa`: BRAKER gene models and proteins  
-• `Kronos.collapsed.chromosomes.masked.fa`: Kronos reference genome (masked)  
+• `all.short-read.rnaseq.merged.sorted.bam`: Filtered transcriptome alignments (HISAT2 + SAMtools)    
+• `braker.gtf braker.aa`: BRAKER gene models and proteins  
+• `Kronos.collapsed.chromosomes.masked.fa`: Kronos reference genome (masked) v1.0  
 
 **📥 Outputs**  
 • `Triticum_kronos.filtered.gff3`: Funannotate gene models
@@ -204,11 +204,11 @@ funannotate predict \
 -i Kronos.collapsed.chromosomes.masked.fa \
 -o Funannotate \
 -s "Triticum kronos" \
---transcript_evidence transcripts.fasta \
+--transcript_evidence trinity.transcripts.fasta \
 --repeats2evm \
 --cpus 56 \
 --ploidy 2 \ #2 was used as Kronos is homozygous and can be collapsed 
---rna_bam all.merged.sorted.bam \
+--rna_bam all.short-read.rnaseq.merged.sorted.bam \
 --stringtie stringtie.gtf \
 --augustus_species Kronos_manual \
 --AUGUSTUS_CONFIG_PATH /global/scratch/users/skyungyong/Software/anaconda3/envs/funannotate/config/ \
@@ -228,11 +228,11 @@ python filter_genes_funannotate.py
 GINGER uses Nextflow to integrate multiple gene prediction modules. We modified two steps. `denovo.nf`: transcript assembles with oases/velvet were not performed, as this required 17,000,000 Gb memory. `abinitio.nf`: Augustus and SNAP were trained manually.
 
 **📥 Inputs**  
-• `transcripts.fasta`: Trinity (de novo + genome-guided) assemblies  
-• `all.merged.sorted.bam`: Filtered transcriptome alignments (HISAT2 + SAMtools)    
-• `braker.gtf, braker.aa`: BRAKER gene models and proteins  
-• `Protein sequence`: protein sequences downloaded from Ensembl for T. aestivum, T. turgidum, T. dicoccoides, T. spelta, T. urartu 
-• `Kronos.collapsed.chromosomes.masked.fa`: Kronos reference genome (masked)  
+• `trinity.transcripts.fasta`: Trinity (de novo + genome-guided) assemblies  
+• `all.short-read.rnaseq.merged.sorted.bam`: Filtered transcriptome alignments (HISAT2 + SAMtools)    
+• `braker.gtf braker.aa`: BRAKER gene models and proteins  
+• `Protein sequences`: protein sequences downloaded from Ensembl for T. aestivum, T. turgidum, T. dicoccoides, T. spelta, T. urartu 
+• `Kronos.collapsed.chromosomes.masked.fa`: Kronos reference genome (masked) v1.0
 
 **📥 Outputs**  
 • `ginger_phase2.gff`: GINGER-predicted gene models
@@ -289,7 +289,7 @@ Miniprot was used to align 2.85 million Poales protein sequences from UniProt to
 
 **📥 Inputs**  
 • `uniprotkb_38820.fasta`: 2,850,097 protein sequences (TAXID: 38820)
-• `Kronos.collapsed.chromosomes.masked.fa`: Kronos reference genome (masked)  
+• `Kronos.collapsed.chromosomes.masked.fa`: Kronos reference genome (masked) v1.0
 
 **📥 Outputs**  
 • `miniprot.gff3`: Protein alignments
@@ -313,7 +313,7 @@ All gene prediction, transcript, and protein evidence was integrated using Evide
 • `sample_mydb_pasa.sqlite.pasa_assemblies.gff3`: PASA transcript assemblies  
 • `sample_mydb_pasa.sqlite.assemblies.fasta.transdecoder.genome.gff3`: Translated ORFs from PASA  
 • `repeat.gff3`: repeat annotations from HiTE  
-• `Kronos.collapsed.chromosomes.fa`: Kronos reference genome  
+• `Kronos.collapsed.chromosomes.fa`: Kronos reference genome v1.0 
 
 **📥 Outputs**  
 • `Kronos.EVM.gff3`: Consensus gene models
@@ -321,7 +321,7 @@ All gene prediction, transcript, and protein evidence was integrated using Evide
 ---
 ⚙️ **Input Preprocessing**  
 ```
-# Combine ab initio predictions
+# Combine draft predictions
 cat braker.gff Triticum_kronos.filtered.gff3 ginger_phase2.gff \
   sample_mydb_pasa.sqlite.assemblies.fasta.transdecoder.genome.gff > abinitio.gff3
 
@@ -359,8 +359,9 @@ PASA was rerun to update the EVM models with untranslated regions (UTRs) and alt
 
 **📥 Inputs**  
 • `Kronos.EVM.gff3`: Consensus gene models  
-• `transcripts.fasta`: Trinity (de novo + genome-guided) assemblies    
+• `trinity.transcripts.fasta`: Trinity (de novo + genome-guided) assemblies    
 • `stringtie.gtf`: StringTie transcript models    
+• `Kronos.collapsed.chromosomes.fa`: Kronos reference genome v1.0 
 
 **📥 Outputs**  
 • `Kronos.EVM.pasa.gff3`: Final annotation with UTRs and isoforms
@@ -371,11 +372,11 @@ PASA was rerun to update the EVM models with untranslated regions (UTRs) and alt
 #create DB
 singularity exec pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl \
             -C -R -c alignAssembly.config -g Kronos.collapsed.chromosomes.masked.fa \
-            -t transcripts.fasta --trans_gtf stringtie.gtf --TRANSDECODER --ALT_SPLICE --ALIGNERS gmap
+            -t trinity.transcripts.fasta --trans_gtf stringtie.gtf --TRANSDECODER --ALT_SPLICE --ALIGNERS gmap
 #update annotations
 singularity exec pasapipeline.v2.5.3.simg /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl \
             -A -L -c compare.config  -g Kronos.collapsed.chromosomes.masked.fa \
-            -t transcripts.fasta --annots Kronos.EVM.gff3
+            -t trinity.transcripts.fasta --annots Kronos.EVM.gff3
 ```
 
 ---
@@ -447,8 +448,7 @@ done
 ```
 • Merge all bam files 
 ``` 
-#merge all bam files
-samtools merge -@56 -h ERR11193282.bam all.long-read.merged.bam *.bam
+samtools merge -@56 all.long-read.merged.bam *.bam
 samtools index -@56 all.long-read.merged.bam
 ```
 • Split chromosomes for parallel processing   
@@ -466,7 +466,7 @@ done
 ### 3. Transcript Assembly with StringTie & IsoQuant  
 
 **📥 Inputs**  
-• `all.merged.sorted.*.bam`: Filtered short-read transcriptome alignments produced during v1.0 anotation  
+• `all.short-read.rnaseq.merged.sorted.*.bam`: Filtered short-read transcriptome alignments produced during v1.0 anotation  
 • `all.long-read.merged.*.bam`: long-read transcriptome alignments  
 • `Kronos.collapsed.chromosomes.masked.v1.1.broken.fa`: broken Kronos reference genome v1.1 (masked)    
 
@@ -479,21 +479,21 @@ done
 ```
 #make sure to adjust the coordinates for the original genome
 stringtie -p 4 -v -o Kronos.${chromosome}.stringtie.denovo.gtf \
-         --mix all.short-read.merged.${chromosome}.bam all.long-read.merged.${chromosome}.bam
+         --mix all.short-read.rnaseq.merged.sorted.${chromosome}.bam all.long-read.merged.${chromosome}.bam
 ```
 
 ⚙️ **Assembly with Isoquant**  
 ```
 #make sure to adjust the coordinates for the original genome
 isoquant.py --threads 56 --reference Kronos.collapsed.chromosomes.masked.v1.1.broken.fa \
-            --illumina_bam all.merged.sorted.all.bam --output Isoquant_Kronos --data_type pacbio_ccs --bam $bam #a list of unmerged bamfiles was given
+            --illumina_bam all.short-read.rnaseq.merged.sorted.bam --output Isoquant_Kronos --data_type pacbio_ccs --bam $bam #a list of unmerged bamfiles was given
 ```
 
 ### 4. Combining Annotations
 **📥 Inputs**  
 • `stringtie.denovo.transcript_models.gtf`: transcripts from StringTie  
 • `isoquant.OUT.transcript_models.gtf`: transcripts from Isoquant  
-• `all.merged.sorted.bam`: Filtered short-read transcriptome alignments produced during v1.0 anotation    
+• `all.short-read.rnaseq.merged.sorted.bam`: Filtered short-read transcriptome alignments produced during v1.0 anotation    
 • `all.evidnece.fa`: protein evidence datasets from Ensembl Plants used during v1.0 anntotation (step 8)  
 • `Kronos.collapsed.chromosomes.masked.v1.1.fa`: broken Kronos reference genome v1.1 (masked)      
  
@@ -504,7 +504,9 @@ isoquant.py --threads 56 --reference Kronos.collapsed.chromosomes.masked.v1.1.br
 ---
 ⚙️ **Set Up Mikado**
 ```
-mikado configure --list list.txt --reference Kronos.collapsed.chromosomes.masked.v1.1.fa --mode STRINGENT --scoring plants.yaml  --copy-scoring plants.yaml –junctions junctions.bed -bt all.evidence.clean.fa configuration.yaml
+mikado configure --list list.txt --reference Kronos.collapsed.chromosomes.masked.v1.1.fa \
+        --mode STRINGENT --scoring plants.yaml  --copy-scoring plants.yaml –junctions junctions.bed \
+        -bt all.evidence.clean.fa configuration.yaml
 mikado prepare --json-conf configuration.yaml
 ```
 ⚙️ **Create Intermediate Inputs**
@@ -518,14 +520,24 @@ blastx -max_target_seqs 5 -query mikado_prepared.fasta \ #this file is from mika
         -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore ppos btop” -num_threads 56
 
 #get junction
-portcullis full -o all_merged.repositioned.bed -t 20 Kronos.collapsed.chromosomes.masked.v1.1.broken.fa all.merged.sorted.bam;
+portcullis full -o all_merged.repositioned.bed -t 20 Kronos.collapsed.chromosomes.masked.v1.1.broken.fa all.short-read.rnaseq.merged.sorted.bam
 ```
 ⚙️ **Finish Mikado**
 ```
 mikado serialise --genome Kronos.collapsed.chromosomes.masked.v1.1.fa -p 56 --junctions all_merged.repositioned.bed --orfs mikado.orfs.gff3 -bt all.evidence.clean.fa
 mikado pick --configuration configuration.yaml -p 56 --scoring-file plant.yaml --subloci-out mikado.subloci.gff3 --loci-out mikado.loci.out
 ```
+---
 
+### 5. Finalizing Annotation    
+We manually and visually compared gene models from Mikado to those in v1.0 annotations (including the final set, BRAKER, Funannotate, and GINGER), as well as long-read-derived transcripts from StringTie and IsoQuant. This step focused on resolving issues such as overlapping exons (CDS and UTR), unusually long introns (both within and outside coding regions), single-exon genes, paralog clusters, and potential chimeric structures.
+
+We looked for annotation-specific patterns and iteratively replaced, removed, or updated subsets of Mikado models to improve structural accuracy. This process involved over 20 rounds of visual inspection and refinement, making it difficult to document as an automated workflow.
+
+### 6. Changes from v1.0 to v2.0  
+While most genes retained consistent identifiers across versions (e.g., TrturKRN1A01G000005 → TrturKRN1A02G000005), a small subset of gene IDs were reassigned to accommodate newly defined gene models and structural updates.
+
+If you're working across both v1.0 and v2.0 annotations, we strongly recommend confirming gene homology and genomic coordinates to ensure accurate correspondence between versions.
 
 ---
 ## Annotation v2.1  
