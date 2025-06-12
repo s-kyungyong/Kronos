@@ -15,11 +15,13 @@ InterProScan v5.68.100
 
 ## 1. eggNOG-mapper
 
-📥 Inputs
-• `Kronos.v2.1.pep.fa`: Kronos annotation v2.1  
+📥 Inputs  
 
-📥 Outputs
-• `Kronos.v2.1.pep.eggnog.tsv`: eggNOG-mapper annotation
+• `Kronos.v2.1.pep.fa`: Kronos annotation v2.1   
+
+📥 Outputs  
+
+• `Kronos.v2.1.pep.eggnog.tsv`: eggNOG-mapper annotation  
 
 ⚙️ Run eggNOG-mapper
 All the parameters were set default, and the sequences were submitted to [the eggNOG-mapper server](http://eggnog-mapper.embl.de/).
