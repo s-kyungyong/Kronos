@@ -515,9 +515,8 @@ mikado prepare --json-conf configuration.yaml
 prodigal -i mikado_prepared.fasta -g 1 -o mikado.orfs.gff3 -f gff
 
 #get homology
-blastx -max_target_seqs 5 -query mikado_prepared.fasta \ #this file is from mikado
-        -db all.evidence.fa -out mikado_prepared.blast.tsv \
-        -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore ppos btop” -num_threads 56
+diamond blastx --max-target-seqs 5 --outfmt 5 --more-sensitive --masking 0 \
+        --threads 56 --db all.evidence.fa.dmnd --query mikado_prepared.fasta --out mikado_prepared.fasta.xml
 
 #get junction
 portcullis full -o all_merged.repositioned.bed -t 20 Kronos.collapsed.chromosomes.masked.v1.1.broken.fa all.short-read.rnaseq.merged.sorted.bam
