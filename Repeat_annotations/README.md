@@ -1,7 +1,7 @@
 # Repeat Annotation
 ## Data Availability
-Repeat annotations are available in Zenodo. 
-• `Repeat annotation [✨Final✨]`: https://zenodo.org/records/15399687
+Repeat annotations are available in Zenodo.   
+• `Repeat annotation [✨Final✨]`: https://zenodo.org/records/15399687  
 
 ## Software version
 ```
@@ -16,10 +16,10 @@ RepeatMasker v4.1.5
 Repeative elements annotated in the Kronos reference genome v1.0 and v1.1 were predicted by [HiTE](https://github.com/CSU-KangHu/HiTE). 
 
 📥 Inputs
-• `Kronos.collapsed.chromosomes.fa`: Haplotype-collapsed scaffolds (v1.0)
+• `Kronos.collapsed.chromosomes.fa`: Haplotype-collapsed scaffolds (v1.0)  
 
-📥 Outputs
-• `Kronos.collapsed.chromosomes.masked.fa`: Haplotype-collapsed scaffolds (v1.0)
+📥 Outputs  
+• `Kronos.collapsed.chromosomes.masked.fa`: Haplotype-collapsed scaffolds (v1.0)  
 
 ⚙️ **Run HiTE**  
 ```
