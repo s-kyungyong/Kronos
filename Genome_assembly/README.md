@@ -295,7 +295,7 @@ grep 'scale factor' out_JBAT.log
 
 
 **📥 Outputs**  
-• `Kronos.collapsed.chromosomes.fa`: Haplotype-collapsed scaffolds (v1.0)  
+• `Kronos.collapsed.chromosomes.fa`: Haplotype-collapsed chromosomes (v1.0)  
 • `Kronos.collapsed.chloroplasts.fa`: Haplotype-collapsed scaffolds  
 • `Kronos.collapsed.mitochondria.fa`: Haplotype-collapsed scaffolds  
 
@@ -334,7 +334,7 @@ To generate the genome version 1.1, chromosomes 1B, 2A, 2B, 3A, 3B, 5A, 6A and 6
 Genome synteny was compared between reference genomes.  
 
 **📥 Inputs**  
-• `Kronos.collapsed.chromosomes.masked.v1.1.fa`: Haplotype-collapsed scaffolds v1.1    
+• `Kronos.collapsed.chromosomes.masked.v1.1.fa`: Haplotype-collapsed chromosomes v1.1    
 • `Triticum_turgidum.Svevo.v1.dna.toplevel.fa`:  Svevo reference genome (Plant Ensembl)  
 • `GCF_002162155.2_WEW_v2.1_genomic.fna`:  Zavitan reference genome (NCBI)  
 • `Triticum_aestivum.IWGSC.dna.toplevel.fa`: Chinese Spring reference genome (Plant Ensembl)  
