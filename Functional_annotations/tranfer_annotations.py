@@ -2,7 +2,7 @@ from Bio import SeqIO
 
 refseq = 'NCBI_refseq.aa.fa'
 dmnd_out = 'Kronos.v2.1.against.NCBI.refseq.dmnd.out'
-eggnog_out = 'eggnog.tsv'
+eggnog_out = 'Kronos.v2.1.pep.eggnog.tsv'
 output = 'Kronos.v2.1.description'
 
 seqdict = SeqIO.to_dict(SeqIO.parse(refseq, 'fasta'))
