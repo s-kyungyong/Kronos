@@ -8,7 +8,7 @@ Sequencing data were deposted in the NCBI under the BioProject assession, PRJNA1
 
 The Kronos reference genome can be assessed through the NCBI and Zenodo.   
 • `v1.0 genome`: https://zenodo.org/records/10215402  
-• `v1.1 genome [Final]`: https://zenodo.org/records/11106422  
+• `v1.1 genome [✨Final✨]`: https://zenodo.org/records/11106422  
 • `v1.1 genome [no Un]`: JBLYQA000000000  
 • `Haplotype resolved assembly (contigs)`: https://zenodo.org/records/15644987
 
