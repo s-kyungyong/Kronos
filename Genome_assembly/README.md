@@ -29,8 +29,8 @@ Note that the genome acessible through the NCBI does not have **Un** sequences. 
 ## Software version
 
 ```
-GenomeScope v2.0
-Jellyfish v2.2.10
+genomescope v2.0
+jellyfish v2.2.10
 trim_galore v0.6.6
 cutadapt v3.7
 bam2fastq v3.0.0
@@ -43,8 +43,8 @@ yahs v1.2a.2
 juicer v1.9.9
 Juicebox v2.20.00
 minimap v2.24-r1122
-BLAST v2.15.0
-SyRI v1.7.0
+blast v2.15.0
+syri v1.7.0
 plotsr v1.1.0
 ```
 ---
