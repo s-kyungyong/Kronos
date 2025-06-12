@@ -38,15 +38,15 @@ Gene Ontology evidence: Transfer non-electronic annotations
 PFAM refinement: Report PFAM domains from orthologs
 SMART annotation: Skip SMART annotations
 ```
-
+---
 
 ## 2. InterProScan
 
-📥 Inputs
-• `Kronos.v2.1.pep.fa`: Kronos annotation v2.1  
+📥 Inputs  
+• `Kronos.v2.1.pep.fa`: Kronos annotation v2.1    
 
-📥 Outputs  
-• `Kronos.v2.1.pep.fa.InterPro.tsv`: InterProScan annotations  
+📥 Outputs    
+• `Kronos.v2.1.pep.fa.InterPro.tsv`: InterProScan annotations    
 
 ⚙️ Run InterProScan
 
@@ -67,19 +67,19 @@ for db in $DATABASES; do
         --appl $db  # Run only the specific database
 done
 ```
-
+---
 ## 3. Annotation Transfer
 
-📥 Inputs
-• `Kronos.v2.1.pep.fa`: Kronos annotation v2.1  
-• `RefSeqs.fa`: Selected RefSeq sequences from NCBI
-• `Kronos.v2.1.pep.eggnog.tsv`: eggNOG-mapper annotation
+📥 Inputs  
+• `Kronos.v2.1.pep.fa`: Kronos annotation v2.1    
+• `RefSeqs.fa`: Selected RefSeq sequences from NCBI  
+• `Kronos.v2.1.pep.eggnog.tsv`: eggNOG-mapper annotation  
 
-📥 Outputs  
-• `Kronos.v2.1.description`: Gene descriptions for Kronos annotation v2.1
+📥 Outputs    
+• `Kronos.v2.1.description`: Gene descriptions for Kronos annotation v2.1  
 
-⚙️ Transfer Gene Annotation
-• Collect databases
+⚙️ Transfer Gene Annotation  
+• Collect databases  
 ```
 #download proteins
 wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/018/294/505/GCF_018294505.1_IWGSC_CS_RefSeq_v2.1/GCF_018294505.1_IWGSC_CS_RefSeq_v2.1_protein.faa.gz
@@ -91,7 +91,7 @@ gunzip *.gz
 cat *_protein.faa > NCBI_refseq.aa.fa 
 ```
 
-• Homology search
+• Homology search  
 ```
 diamond makedb --in NCBI_refseq.aa.fa --db NCBI_refseq.aa
 diamond blastp --masking 0 -d NCBI_refseq.aa --evalue 1-e04 --max-target-seqs 5 \
@@ -99,8 +99,8 @@ diamond blastp --masking 0 -d NCBI_refseq.aa --evalue 1-e04 --max-target-seqs 5 
         --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen 
 ```
 
-• Annotation transfer
-For annotation transfer, query and hit coverage > 90%, sequence ideneity > 90% and E-value < 1e-10 were required. For sequences that fail to meet these criteria, annotations were lifted from eggNOG-mapper if present. Otherwise, sequences were annotated as hypothetical proteins. 
+• Annotation transfer  
+For annotation transfer, query and hit coverage > 90%, sequence ideneity > 90% and E-value < 1e-10 were required. For sequences that fail to meet these criteria, annotations were lifted from eggNOG-mapper if present. Otherwise, sequences were annotated as hypothetical proteins.   
 ```
 python transfer_annotations.py
 ```
