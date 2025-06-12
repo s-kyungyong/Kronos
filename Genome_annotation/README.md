@@ -545,7 +545,7 @@ In this version, existing genes in the v2.0 annotation that overlap with low-con
 
 **📥 Inputs**   
 • `Kronos.v2.0.gff3`: Kronos annotation v2.0  
-• `Kronos_all.NLRs.final.gff3`: Kronos NLR annotations: https://zenodo.org/records/15539721  
+• `Kronos_all.NLRs.final.gff3`: Kronos NLR annotations(https://zenodo.org/records/15539721)  
 
 **📥 Outputs**   
 • `Kronos.v2.1.gff3`: Kronos annotation v2.1  
@@ -585,4 +585,24 @@ awk 'BEGIN {OFS="\t"} {
     else type = 5;
     print $0, type 
 }' | sort -k1,1 -k4,4n -k10,10n | cut -f1-9 > Kronos.v2.1.gff3  # Sort by chromosome, start, then type order
+```
+
+
+---
+## Annotation Assessment
+Genome annotations were evaluated by BUSCO and OMArk  
+
+**📥 Inputs**   
+• `Kronos.vX.X.pep.fa`: Kronos annotation
+
+⚙️ **BUSCO**  
+```
+busco -m prot -c 56 -l poales_odb10 -i Kronos.vX.X.pep.fa -o busco
+```
+
+⚙️ **OMArk**  
+```
+#for longest protein per gene
+omamer search --db  LUCA.h5 --query Kronos.vX.X.pep.fa --out Kronos.vX.X.pep.fa.omamer
+omark -f Kronos.vX.X.pep.fa.omamer -d LUCA.h5 -oomark_output
 ```
