@@ -5,9 +5,9 @@ Repeat annotations are available in Zenodo.
 
 ## Software version
 ```
-HiTE v3.0
-EDTA v2.2.2
-RepeatMasker v4.1.5
+hite v3.0
+edta v2.2.2
+repeatmasker v4.1.5
 ```
 
 ---
