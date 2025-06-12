@@ -6,8 +6,8 @@ The functional annotations can be downloaded from Zenodo.
 
 ## Software version
 ```
-eggNOG-mapper v2.1.12
-InterProScan v5.68.100
+eggnog-mapper v2.1.12
+interproscan v5.68.100
 ```
 
 ---
