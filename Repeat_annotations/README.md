@@ -15,10 +15,12 @@ RepeatMasker v4.1.5
 ## 1. Repeat Identification with HiTE
 Repeative elements annotated in the Kronos reference genome v1.0 and v1.1 were predicted by [HiTE](https://github.com/CSU-KangHu/HiTE). 
 
-📥 Inputs
+📥 Inputs  
+
 • `Kronos.collapsed.chromosomes.fa`: Haplotype-collapsed scaffolds (v1.0)  
 
 📥 Outputs  
+
 • `Kronos.collapsed.chromosomes.masked.fa`: Haplotype-collapsed scaffolds (v1.0)  
 
 ⚙️ **Run HiTE**  
