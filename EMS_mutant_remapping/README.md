@@ -2,10 +2,10 @@
 
 ## Data availability 
 Processed exome and promoter-capture data are available through Zenodo 
-• `Exome capture (MAPS) [✨Final✨]`:
-• `Exome capture (GATK) [✨Final✨]`:
-• `Promoter capture (MAPS) [✨Final✨]`:
-• `Promoter capture (GATK) [✨Final✨]`:
+• `Exome capture (MAPS) [✨Final✨]`:  
+• `Exome capture (GATK) [✨Final✨]`:  
+• `Promoter capture (MAPS) [✨Final✨]`:  
+• `Promoter capture (GATK) [✨Final✨]`:  
 
 ## Software version
 ```
@@ -60,7 +60,7 @@ fastp --in1 ${accession}_1.fastq --in2 ${accession}_2.fastq --out1 ${accession}.
 
 
 📥 Outputs   
-• `Kronos.collapsed.chromosomes.masked.v1.1.broken.fa`: Kronos reference genome v1.1 (more about this genome is: https://github.com/krasileva-group/Kronos_EDR)  
+• `Kronos.collapsed.chromosomes.masked.v1.1.broken.fa`: Kronos reference genome v1.1 (more about this genome is [here](https://github.com/krasileva-group/Kronos_EDR)).  
 • `*.sam`: alignment files  
 
 ```
@@ -118,9 +118,6 @@ while read mutant lib1 lib2; do
 📥 Outputs    
 • `MAPS-{x}`: folders containing each batch of alignments to be processed together
 
-
-Mutants were prepared for squencing in batches of about 8, and 3 batches were sequenced together, though some variations exist. 
-
 ```
 #create folders and move bam files
 for i in {1..60}; do mkdir MAPS-${i}; done
@@ -143,7 +140,7 @@ done
 • `Kronos_mpileup.txt`: mpile up output for the MAPS pipeline part 1 
 
 ⚙️ **Mpileup**  
-Note: [the MAPS pipeline](https://github.com/DubcovskyLab/wheat_tilling_pub) is available in the link. 
+Note: the MAPS pipeline is available [here](https://github.com/DubcovskyLab/wheat_tilling_pub). 
 ```
 #for each folder
 python ./wheat_tilling_pub/maps_pipeline/beta-run-mpileup.py \
@@ -152,7 +149,7 @@ python ./wheat_tilling_pub/maps_pipeline/beta-run-mpileup.py \
       --bamname .sorted.rmdup.bam
 ```
 
-⚙️ **MAPS Part 1 **  
+⚙️ **MAPS Part 1**  
 Note: set l as **(# libraries - 4)**.
 ```
 mkdir MAPS && cd MAPS
@@ -182,8 +179,7 @@ for chr in $(ls -d */ | sed 's/\/$//'); do
 done
 ```
 
-⚙️ **MAPS Part 2 **  
-
+⚙️ **MAPS Part 2**  
 ```
 cd .. && mkdir MAPS_output && cd MAPS_output
 head -n 1 ../MAPS/1A/1A.mapspart1.txt > all.mapspart1.out
@@ -198,24 +194,41 @@ for pair in "2,3" "3,4" "3,5" "4,6"; do
   python ./wheat_tilling_pub/maps_pipeline/maps-part2-v2.py -f all.mapspat1.txt --hetMinPer 15 -l $l --homMinCov $k --hetMinCov $j -o all.mapspart2.Lib20HetMinPer15HetMinCov${j}HomMinCov${k}.tsv -m m
 done
 ```
+---
+### 8. (MAPS) VCF Conversion
 
-### 8A. Vcf Conversion and Residual Hetrogenity Filtering
-Once all folders were processed, all outputs were merged together. Make sure that all 1,440 library data is present here. 
+📥 Inputs   
+• `all.mapspart2.Lib20HetMinPer15HetMinCov${j}HomMinCov${k}.tsv`: called mutations in tsv format from four pairs of parameters
+
+📥 Outputs    
+• `all.mapspart2.Lib20HetMinPer15HetMinCov${j}HomMinCov${k}.reformatted.tsv`: reformatted mutations
+
+
 ```
+#concatnate all outputs
 for tsv in MAPS-1/MAPS_output/*.tsv; do
   cat MAPS-*/MAPS_output/${tsv} > ${tsv}
 done
-```
 
-Then, convert the SRR accessions to proper Kronos mutant names and the tsv files to vcf formats. 
-```
+#adjust coordinates for mutation: broken genome -> full genome
+#change identifier: SRRXXX -> Kronos3412
 ls *.tsv | while read line; do python reformat_maps2_tsv.py $line exome_MAPS_groups.list; done
-ls *.reformatted.tsv | while read line; bash ./wheat_tilling_pub/postprocessing/residual_heterogeneity/generate_RH.sh $line chr.length.list; done
 ```
+---
+### 9. (MAPS) Separate Regions with Residual Hetrogenity
 
-Separate regions with residual hetrogenity.
+📥 Inputs   
+• `all.mapspart2.Lib20HetMinPer15HetMinCov${j}HomMinCov${k}.reformatted.tsv`: reformatted mutations
+
+📥 Outputs    
+• `all.mapspart2.Lib20HetMinPer15HetMinCov${j}HomMinCov${k}.reformatted.corrected.10kb_bins.RH.byContig.MI.No_RH.maps.vcf`: mutations not from residual hetrogenity regions
+• `all.mapspart2.Lib20HetMinPer15HetMinCov${j}HomMinCov${k}.reformatted.corrected.10kb_bins.RH.byContig.MI.RH_only.maps.vcf`: mutations from residual hetrogenity regions
+
+
 ```
-#the outputs from this step will be the main ones. 
+Separate regions with residual hetrogenity.
+ls *.reformatted.tsv | while read line; bash ./wheat_tilling_pub/postprocessing/residual_heterogeneity/generate_RH.sh $line chr.length.list; done
+
 mkdir no_RH
 mv *No_RH.maps* No_RH/ && cd No_RH/
 bash wheat_tilling_pub/postprocessing/vcf_modifications/fixMAPSOutputAndMakeVCF.sh
@@ -225,15 +238,23 @@ mv *RH_only* RH/ && cd RH
 bash ./wheat_tilling_pub/postprocessing/vcf_modifications/fixMAPSOutputAndMakeVCF.sh
 ```
 
-### 9A. Parameter Search
-The MAPS outputs were generated with four pairs of HomMinCov and HetMinCov: HetMinCov3HomMinCov2, HetMinCov4HomMinCov3, HetMinCov5HomMinCov3 and HetMinCov6HomMinCov4 from the least to most stringency. Each parameter will be analyzed to select high, medium and low confidence thresholds. There are two major criteria. 
+---
+### 9. (MAPS) Summarizing Mutations Per Prameter
 
-If any of the thresholds yielded ≥ 98% EMS rates, the following criteria are applied.
+📥 Inputs   
+• `all.mapspart2.Lib20HetMinPer15HetMinCov${j}HomMinCov${k}.reformatted.corrected.10kb_bins.RH.byContig.MI.No_RH.maps.vcf`: mutations **not from** residual hetrogenity regions
+
+📥 Outputs    
+• `Mutations.summary`: mutation numbers per sample per parameter  
+
 ```
+The MAPS outputs were generated with four pairs of HomMinCov and HetMinCov: HetMinCov3HomMinCov2, HetMinCov4HomMinCov3, HetMinCov5HomMinCov3 and HetMinCov6HomMinCov4 from the least to most stringency.
+If any of the thresholds yielded ≥ 98% EMS rates, the following criteria are applied.
+
 High confidence: the least stringent threshold yielding ≥ 98% EMS rates
 Medium confidence: the least stringent threshold yielding ≥ 97% EMS rates among the remainning three, N/A otherwise
 Low confidence: the least stringent threshold yielding ≥ 95% EMS rates among the remainning ones, N/A otherwise
-```
+
 
 If none of the thresholds yielded ≥ 98% EMS rates, pre-defined confidence levels will be used as [Krasileva et al., 2017](https://www.pnas.org/doi/10.1073/pnas.1619268114).
 ```
