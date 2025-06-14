@@ -229,7 +229,7 @@ ls *.tsv | while read line; do python reformat_maps2_tsv.py $line exome_MAPS_gro
 Separate regions with residual hetrogenity.
 ls *.reformatted.tsv | while read line; bash ./wheat_tilling_pub/postprocessing/residual_heterogeneity/generate_RH.sh $line chr.length.list; done
 
-mkdir no_RH
+mkdir No_RH
 mv *No_RH.maps* No_RH/ && cd No_RH/
 bash wheat_tilling_pub/postprocessing/vcf_modifications/fixMAPSOutputAndMakeVCF.sh
 
@@ -303,8 +303,8 @@ done
 ### 11. (MAPS) Finalization
 
 📥 Inputs   
-• `TSVs/No_RH TSVs/RH_only`: all tsv files for uniquely mapped regions in non-RH and RH regions
-• `TSVs-Multi/No_RH TSVs-Multi/RH_only`: all tsv files for uniquely mapped regions in non-RH and RH regions
+• `TSVs/No_RH TSVs/RH`: all tsv files for uniquely mapped regions in non-RH and RH regions
+• `TSVs-Multi/No_RH TSVs-Multi/RH`: all tsv files for uniquely mapped regions in non-RH and RH regions
 
 ```
 python finalize_vcf.py
