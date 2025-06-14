@@ -267,7 +267,7 @@ Low confidence: HetMinCov3HomMinCov2
 Summarize the statistics and select the parameters. This will create Mutations. summary
 ```
 #run this within the No_RH folder.
-python summarize_vcf.py
+python summarize.py
 ```
 ---
 ### 10. (MAPS) Rescuing Multi-mapped Reads
