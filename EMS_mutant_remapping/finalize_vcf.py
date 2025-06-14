@@ -135,8 +135,8 @@ def main():
 
         # Substitutions, RH_only
         ('Kronos_v1.1.Exom-capture.corrected.deduped.10kb_bins.RH.byContig.MI.RH_only.maps.substitutions.vcf',
-         [('TSVs/RH_only/', 'Unique', 'Type=Substitution;RH=True;Reference=Kronosv1.1'),
-          ('TSVs-Multi/RH_only/', 'Multi', 'Type=Substitution;RH=True;Reference=Kronosv1.1')]),
+         [('TSVs/RH/', 'Unique', 'Type=Substitution;RH=True;Reference=Kronosv1.1'),
+          ('TSVs-Multi/RH/', 'Multi', 'Type=Substitution;RH=True;Reference=Kronosv1.1')]),
 
         # Indels, No_RH only
         ('Kronos_v1.1.Exom-capture.corrected.deduped.10kb_bins.RH.byContig.MI.No_RH.maps.indels.vcf',
@@ -145,8 +145,8 @@ def main():
 
         # Indels, RH_only
         ('Kronos_v1.1.Exom-capture.corrected.deduped.10kb_bins.RH.byContig.MI.RH_only.maps.indels.vcf',
-         [('TSVs/RH_only/', 'Unique', 'Type=Indel;RH=True;Reference=Kronosv1.1'),
-          ('TSVs-Multi/RH_only/', 'Multi', 'Type=Indel;RH=True;Reference=Kronosv1.1')])
+         [('TSVs/RH/', 'Unique', 'Type=Indel;RH=True;Reference=Kronosv1.1'),
+          ('TSVs-Multi/RH/', 'Multi', 'Type=Indel;RH=True;Reference=Kronosv1.1')])
     ]
 
     # Process each set of VCFs
