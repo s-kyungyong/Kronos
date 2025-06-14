@@ -1,8 +1,8 @@
 # Capture sequencing data remapping 
 
 ## Data availability 
-Processed exome and promoter-capture data are available through Zenodo 
-• `Exome capture (MAPS) [✨Final✨]`:  
+Processed exome and promoter-capture data are available through Zenodo   
+• `Exome capture (MAPS) [✨Final✨]`:    
 • `Exome capture (GATK) [✨Final✨]`:  
 • `Promoter capture (MAPS) [✨Final✨]`:  
 • `Promoter capture (GATK) [✨Final✨]`:  
@@ -247,14 +247,15 @@ bash ./wheat_tilling_pub/postprocessing/vcf_modifications/fixMAPSOutputAndMakeVC
 📥 Outputs    
 • `Mutations.summary`: mutation numbers per sample per parameter  
 
-```
+
 The MAPS outputs were generated with four pairs of HomMinCov and HetMinCov: HetMinCov3HomMinCov2, HetMinCov4HomMinCov3, HetMinCov5HomMinCov3 and HetMinCov6HomMinCov4 from the least to most stringency.
 If any of the thresholds yielded ≥ 98% EMS rates, the following criteria are applied.
 
+```
 High confidence: the least stringent threshold yielding ≥ 98% EMS rates
 Medium confidence: the least stringent threshold yielding ≥ 97% EMS rates among the remainning three, N/A otherwise
 Low confidence: the least stringent threshold yielding ≥ 95% EMS rates among the remainning ones, N/A otherwise
-
+```
 
 If none of the thresholds yielded ≥ 98% EMS rates, pre-defined confidence levels will be used as [Krasileva et al., 2017](https://www.pnas.org/doi/10.1073/pnas.1619268114).
 ```
@@ -268,10 +269,17 @@ Summarize the statistics and select the parameters. This will create Mutations. 
 #run this within the No_RH folder.
 python summarize_vcf.py
 ```
+---
+### 10. (MAPS) Rescuing Multi-mapped Reads
+This step goes back to *4. (MAPS) Sorting and Deduplication* and requires *.sorted.rmdup.bam files. Multi-mapped reads were rescored, so that any meaningful mutations could be picked up by the MAPS pipeline.
 
-### 10A. Rescuing Multi-mapped Reads
+📥 Inputs   
+• `*.sorted.rmdup.bam`: sorted alignment files without duplicate reads  
 
-Almost everything is ready. We finally need to rescue multi-mapped reads. This step goes back to Step 5A and requires *.sorted.rmdup.bam files. Multi-mapped reads are rescored, so that any meaningful mutations can be picked up by the MAPS pipeline. 
+📥 Outputs    
+• `*.sorted.rmdup.rescued.bam`: sorted alignment files without duplicate reads  
+
+Note: Once the output files are generated, the entire MAPS pipeline (steps 5 - 9) needs to rerun on these files.
 ```
 for bam in *.sorted.rmdup.bam; do
     prefix="${bam%.bam}"
@@ -291,21 +299,13 @@ for bam in *.sorted.rmdup.bam; do
 done
 ```
 
-Once these files are generated, the entire MAPS pipeline from 6A to 8A is rerun for them. 
+---
+### 11. (MAPS) Finalization
 
-### 11A. Finalization
+📥 Inputs   
+• `TSVs/No_RH TSVs/RH_only`: all tsv files for uniquely mapped regions in non-RH and RH regions
+• `TSVs-Multi/No_RH TSVs-Multi/RH_only`: all tsv files for uniquely mapped regions in non-RH and RH regions
 
-All outputs are concatnated into four final outputs. With the folders structured as following:
-```
-ls TSVs #uniquely mapped reads
-No_RH  RH_only
-
-ls TSVs-Multi #multi-mapped reads
-No_RH  RH_only
-```
-
-
-Run the script.
 ```
 python finalize_vcf.py
 ```
@@ -313,13 +313,13 @@ python finalize_vcf.py
 We will create four final outputs! 
 ```
 # Excluding genomic regtions with residual hetrogenity. Indels only 
-Kronos_v1.1.Exom-capture.corrected.deduped.10kb_bins.RH.byContig.MI.No_RH.maps.indels.snpeff.vcf
+Kronos_v1.1.Exom-capture.corrected.deduped.10kb_bins.RH.byContig.MI.No_RH.maps.indels.vcf
 # Excluding genomic regtions with residual hetrogenity. Substitutions only ------- This is our primary output 
-Kronos_v1.1.Exom-capture.corrected.deduped.10kb_bins.RH.byContig.MI.No_RH.maps.substitutions.snpeff.vcf
+Kronos_v1.1.Exom-capture.corrected.deduped.10kb_bins.RH.byContig.MI.No_RH.maps.substitutions.vcf
 # Only genomic regtions with residual hetrogenity. Indels only 
-Kronos_v1.1.Exom-capture.corrected.deduped.10kb_bins.RH.byContig.MI.RH_only.maps.indels.snpeff.vcf
+Kronos_v1.1.Exom-capture.corrected.deduped.10kb_bins.RH.byContig.MI.RH_only.maps.indels.vcf
 # Only genomic regtions with residual hetrogenity. Substitutions only 
-Kronos_v1.1.Exom-capture.corrected.deduped.10kb_bins.RH.byContig.MI.RH_only.maps.substitutions.snpeff.vcf
+Kronos_v1.1.Exom-capture.corrected.deduped.10kb_bins.RH.byContig.MI.RH_only.maps.substitutions.vcf
 ```
 
 Within these vcf files, the following fields will be included. Our primary mutations are labeled with Substitution/False/High/Any threshold/Unique. 
@@ -331,9 +331,15 @@ Threshold=HetMinCov{x}HomMinCov{y}: This indicates parameters used to call the m
 Mapping={Unique/Multi}: This indicates whether called mutations come from uniquely mapped or multi-mapped reads. 
 ```
 
-### 12A. snpEff
+---
+### 12. snpEff
 
-Finally, snpEff is run to add variant effect prediction outputs. This is based on the annotation v21. 
+📥 Inputs   
+• `Kronos_v1.1.Exom-capture.corrected.deduped.10kb_bins.RH.byContig.MI.*.vcf`: Final mutation files from the MAPS pipeline  
+
+📥 Outputs   
+• `Kronos_v1.1.Exom-capture.corrected.deduped.10kb_bins.RH.byContig.MI.*.snpeff.vcf`: Final mutation files from the MAPS pipeline with annotated mutation effects
+
 ```
 for vcf in *.vcf:
     prefix="${vcf%.vcf}"
