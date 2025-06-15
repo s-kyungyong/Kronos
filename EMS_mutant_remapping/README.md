@@ -227,7 +227,7 @@ ls *.tsv | while read line; do python reformat_maps2_tsv.py $line exome_MAPS_gro
 
 ```
 Separate regions with residual hetrogenity.
-ls *.reformatted.tsv | while read line; bash ./wheat_tilling_pub/postprocessing/residual_heterogeneity/generate_RH.sh $line chr.length.list; done
+ls *.reformatted.tsv | while read line; do bash ./wheat_tilling_pub/postprocessing/residual_heterogeneity/generate_RH.sh $line chr.length.list; done
 
 mkdir No_RH
 mv *No_RH.maps* No_RH/ && cd No_RH/
