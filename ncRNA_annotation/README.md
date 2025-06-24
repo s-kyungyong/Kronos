@@ -63,3 +63,4 @@ cpat.py -x ./Plant-LncRNA-pipeline-v2/Model/Plant_Hexamer.tsv -d ./Plant-LncRNA-
 cpat.py -x ./Plant-LncRNA-pipeline-v2/Model/Plant_Hexamer.tsv -d ./Plant-LncRNA-pipeline-v2/Model/Plant.logit.RData -g stringtie_candidate_lncRNA.fa -o stringtie_CPAT_plant.output
 
  diamond blastx --masking 0 -d /global/scratch/users/skyungyong/Kronos/10.Genome_comparisons/Annotation_filtering_evaluation/uniprotkb_taxonomy_id_4479_2025_02_18.fasta.dmnd -q mikado_candidate_lncRNA.fa -o mikado_uniprotoutput.txt
+stringtie --merge mikado_final_lncRNA.gtf stringtie_final_lncRNA.gtf > mikado_stringtie_merged_final_lncRNA.gtf
