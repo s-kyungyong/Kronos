@@ -31,7 +31,7 @@ Quantification
 ```
 #prepare database
 grep ">"Kronos.collapsed.chromosomes.masked.v1.1.fa | cut -d " " -f 1 | cut -d ">" -f 2 > decoys.txt
-gffread -x Kronos.v2.1.transcripts.fa -g Kronos.collapsed.chromosomes.masked.v1.1.fa Kronos.v2.1.gff3
+gffread -w Kronos.v2.1.transcripts.fa -g Kronos.collapsed.chromosomes.masked.v1.1.fa Kronos.v2.1.gff3
 cat Kronos.v2.1.transcripts.fa Kronos.collapsed.chromosomes.masked.v1.1.fa > Kronos.gentrome.fa
 
 #index gentrome
