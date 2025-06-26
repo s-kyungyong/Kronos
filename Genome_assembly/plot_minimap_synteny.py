@@ -35,15 +35,15 @@ with open(args.paf, 'r') as file:
                 args.end = int(items[1])
                 args.hend = int(items[6])
 
-            start_y += resize(items[2], resize_param)  # Swapped x and y
-            end_y += resize(items[3], resize_param)  # Swapped x and y
+            start_x += resize(items[2], resize_param)  # Swapped x and y
+            end_x += resize(items[3], resize_param)  # Swapped x and y
 
             if items[4] == "+":
-                start_x += resize(items[7], resize_param)  # Swapped x and y
-                end_x += resize(items[8], resize_param)  # Swapped x and y
+                start_y += resize(items[7], resize_param)  # Swapped x and y
+                end_y += resize(items[8], resize_param)  # Swapped x and y
             else:
-                start_x += resize(items[8], resize_param)  # Swapped x and y
-                end_x += resize(items[7], resize_param)  # Swapped x and y
+                start_y += resize(items[8], resize_param)  # Swapped x and y
+                end_y += resize(items[7], resize_param)  # Swapped x and y
 
 vline = []
 if not args.agp == None:
@@ -66,7 +66,7 @@ for sx, sy, ex, ey in zip(start_x, start_y, end_x, end_y):
 if len(vline) >= 1:
   plt.vlines(x=vline, ymin=args.start / resize_param, ymax=args.end / resize_param, color='g')  # Swapped x and y
 
-ax.set_xlabel(f'{args.hit} (Mb)')  # Swapped x and y labels
+ax.set_xlabel(f'{args.query} (Mb)')  # Swapped x and y labels
 ax.set_ylabel(f'{args.hit} (Mb)')  # Changed y-axis label to match x-axis
 ax.grid(True)
 
