@@ -466,7 +466,7 @@ done
 ---
 
 ### 5. (MAPS) Merging Redundant Libraries
-After processing all sequencing data, the datasets were selected that produced the largest number of mutations before any filtering. This information can be found in `promoter_merge.list`.
+After processing all sequencing data according to the batch information (see the next step), we picked one sequencing datasets per mutant. This information can be found in `promoter_merge.list`.
 
 ---
 ### 6. (MAPS) Preparing for MAPS Pipeline
