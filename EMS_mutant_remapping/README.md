@@ -473,7 +473,5 @@ After processing all sequencing data, the datasets were selected that produced t
 The BioProject PRJNA1218005 contains 33 BioSamples. Each BioSample contains a batch of Kronos mutants to be processed together. This informtion can be found in `promoter_MAPS_group.list`.
 
 ---
-
-### 7.(MAPS) Running the MAPS Pipeline
-
+### 7. (MAPS) Running the MAPS Pipeline
 l was set as the number of analyzed mutatns in a batch * 0.8 rounded up to the closest integer.
