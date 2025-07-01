@@ -436,7 +436,7 @@ The analysis of promoter-capture sequencing data was done nearly identically as 
 ### 1. Downloading Sequencing Data
 📥 Inputs  
 • `promoter_MAPS_groups.list`: SRA identifiers for exome-capture data.  
-Note: We obtained most of the data directly from the authors. Any missing sequencing data were downloaded from PRJNA1218005.  
+Note: We obtained most of the data directly from the authors. Any missing sequencing data were downloaded from PRJNA1218005 produced by [Zhang et al. (2023)](https://www.pnas.org/doi/10.1073/pnas.2306494120).  
 
 ---
 
