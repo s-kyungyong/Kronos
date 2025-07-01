@@ -347,76 +347,98 @@ for vcf in *.vcf:
 done
 ```
 
+---
+## The GATK pipeline
 
-## B. The GATK pipeline
+To call variants with GATK, we begin with the trimmed filtered sequencing outputs from Step 2. Quality Control and Filtering. 
 
-To call variants with GATK, we begin with the trimmed filtered sequencing outputs from Step 2. 
+---
 
-### 3B. Read Alignment
-Reads are aligned to the broken Kronos genome using bwa mem:
+### 3. (GATK) Read Alignment
+📥 Inputs   
+• `*.filtered.fastq`: filtered and trimmed paired-end fastq files   
+
+
+📥 Outputs   
+• `Kronos.collapsed.chromosomes.masked.v1.1.broken.fa`: Kronos reference genome v1.1 (more about this genome is [here](https://github.com/krasileva-group/Kronos_EDR)).  
+• `*.gatk.sam`: alignment files  
+
 ```
-#information about how the genome was broken can be found
-#https://github.com/krasileva-group/Kronos_EDR
-bwa index Kronos Kronos.collapsed.chromosomes.masked.v1.1.broken.fa
+for read1 in *.1.filtered.fastq; do
+  accession="${read1%.1.filtered.fastq}"
+  read2="${accession}.2.filtered.fastq"
 
-for read1 in *.1.filtered.fq; do
-  accession="${read1%.1.filtered.fq}"
-  read2="${accession}.2.filtered.fq"
-
-  # Add read group information during alignment
-  RG="@RG\tID:${accession}\tLB:${accession}\tPL:ILLUMINA\tPU:unit1\tSM:${accession}"
-  bwa mem -t 56 -R "$RG" /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/Reference/Kronos "${read1}" "${read2}" > "${accession}.gatk.sam"
+  #align to the broken genome
+  bwa mem -t ${Numthreads} ${reference_dir}/Kronos "${read1}" "${read2}" > "${accession}.gatk.sam"
 ```
+---
 
-### 4B. Sorting and Deduplication
-Alignment files are sorted using samtools and duplicates are removed with picard:
+### 4. (GATK) Sorting and Deduplication
+
+📥 Inputs   
+• `*.gatk.sam`: alignment files
+
+
+📥 Outputs   
+• `*.gatk.sorted.rmdup.bam`: sorted alignment files without duplicate reads
+
 ```
   samtools view -@56 -h "${accession}.gatk.sam" | samtools sort -@56 -o "${accession}.gatk.sorted.bam"
   samtools index -@56 "${accession}.gatk.sorted.bam"
   picard MarkDuplicates REMOVE_DUPLICATES=true I="${accession}.gatk.sorted.bam" O="${accession}.gatk.sorted.rmdup.bam" M="${accession}.rmdup.txt"
 ```
+---
 
-### 5B. Merging Redundant Libraries
-Some mutants have multiple sequencing datasets. these are merged into a single BAM file. By this step, we have 1,440 bam files ready to be processed with the MAPS pipeline. 
+### 5. (GATK) Merging Redundant Libraries
+📥 Inputs
+• `*.gatk.sorted.rmdup.bam`: sorted alignment files without duplicate reads
+
+📥 Outputs
+• `*.gatk.sorted.rmdup.bam`: merged sorted alignment files without duplicate read
+• `exome_merge.list`: a list of alignments to be merged together
+
 ```
 while read mutant lib1 lib2; do
      samtools merge -@ 56 -o ../sorted.rmdup.bam_files/${lib1}.gatk.sorted.rmdup.bam ${lib1}.sorted.rmdup.bam ${lib2}.gatk.sorted.rmdup.bam
  done < exome_merge.list
 ```
+---
+### 6. (GAKT) HaplotypeCaller
+Note: variant effect prediction should be followed after this step. Refer to 12. snpEff
+📥 Inputs
+• `*.gatk.sorted.rmdup.bam`: merged sorted alignment files without duplicate read
+• `Kronos.collapsed.chromosomes.masked.v1.1.broken.fa`: Kronos reference genome v1.1  
 
-### 6B. Running HaplotypeCaller
-SNPs are called by HaplotypeCaller from GATK, and positions are adjusted for the intact chromosomes.
+📥 Outputs
+• `*.vcf.gz`: variant calling outputs  
+
 ```
 for bam in *.gatk.sorted.rmdup.bam; do
   accession="${bam%.gatk.sorted.rmdup.bam}"
-  gatk HaplotypeCaller -R /global/scratch/projects/vector_kvklab/KS-Kronos_remapping/Reference/Kronos.collapsed.chromosomes.masked.v1.1.broken.fa -I ${accession}.gatk.sorted.rmdup.bam -O ${accession}.vcf.gz
+  gatk HaplotypeCaller -R Kronos.collapsed.chromosomes.masked.v1.1.broken.fa -I ${accession}.gatk.sorted.rmdup.bam -O ${accession}.vcf.gz
   gunzip ${accession}.vcf.gz
   python reformat_gatk.py ${accession}.vcf
 done
 ```
-
-### 7B. Variant Effect Prediction
-Variant effect prediction is run on the annotation version 2.1. 
-```
-for vcf in Kronos*.vcf; do
-    accession="${vcf%.vcf}"
-    java -jar /global/scratch/users/skyungyong/Software/snpEff/snpEff.jar eff -v Kronosv2  ${vcf}> ${accession}.gatk.exome.snpeff.vcf
-done
-```
-
 ---
 
-
-# Promoter capture sequencing data remapping 
-
-The analysis of promoter-capture sequencing data was done nearly identically with the exome capture data analysis. Thus, only the workflow different from the previous one is recorded below. 
+## Promoter-capture Data Remapping
+The analysis of promoter-capture sequencing data was done nearly identically as the exome capture data analysis. Thus, only the workflow different from the previous one is recorded below. 
 
 
 ### 1. Downloading Sequencing Data
-Most of the sequencing data were directly obtained from [Zhang et al. 2023](https://www.pnas.org/doi/10.1073/pnas.2306494120). Any missing sequencing data were downloaded from PRJNA1218005.
+📥 Inputs
+• `promoter_MAPS_groups.list`: SRA identifiers for exome-capture data. Note that we obtained most of the data directly from the authors. Any missing sequencing data were downloaded from PRJNA1218005.
+
+---
 
 ### 2. Quality Control and Filtering
-The datasets in PRJNA1218005 should already be trimmed. A small number of datasets directly provided by the author was not. These were trimmed with trimmomatic. 
+
+📥 Inputs
+• `*.fastq.gz`: paired-end fastq files
+
+📥 Outputs
+• `*.trimmed.fq.gz`: paired-end fastq files
 
 ```
 for fq1 in *R1*fastq.gz; do
@@ -429,30 +451,17 @@ for fq1 in *R1*fastq.gz; do
         fi
 done
 ```
+---
 
-### 5A. Merging Redundant Libraries
+### 5. (MAPS) Merging Redundant Libraries
+After processing all sequencing data, the datasets were selected that produced the largest number of mutations before any filtering. This information can be found in `promoter_merge.list`.
 
-Although some Kronos mutants were sequenced multiple times, we did not concatenate redundant libraries into single files, unlike the approach taken for the exome capture data. Each batch and the mutant libraries within it were clearly defined by Junli et al., and we wanted to preserve this original structure. As a result, datasets generated from the same mutant were only merged at the final processing stage. Overall, 1,518 mutants have a single associated sequencing dataset, and 38 mutants have two. 
+---
+### 6. (MAPS) Preparing for MAPS Pipeline
+The BioProject PRJNA1218005 contains 33 BioSamples. Each BioSample contains a batch of Kronos mutants to be processed together. This informtion can be found in `promoter_MAPS_group.list`.
 
-For GATK outputs, finish running Step 6B. Then, the vcf files can be merged by looking for unions of mutations:
-```
-awk '{print $2}' promoter_MAPS_group.list | grep 'Kronos' | sort | uniq -c | awk '$1 != 1 {print $2}' > redundant.list
-while read -r accession; do
-    libs=$(ls */${accession}.reformatted.vcf)
-    for lib in ${libs}; do
-            bgzip -c $lib > ${lib}.gz
-            tabix --csi -p vcf ${lib}.gz
-    done
-    
-    bcftools isec -o merged/${accession}.merged.reformatted.vcf.gz -w 1 -Oz -n =2 ${libs}
-    bcftools norm -m -both merged/${accession}.merged.reformatted.vcf.gz -f Kronos.collapsed.chromosomes.masked.v1.1.fa -Ov -o merged/${accession}.merged.norm.reformatted.vcf
-done < redundant.list
-```
+---
 
-### 6A. Preparing for MAPS Pipeline
+### 7.(MAPS) Running the MAPS Pipeline
 
-The BioProject PRJNA1218005 contains 33 BioSamples. Each BioSample contains a batch of Kronos mutants to be processed together. 
-
-### 7A. Running the MAPS Pipeline
-
-In first part of the MAPS pipeline, l was set as **int(math.ceil(lib * 0.8))**.
+l was set as the number of analyzed mutatns in a batch * 0.8 rounded up to the closest integer.
