@@ -349,7 +349,7 @@ Mapping={Unique/Multi}: This indicates whether called mutations come from unique
 ```
 for vcf in *.vcf:
     prefix="${vcf%.vcf}"
-    java -jar /global/scratch/users/skyungyong/Software/snpEff/snpEff.jar eff -v Kronosv21 ${vcf} > ${prefix}.snpeff.vcf
+    java -jar snpEff.jar eff -v Kronosv21 ${vcf} > ${prefix}.snpeff.vcf
 done
 ```
 
@@ -512,4 +512,20 @@ gffread -y ${prefix}.nlrs.fa -g ${prefix}.fa ${fa}.NLRs.gff
 📥 Inputs     
 • `*.vcf`: GATK-derived vcf files for mutants.  
 
+📥 Outputs   
+• `mutant_cluster_colors.tsv`: the membership of each Kronos mutants based on the UMAP (see the **output** folder)
+```
+#evaluate zygosity for common sites
+collect_common_mutations.py True 0.05 #exome-capture, EMS type mutations
+collect_common_mutations.py False 0.05 #exome-capture, non EMS type mutations
+
+#similary for promoter capture
+collect_common_mutations.py True 0.15 #promoter-capture, EMS type mutations
+collect_common_mutations.py False 0.15 #promoter-capture, non EMS type mutations
+```
+
+```
+#then we used
+common_mutations_UMAP.R
+```
 
