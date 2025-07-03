@@ -482,14 +482,16 @@ l was set as the number of analyzed mutatns in a batch * 0.8 rounded up to the c
 
 ### NLR detection in Kronos mutants
 
-📥 Inputs   
-• `Kronos_all.NLRs.318_target.list`: A list of low-quality NLRs annotated with "|Interrupted|1". Only primary transcripts (.1) were considered.
-• `Kronos.collapsed.chromosomes.masked.v1.1.broken.fa`: Kronos reference genome v1.1 
-• `*.vcf`: vcf files for mutants (we used those from GATK).
-• `Wheat_NLR`: Pre-trained Augustus parameters. See **the NLR_anlyses folder**.
+📥 Inputs     
+• `Kronos_all.NLRs.318_target.list`: A list of low-quality NLRs annotated with "|Interrupted|1". Only primary transcripts (.1) were considered.  
+• `Kronos.collapsed.chromosomes.masked.v1.1.broken.fa`: Kronos reference genome v1.1   
+• `*.vcf`: vcf files for mutants (we used those from GATK).  
+• `Wheat_NLR`: Pre-trained Augustus parameters. See **the NLR_anlyses folder**.  
 
-📥 Outputs   
-• `*.NLRs.gff`: predicted NLR sequences in target regions of Kronos mutants.
+📥 Outputs     
+• `*.NLRs.gff`: predicted NLR sequences in target regions of Kronos mutants.  
+
+
 ```
 #define target region, extract and modify genomic sequences
 bedtools slop -i Kronos_all.NLRs.318_target.list -r 1000 -l 1000 -g genome.idx | awk '$3 == "mRNA" {print}' > Kronos_all.NLRs.318_target.padded.bed
@@ -507,5 +509,7 @@ gffread -y ${prefix}.nlrs.fa -g ${prefix}.fa ${fa}.NLRs.gff
 ```
 
 ### UMAP
+📥 Inputs     
+• `*.vcf`: GATK-derived vcf files for mutants.  
 
 
