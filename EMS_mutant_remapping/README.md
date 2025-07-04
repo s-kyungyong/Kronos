@@ -2,10 +2,10 @@
 
 ## Data availability 
 Processed exome and promoter-capture data are available through Zenodo   
-• `Exome capture (MAPS) [✨Final✨]`:    
-• `Exome capture (GATK) [✨Final✨]`:  
-• `Promoter capture (MAPS) [✨Final✨]`:  
-• `Promoter capture (GATK) [✨Final✨]`:  
+• `Exome capture (MAPS) [✨Final✨]`: https://zenodo.org/records/15801888  
+• `Exome capture (GATK) [✨Final✨]`: https://zenodo.org/records/15801566  
+• `Promoter capture (MAPS) [✨Final✨]`: https://zenodo.org/records/15801888    
+• `Promoter capture (GATK) [✨Final✨]`: https://zenodo.org/records/15801566  
 
 ## Software version
 ```
@@ -490,7 +490,7 @@ l was set as the number of analyzed mutatns in a batch * 0.8 rounded up to the c
 
 📥 Outputs     
 • `*.NLRs.gff`: predicted NLR sequences in target regions of Kronos mutants.  
-
+• `rescued_nlrs.gff3`: rescued NLR sequences (see the **output** folder)
 
 ```
 #define target region, extract and modify genomic sequences
