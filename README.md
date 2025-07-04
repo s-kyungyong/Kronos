@@ -20,7 +20,7 @@ Most of the datasets can be accessed through [Zenodo: Chromosome-level genome as
 | [3](https://zenodo.org/records/14189805)  | Genome annotation v2.0  |  |
 | [4](https://zenodo.org/records/14853918)  | Exome-capture sequencing data remapped for 1,440 Kronos EMS mutants v1.0 |
 | [5](https://zenodo.org/records/15539216)  | **✨Genome annovation v2.1✨** | Final genome annotation |
-| [6](https://zenodo.org/records/15801888)  |  **✨Mutation calls from exome and promoter capture sequencing data (MAPS)✨** | Final capture data reanlyses |
+| [6](https://zenodo.org/records/15801888)  |  **✨Mutation calls from exome and promoter capture sequencing data (MAPS)✨** | Final capture data re-anlayses |
 
 Additional datasets are available in [Zenodo: Chromosome-level genome assembly of Triticum turgidum var 'Kronos' additional datasets](https://zenodo.org/records/15399687)
 | version                                   | Contents | Comments |
@@ -28,7 +28,7 @@ Additional datasets are available in [Zenodo: Chromosome-level genome assembly o
 | [1](https://zenodo.org/records/15399687)  | **✨Repeat annotations✨**  | Final repeat annotation |
 | [2](https://zenodo.org/records/15539721)  | **✨NLR annotations✨** | Final NLR annotation | 
 | [3](https://zenodo.org/records/15644987)  | **✨Haplotype-resolved assembly✨** | Final haplotype-resolved assembly (contigs) | 
-| [4](https://zenodo.org/records/15801566)  | **✨Mutation calls from exome and promoter capture sequencing data (GATK)✨** | Final Exome-capture remapping with GATK |
+| [4](https://zenodo.org/records/15801566)  | **✨Mutation calls from exome and promoter capture sequencing data (GATK)✨** | Final capture data re-anlayses |
 
 ## Data Sharing through NCBI
 Sequencing data were deposted in the NCBI under the BioProject assession, PRJNA1213727. The following runs include:  
