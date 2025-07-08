@@ -18,12 +18,12 @@ cmscan
 
 ## Long non-coding RNAs
 
-### 1. Identify non-overlapping candidate transcripts
-Transcripts that are not overlapping with annotated coding genes will be selected as long non-coding RNA (lncRNA) candidates. 
+### 1. Identify non-overlapping candidate transcripts  
+Transcripts that are not overlapping with annotated coding genes will be selected as long non-coding RNA (lncRNA) candidates.   
 
-**📥 Inputs**  
+**📥 Inputs**    
 • `stringtie.gtf': assembled transcripts produced during v1.0 annotations  
-• `mikado.loci.gff3`: assembled transcripts during v2.0 annotations     
+• `mikado.loci.gff3`: assembled transcripts during v2.0 annotations      
 • `Kronos.collapsed.chromosomes.masked.v1.1.fa`: genome version v1.1  
 • `Kronos.v2.1.gtf`: genome annotation v2.1  
 
