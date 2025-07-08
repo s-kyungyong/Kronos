@@ -19,17 +19,17 @@ cmscan
 ## Long non-coding RNAs
 
 ### 1. Identify non-overlapping candidate transcripts
-Transcripts that are not overlapping with annotated coding genes will be selected as long non-coding RNA (lncRNA) candidates
+Transcripts that are not overlapping with annotated coding genes will be selected as long non-coding RNA (lncRNA) candidates. 
 
 **📥 Inputs**  
-• `stringtie.gtf': assembled transcripts produced during v1.0 annotations
-• `mikado.loci.gff3`: assembled transcripts during v2.0 annotations   
-• `Kronos.collapsed.chromosomes.masked.v1.1.fa`: genome version v1.1
-• `Kronos.v2.1.gtf`: genome annotation v2.1
+• `stringtie.gtf': assembled transcripts produced during v1.0 annotations  
+• `mikado.loci.gff3`: assembled transcripts during v2.0 annotations     
+• `Kronos.collapsed.chromosomes.masked.v1.1.fa`: genome version v1.1  
+• `Kronos.v2.1.gtf`: genome annotation v2.1  
 
 **📥 Outputs**   
-• `stringtie_candidate_lncRNA.gtf`: candidate lncRNAs from v1.0 annotations  
-• `mikado_candidate_lncRNA.gtf`: candidate lncRNAs from v2.0 annotations  
+• `stringtie_candidate_lncRNA.gtf`: candidate lncRNAs from v1.0 annotations    
+• `mikado_candidate_lncRNA.gtf`: candidate lncRNAs from v2.0 annotations    
 
 ```
 #for mikado, extract ncRNAs. for stringtie, use all. 
@@ -54,7 +54,7 @@ gffread -w mikado_candidate_lncRNA.fa -g Kronos.collapsed.chromosomes.masked.v1.
 ```
 
 ### 2. Run Plant-LncRNA pipelines
-We mostly followed existing pipelines available in [here](https://github.com/xuechantian/Plant-LncRNA-pipeline-v2) and [here](https://github.com/xuechantian/Plant-LncRNA-pipline).
+We mostly followed existing pipelines available in [here](https://github.com/xuechantian/Plant-LncRNA-pipeline-v2) and [here](https://github.com/xuechantian/Plant-LncRNA-pipline).  
 
 **📥 Inputs**  
 • `stringtie_candidate_lncRNA.gtf`: candidate lncRNAs from v1.0 annotations  
@@ -94,7 +94,7 @@ Rscript prediction_insersection.sh mikado_candidate_lncRNA.txt mikado_PlantLncBo
 grep -Fwf mikado_Final_lncRNA_results.txt mikado_candidate_lncRNA.gtf > mikado_lncRNA.gtf
 ```
 
-### 3. Classification
+### 3. Classification  
 
 **📥 Inputs**  
 • `stringtie_ncRNA.gtf`: lncRNAs from v1.0 annotations    
@@ -102,7 +102,7 @@ grep -Fwf mikado_Final_lncRNA_results.txt mikado_candidate_lncRNA.gtf > mikado_l
 • `Kronos.v2.1.gtf`: genome annotation v2.1  
 
 **📥 Outputs**  
-• `lncRNA_classes.txt`: lncRNA classes
+• `lncRNA_classes.txt`: lncRNA classes  
 
 ```
 #merge transcripts and classify
@@ -113,13 +113,13 @@ FEELnc_classifier.pl -i mikado_stringtie_merged_final_lncRNA.gtf -a Glycine_max_
 
 ## Small non-coding RNAs
 
-### 1. Rfam search
-**📥 Inputs**  
-• `Kronos.collapsed.chromosomes.masked.v1.1.fa`: genome version v1.1  
+### 1. Rfam search  
+**📥 Inputs**    
+• `Kronos.collapsed.chromosomes.masked.v1.1.fa`: genome version v1.1    
 
-**📥 Outputs**  
+**📥 Outputs**   
 • `*.Rfam.tblout`: Rfam outputs  
-
+ 
 ```
 wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz #v15.0 
 gunzip Rfam.cm.gz
