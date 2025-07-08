@@ -11,15 +11,17 @@ stringtie
 agat
 diamond
 rfam v15.0
-tRNAscan-SE
+Infernal v1.1.5
+tRNAscan-SE v2.0.12
 cmscan
+unitas v1.6.1
 ```
 
 ---
 
-## Long non-coding RNAs
+## Long Non-coding RNAs
 
-### 1. Identify non-overlapping candidate transcripts  
+### 1. Identify Non-overlapping Candidate Transcripts  
 Transcripts that are not overlapping with annotated coding genes will be selected as long non-coding RNA (lncRNA) candidates.   
 
 **📥 Inputs**    
@@ -55,7 +57,7 @@ gffread -w mikado_candidate_lncRNA.fa -g Kronos.collapsed.chromosomes.masked.v1.
 ```
 ---
 
-### 2. Run Plant-LncRNA pipelines
+### 2. Run Plant-LncRNA Pipelines
 We mostly followed existing pipelines available in [here](https://github.com/xuechantian/Plant-LncRNA-pipeline-v2) and [here](https://github.com/xuechantian/Plant-LncRNA-pipline).  
 
 **📥 Inputs**  
@@ -112,12 +114,19 @@ grep -Fwf mikado_Final_lncRNA_results.txt mikado_candidate_lncRNA.gtf > mikado_l
 stringtie --merge mikado_final_lncRNA.gtf stringtie_final_lncRNA.gtf > mikado_stringtie_merged_final_lncRNA.gtf
 FEELnc_classifier.pl -i mikado_stringtie_merged_final_lncRNA.gtf -a Glycine_max_longest.gtf > lncRNA_classes.txt
 ```
+
+```
+#examine overlaps with repeats
+awk '{print $1 "\t" $4 "\t" $5 "\t" $10}' mikado_stringtie_merged_final_lncRNA.gtf | sed 's/\"//g' | sed 's/;//g' > mikado_stringtie_merged_final_lncRNA.bed
+bedtools intersect -a mikado_stringtie_merged_final_lncRNA.bed -b TEs.bed -wo | sort -u | awk '{print $1,$2,$3,$4,$6,$7,$8,$9}' | sed 's/ /\t/g' | sed '1iChr\tLncRNA_start\tLncRNA_end\tLncRNA_ID\tTE_start\tTE_end\tTE_ID\tOverlap' > TE_lncRNA_intersect.txt
+```
+
 ---
 
 
-## Small non-coding RNAs
+## Small Non-coding RNAs
 
-### 1. Rfam search  
+### 1. Rfam Search  
 **📥 Inputs**    
 • `Kronos.collapsed.chromosomes.masked.v1.1.fa`: genome version v1.1    
 
@@ -137,9 +146,45 @@ while read -r chromosome zvalue; do
   cmscan -Z ${zvalue} --cut_ga --rfam --nohmmonly --tblout ${chromosome}.Rfam.tblout --fmt 2 --cpu 56 --clanin Rfam.clanin Rfam.cm Kronos.v1.1.${chromosome}.fa
 done < zvalue.list
 ```
+
+grep -w 'tRNA' ../../Rfam_analysis/All.Rfam.tblout |  awk '{print $4 "\tRfam\t" $2 "\t" $10 "\t" $11 "\t.\t" $12 "\t."}' > Rfam.tRNA.gff3
+awk '{print $1 "\ttRNAscan\ttRNA\t" $3 "\t" $4 "\t.\t.\t."}'   ../../tRNA/tRNAscan-SE.out > tRNAscan.gff3
+
+
+### 2. tRNA Annotation
+
+**📥 Inputs**  
+• `*.Rfam.tblout`: Rfam outputs  
+• `Kronos.collapsed.chromosomes.masked.v1.1.fa`: genome version v1.1  
+
+**📥 Outputs**  
+• `tRNAs.final.gff3`: tRNA scan outputs
+
+```
+#run tRNAscan
+tRNAscan-SE -E -o tRNAscan-SE.out -f tRNAscan-SE.ss -s tRNAscan-SE.iso -m tRNAscan-SE.stats -c tRNAscan-SE.conf Kronos.collapsed.chromosomes.v1.1.fa
+#reformat to a gff3 with Rfam integration
+python tRNA_gff.py
+```
+
+### 3. rRNA annotation
+
+
+
+### 2. UNITAS
+
+**📥 Inputs**    
+• `Triticum_aestivum.IWGSC.ncrna.fa.gz`: non-coding RNA annotations for Chinese Spring genome from Ensembl
+• `SRR288986[x]`: where x ranges from 57 to 65. sRNA datasets
+
+```
+#merge all sRNA datasets into a single fastq file. 
+unitas.pl -species x -refseq Triticum_aestivum.IWGSC.ncrna.fa -input all.fq -threads 48
+```
+
 ---
 
-### 2. tRNA search
+### 2. tRNA search and annotations
 
 **📥 Inputs**  
 • `Kronos.collapsed.chromosomes.masked.v1.1.fa`: genome version v1.1  
@@ -154,8 +199,5 @@ tRNAscan-SE -E -o tRNAscan-SE.out -f tRNAscan-SE.ss -s tRNAscan-SE.iso -m tRNAsc
 ---
 
 
-1.6.1
-wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-61/fasta/triticum_aestivum/ncrna/Triticum_aestivum.IWGSC.ncrna.fa.gz
-unitas.pl -species x -refseq Triticum_aestivum.IWGSC.ncrna.fa -input all.fq -threads 48
 
 
