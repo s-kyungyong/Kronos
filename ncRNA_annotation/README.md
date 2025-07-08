@@ -15,6 +15,7 @@ tRNAscan-SE
 cmscan
 ```
 
+---
 
 ## Long non-coding RNAs
 
@@ -52,6 +53,7 @@ gffread -w stringtie_candidate_lncRNA.fa -g Kronos.collapsed.chromosomes.masked.
 cut -d ";" -f 2 mikado_candidate_lncRNA.gtf | sed 's/ transcript_id //g' | sed 's/"//g' | sort -u > mikado_candidate_lncRNA.txt
 gffread -w mikado_candidate_lncRNA.fa -g Kronos.collapsed.chromosomes.masked.v1.1.fa mikado_candidate_lncRNA.gtf
 ```
+---
 
 ### 2. Run Plant-LncRNA pipelines
 We mostly followed existing pipelines available in [here](https://github.com/xuechantian/Plant-LncRNA-pipeline-v2) and [here](https://github.com/xuechantian/Plant-LncRNA-pipline).  
@@ -93,6 +95,7 @@ write.table(Plant_results, file ="mikado_plant-lncFinder.txt", sep ="\t",row.nam
 Rscript prediction_insersection.sh mikado_candidate_lncRNA.txt mikado_PlantLncBoost_prediction.csv mikado_CPAT_plant.output plant-lncFinder.txt mikado_uniprotoutput.txt
 grep -Fwf mikado_Final_lncRNA_results.txt mikado_candidate_lncRNA.gtf > mikado_lncRNA.gtf
 ```
+---
 
 ### 3. Classification  
 
@@ -109,6 +112,7 @@ grep -Fwf mikado_Final_lncRNA_results.txt mikado_candidate_lncRNA.gtf > mikado_l
 stringtie --merge mikado_final_lncRNA.gtf stringtie_final_lncRNA.gtf > mikado_stringtie_merged_final_lncRNA.gtf
 FEELnc_classifier.pl -i mikado_stringtie_merged_final_lncRNA.gtf -a Glycine_max_longest.gtf > lncRNA_classes.txt
 ```
+---
 
 
 ## Small non-coding RNAs
@@ -133,6 +137,7 @@ while read -r chromosome zvalue; do
   cmscan -Z ${zvalue} --cut_ga --rfam --nohmmonly --tblout ${chromosome}.Rfam.tblout --fmt 2 --cpu 56 --clanin Rfam.clanin Rfam.cm Kronos.v1.1.${chromosome}.fa
 done < zvalue.list
 ```
+---
 
 ### 2. tRNA search
 
@@ -146,6 +151,9 @@ done < zvalue.list
 ```
 tRNAscan-SE -E -o tRNAscan-SE.out -f tRNAscan-SE.ss -s tRNAscan-SE.iso -m tRNAscan-SE.stats -c tRNAscan-SE.conf Kronos.collapsed.chromosomes.v1.1.fa
 ```
+---
+
+
 1.6.1
 wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-61/fasta/triticum_aestivum/ncrna/Triticum_aestivum.IWGSC.ncrna.fa.gz
 unitas.pl -species x -refseq Triticum_aestivum.IWGSC.ncrna.fa -input all.fq -threads 48
