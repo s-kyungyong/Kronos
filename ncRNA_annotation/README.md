@@ -4,8 +4,8 @@
 
 ## Momenclature 
 
-• `tRNA`: TrturKRN1A01**TR2**00113 (TR for tRNAs and always start with 2).  
-• `rRNA`: TrturKRN1A01**RR3**00113 (RR for rRNAs and always start with 3).  
+• `tRNA`: TrturKRN1A01`TR2`00113 (TR for tRNAs and always start with 2).  
+• `rRNA`: TrturKRN1A01`RR3`00113 (RR for rRNAs and always start with 3).  
 
 ## Software version
 
