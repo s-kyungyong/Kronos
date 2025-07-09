@@ -13,6 +13,7 @@ diamond
 rfam v15.0
 Infernal v1.1.5
 tRNAscan-SE v2.0.12
+barrnap v0.9
 cmscan
 unitas v1.6.1
 ```
