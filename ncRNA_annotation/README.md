@@ -7,9 +7,10 @@
 
 |    | Example | Identifier | Numbering | Type |
 |----|---------|-----------| -----------|-----------|
-| tRNA | TrturKRN1A01TR200110  | TR (for **tR**NA) | always start with 3 | tRNA/tRNA_pseudogene |
-| rRNA | TrturKRN1A01RR300110| RR (for **rR**NA) | always start with 4 | rRNA/rRNA_fragment |
-| sn/snoRNA | TrturKRN1A01SR300110| SN (for **sn**/**sn**oRNA) | always start with 5 | snRNA/snoRNA |
+| lncRNA | TrturKRN1A01LN**0/1**00110  | LN (for **ln**cRNA) | start with 0 or 1 | tRNA/tRNA_pseudogene |
+| tRNA | TrturKRN1A01TR300110  | TR (for **tR**NA) | always start with 3 | tRNA/tRNA_pseudogene |
+| rRNA | TrturKRN1A01RR400110| RR (for **rR**NA) | always start with 4 | rRNA/rRNA_fragment |
+| sn/snoRNA | TrturKRN1A01SR500110| SN (for **sn**/**sn**oRNA) | always start with 5 | snRNA/snoRNA |
 
 ## Software version
 
