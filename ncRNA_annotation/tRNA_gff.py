@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from collections import defaultdict
 from intervaltree import Interval, IntervalTree
 import sys
@@ -9,6 +8,7 @@ import re
 # ------------------------------------------------------------------
 PREFIX   = "TrturKRN"          # species + cultivar + assembly tag
 VERSION  = "01"                # used in column-2 (source)
+reserved = 2
 TYPE_PREFIX = "TR"             # maps biotype -> prefix in ID
 ctr = defaultdict(int)
 
@@ -49,8 +49,8 @@ def enough_overlap(qs, qe, intervals, thr=0.7):
 
 
 def make_new_id(chrom):
-    ctr[chrom] += 1
-    return f"{PREFIX}{chrom}01{TYPE_PREFIX}2{ctr[chrom]:05d}"
+    ctr[chrom] += 10
+    return f"{PREFIX}{chrom}01{TYPE_PREFIX}{reserved}{ctr[chrom]:05d}"
 
 
 def integrate(tRNAscan_file, rfam_trees, out_path):
@@ -130,7 +130,7 @@ def integrate(tRNAscan_file, rfam_trees, out_path):
 # main driver
 # ------------------------------------------------------------------
 if __name__ == "__main__":
-    rfam_file   = "All.Rfam.tblout"
+    rfam_file   = "../../Rfam_analysis/All.Rfam.tblout"
     trna_file   = "tRNAscan-SE.out"
     output_file = "tRNAs.final.gff3"
 
