@@ -130,7 +130,7 @@ def integrate(tRNAscan_file, rfam_trees, out_path):
 # main driver
 # ------------------------------------------------------------------
 if __name__ == "__main__":
-    rfam_file   = "../../Rfam_analysis/All.Rfam.tblout"
+    rfam_file   = "All.Rfam.tblout"
     trna_file   = "tRNAscan-SE.out"
     output_file = "tRNAs.final.gff3"
 
