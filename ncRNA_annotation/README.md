@@ -97,6 +97,7 @@ write.table(Plant_results, file ="mikado_plant-lncFinder.txt", sep ="\t",row.nam
 Rscript prediction_insersection.sh mikado_candidate_lncRNA.txt mikado_PlantLncBoost_prediction.csv mikado_CPAT_plant.output plant-lncFinder.txt mikado_uniprotoutput.txt
 grep -Fwf mikado_Final_lncRNA_results.txt mikado_candidate_lncRNA.gtf > mikado_lncRNA.gtf
 ```
+
 ---
 
 ### 3. Classification  
@@ -147,8 +148,6 @@ while read -r chromosome zvalue; do
 done < zvalue.list
 ```
 
-grep -w 'tRNA' ../../Rfam_analysis/All.Rfam.tblout |  awk '{print $4 "\tRfam\t" $2 "\t" $10 "\t" $11 "\t.\t" $12 "\t."}' > Rfam.tRNA.gff3
-awk '{print $1 "\ttRNAscan\ttRNA\t" $3 "\t" $4 "\t.\t.\t."}'   ../../tRNA/tRNAscan-SE.out > tRNAscan.gff3
 
 
 ### 2. tRNA Annotation
@@ -167,9 +166,36 @@ tRNAscan-SE -E -o tRNAscan-SE.out -f tRNAscan-SE.ss -s tRNAscan-SE.iso -m tRNAsc
 python tRNA_gff.py
 ```
 
-### 3. rRNA annotation
+---
+
+### 3. rRNA Annotation
+
+**📥 Inputs**  
+• `*.Rfam.tblout`: Rfam outputs  
+• `Kronos.collapsed.chromosomes.masked.v1.1.fa`: genome version v1.1  
+
+**📥 Outputs**  
+• `rRNAs.final.gff3`: tRNA scan outputs
+
+---
+for chrom in A B; do
+ for i in {1..7}; do
+         barrnap --kingdom euk --threads 56 --outseq rRNA.${i}${chrom}.fa < Kronos.v1.1.${i}${chrom}.fa > barrnap.${i}${chrom}.gff
+  done
+done
+---
+
+---
+
+### 4. miRNA Annotation
+**📥 Inputs**  
+• `miRNAs.gff3`: miRNA annotations. Please refer to this repository.
+
+**📥 Outputs**  
+• `miRNAs.final.gff3`: tRNA scan outputs
 
 
+---
 
 ### 2. UNITAS
 
