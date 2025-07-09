@@ -157,12 +157,12 @@ done < zvalue.list
 • `Kronos.collapsed.chromosomes.masked.v1.1.fa`: genome version v1.1  
 
 **📥 Outputs**  
-• `tRNAs.final.gff3`: tRNA scan outputs
+• `tRNAs.final.gff3`: tRNA annotation output
 
 ```
 #run tRNAscan
 tRNAscan-SE -E -o tRNAscan-SE.out -f tRNAscan-SE.ss -s tRNAscan-SE.iso -m tRNAscan-SE.stats -c tRNAscan-SE.conf Kronos.collapsed.chromosomes.v1.1.fa
-#reformat to a gff3 with Rfam integration
+#reformat to a gff3 with Rfam support
 python tRNA_gff.py
 ```
 
@@ -175,15 +175,18 @@ python tRNA_gff.py
 • `Kronos.collapsed.chromosomes.masked.v1.1.fa`: genome version v1.1  
 
 **📥 Outputs**  
-• `rRNAs.final.gff3`: tRNA scan outputs
+• `rRNAs.final.gff3`: rRNA annotation output
 
----
+```
 for chrom in A B; do
  for i in {1..7}; do
          barrnap --kingdom euk --threads 56 --outseq rRNA.${i}${chrom}.fa < Kronos.v1.1.${i}${chrom}.fa > barrnap.${i}${chrom}.gff
   done
 done
----
+
+#reformat to a gff with Rfam support
+python tRNA_gff.py
+```
 
 ---
 
