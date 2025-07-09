@@ -10,7 +10,7 @@ import re
 PREFIX   = "TrturKRN"          # species + cultivar + assembly tag
 VERSION  = "01"                # used in column-2 (source)
 TYPE_PREFIX = "RR"             # maps biotype -> prefix in ID
-reserved = "3"
+reserved = "4"
 ctr = defaultdict(int)
 
 # ------------------------------------------------------------------
