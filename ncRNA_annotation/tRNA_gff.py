@@ -1,138 +1,139 @@
-import sys
+#!/usr/bin/env python3
 from collections import defaultdict
 from intervaltree import Interval, IntervalTree
+import sys
+import re
 
+# ------------------------------------------------------------------
+# CONFIG
+# ------------------------------------------------------------------
+PREFIX   = "TrturKRN"          # species + cultivar + assembly tag
+VERSION  = "01"                # used in column-2 (source)
+TYPE_PREFIX = "TR"             # maps biotype -> prefix in ID
+ctr = defaultdict(int)
+
+# ------------------------------------------------------------------
+# helpers
+# ------------------------------------------------------------------
 def parse_rfam_hits(rfam_file):
-    """
-    Parse Rfam hits and yield only tRNA-related hits.
-    """
+    """Return list of (chrom, strand, start, end) for every tRNA hit."""
     hits = []
     with open(rfam_file) as f:
         for ln in f:
             if ln.startswith("#") or not ln.strip():
                 continue
-            fields = ln.strip().split()
-            _, name, accession, chrom, _, _, _, _, _, start, end, strand, *rest = fields
-            if name not in ['tRNA', 'tRNA-Sec']:
+            _, name, accession, chrom, _, _, _, _, _, start, end, strand, *rest = ln.split()
+            if name not in ("tRNA", "tRNA-Sec"):
                 continue
-            start, end = int(start), int(end)
-            if start > end:
-                start, end = end, start
-            hits.append((chrom, strand, start, end))
+            s, e = int(start), int(end)
+            if s > e:
+                s, e = e, s
+            hits.append((chrom, strand, s, e))
     return hits
 
+
 def build_rfam_trees(hits):
-    """
-    Build an IntervalTree for each (chrom, strand).
-    """
     trees = defaultdict(IntervalTree)
-    for chrom, strand, start, end in hits:
-        trees[(chrom, strand)].add(Interval(start, end + 1))  # 1-based inclusive
+    for chrom, strand, s, e in hits:
+        trees[(chrom, strand)].add(Interval(s, e + 1))  # 1-based inclusive
     return trees
 
-def overlaps_enough(query_start, query_end, intervals, threshold=0.7):
-    """
-    Check if the query interval overlaps ≥ threshold with any interval in the tree.
-    """
-    query_len = query_end - query_start + 1
+
+def enough_overlap(qs, qe, intervals, thr=0.7):
+    qlen = qe - qs + 1
     for iv in intervals:
-        ov_start = max(query_start, iv.begin)
-        ov_end = min(query_end + 1, iv.end)
-        overlap = max(0, ov_end - ov_start)
-        if (overlap / query_len) >= threshold:
+        ov = max(0, min(qe + 1, iv.end) - max(qs, iv.begin))
+        if ov / qlen >= thr:
             return True
     return False
 
-def integrate_tRNA_predictions(tRNAscan_file, rfam_trees, output_file):
-    """
-    Read tRNAscan results, annotate with Rfam support, and write GFF3 output.
-    """
-    with open(output_file, 'w') as out:
+
+def make_new_id(chrom):
+    ctr[chrom] += 1
+    return f"{PREFIX}{chrom}01{TYPE_PREFIX}2{ctr[chrom]:05d}"
+
+
+def integrate(tRNAscan_file, rfam_trees, out_path):
+    records = []                       # collect lines for later sorting
+
+    with open(tRNAscan_file) as fh:
+        for ln in fh:
+            if ln.startswith("#") or not ln.strip():
+                continue
+
+            chrom, num, start, end, isotype, anticodon, int_s, int_e, *rest = ln.split()
+            if isotype == "Undet":
+                continue
+
+            s, e = int(start), int(end)
+            strand = "+" if s < e else "-"
+            if s > e: s, e = e, s
+
+            int_s, int_e = int(int_s), int(int_e)
+            if int_s and int_s > int_e:
+                int_s, int_e = int_e, int_s
+
+            pseudo = "pseudo" in ln.lower()
+            biotype = "tRNA_pseudogene" if pseudo else "tRNA"
+
+            # Rfam support?
+            tree_key = (chrom, strand)
+            rfam_sup = tree_key in rfam_trees and \
+                       enough_overlap(s, e, rfam_trees[tree_key])
+
+            # assign stable ID
+            gene_id = f"{chrom}-{num}"
+
+            # --- build attributes ---
+            g_attrs = f"ID={gene_id};Name={gene_id};biotype={biotype}"
+            t_attrs = [
+                f"ID={gene_id}.1",
+                f"Parent={gene_id}",
+                f"biotype={biotype}",
+                f"anticodon={anticodon}",
+                f"isotype={isotype}",
+                "source=tRNAscan-SE"
+            ]
+            if pseudo:
+                t_attrs.append("pseudo=true")
+            if rfam_sup:
+                t_attrs.append("rfam_supported=true")
+            if int_s:
+                t_attrs.append(f"Note=predicted intron {int_s}-{int_e}")
+
+            # stash tuple for later sort: (chrom, start, strand, line)
+            records.append((chrom, s, strand,
+                f"{chrom}\tKRNncRNAv1.0\tncRNA_gene\t{s}\t{e}\t.\t{strand}\t.\t{g_attrs}\n"))
+            records.append((chrom, s, strand,
+                f"{chrom}\tKRNncRNAv1.0\t{biotype}\t{s}\t{e}\t.\t{strand}\t.\t{';'.join(t_attrs)}\n"))
+
+    # ------------------------------------------------------------------
+    # sort: chrom (lex), start (int), strand
+    # ------------------------------------------------------------------
+    records.sort(key=lambda x: (x[0], x[1], x[2]))
+    id_map = {}
+    with open(out_path, "w") as out:
         out.write("##gff-version 3\n")
-        with open(tRNAscan_file) as f:
-            for ln in f:
-                if ln.startswith("#") or not ln.strip():
-                    continue
-                chrom, num, start, end, isotype, anticodon, int_start, int_end, *rest = ln.strip().split()
-                start, end = int(start), int(end)
-                int_start, int_end = int(int_start), int(int_end)
+        for chrom, start, strand, line in records:
+            if "ncRNA_gene" in line.split()[2]:
+                old_id   = re.search(r"ID=([^;]+)", line).group(1)
+                new_id = make_new_id(chrom)
+                id_map[old_id] = new_id
+            else:
+                old_id = re.search(r"Parent=([^;]+)", line).group(1)
+                new_id = id_map[old_id]
+
+            out.write(line.replace(old_id, new_id))
 
 
-                if isotype == 'Undet':
-                    print(f'Ignoring {isotype}')
-                    continue
-
-                if start > end:
-                    strand = "-"
-                    start, end = end, start
-                else:
-                    strand = "+"  # adjust if available in input
-
-                if int_start != 0 and int_start > int_end:
-                    int_start, int_end = int_end, int_start
-
-                pseudo = "pseudo" in ln.lower()
-
-                tree_key = (chrom, strand)
-                rfam_supported = False
-                if tree_key in rfam_trees:
-                    overlapping = rfam_trees[tree_key].overlap(start, end + 1)
-                    rfam_supported = overlaps_enough(start, end, overlapping)
-
-                gene_id = f"{chrom}-{num}-tRNA"
-                transcript_type = "tRNA_pseudogene" if pseudo else "tRNA"
-                # Gene line
-                gene_attrs = [f"ID={gene_id}",
-                    f"Name={gene_id}",
-                    f"biotype={transcript_type}",
-                    f"anticodon={anticodon}",
-                    f"isotype={isotype}",
-                    "logic_name=trnascan_gene"
-                  ]
-                if pseudo:
-                      gene_attrs.append("pseudo=true")
-                if rfam_supported:
-                      gene_attrs.append("rfam_supported=true")
-
-                attr_str = ";".join(gene_attrs)
-                out.write(f"{chrom}\tKRN_ncRNA\tncRNA_gene\t{start}\t{end}\t.\t{strand}\t.\t{attr_str}\n")
-
-                # Transcript line
-                transcript_attrs = [
-                    f"ID={gene_id}.1",
-                    f"Parent={gene_id}",
-                  ]
-
-                attr_str = ";".join(transcript_attrs)
-                out.write(f"{chrom}\tKRN_ncRNA\t{transcript_type}\t{start}\t{end}\t.\t{strand}\t.\t{attr_str}\n")
-
-                # Exon line
-                exon_attrs = [
-                    f"ID={gene_id}.1.exon1",
-                    f"Parent={gene_id}.1",
-                ]
-
-                attr_str = ";".join(exon_attrs)
-
-                if int_start == 0:
-                    out.write(f"{chrom}\tKRN_ncRNA\texon\t{start}\t{end}\t.\t{strand}\t.\t{attr_str}\n")
-                else:
-                    if strand == "+":
-                      out.write(f"{chrom}\tKRN_ncRNA\texon\t{start}\t{int_start-1}\t.\t{strand}\t.\t{attr_str}\n")
-                      out.write(f"{chrom}\tKRN_ncRNA\texon\t{int_end+1}\t{end}\t.\t{strand}\t.\t{attr_str.replace('.exon1', '.exon2')}\n")
-                    else:
-                      out.write(f"{chrom}\tKRN_ncRNA\texon\t{start}\t{int_start-1}\t.\t{strand}\t.\t{attr_str.replace('.exon1', '.exon.2')}\n")
-                      out.write(f"{chrom}\tKRN_ncRNA\texon\t{int_end+1}\t{end}\t.\t{strand}\t.\t{attr_str}\n")
-
-
-def main():
-    rfam_file = "All.Rfam.tblout"
-    tRNA_file = "tRNAscan-SE.out"
+# ------------------------------------------------------------------
+# main driver
+# ------------------------------------------------------------------
+if __name__ == "__main__":
+    rfam_file   = "../../Rfam_analysis/All.Rfam.tblout"
+    trna_file   = "tRNAscan-SE.out"
     output_file = "tRNAs.final.gff3"
 
-    rfam_hits = parse_rfam_hits(rfam_file)
-    rfam_trees = build_rfam_trees(rfam_hits)
-    integrate_tRNA_predictions(tRNA_file, rfam_trees, output_file)
-
-if __name__ == "__main__":
-    main()
+    trees = build_rfam_trees(parse_rfam_hits(rfam_file))
+    integrate(trna_file, trees, output_file)
+    print(f"✔ Wrote {output_file}")
