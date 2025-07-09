@@ -53,7 +53,7 @@ def integrate_tRNA_predictions(tRNAscan_file, rfam_trees, output_file):
             for ln in f:
                 if ln.startswith("#") or not ln.strip():
                     continue
-                chrom, num, start, end, anticodon, isotype, int_start, int_end, *rest = ln.strip().split()
+                chrom, num, start, end, isotype, anticodon, int_start, int_end, *rest = ln.strip().split()
                 start, end = int(start), int(end)
                 int_start, int_end = int(int_start), int(int_end)
 
@@ -126,7 +126,7 @@ def integrate_tRNA_predictions(tRNAscan_file, rfam_trees, output_file):
 
 
 def main():
-    rfam_file = "../../Rfam_analysis/All.Rfam.tblout"
+    rfam_file = "All.Rfam.tblout"
     tRNA_file = "tRNAscan-SE.out"
     output_file = "tRNAs.final.gff3"
 
