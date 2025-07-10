@@ -54,8 +54,8 @@ agat_convert_sp_gff2gtf.pl --gff mikado.loci.ncRNA.gff3 -o mikado.loci.ncRNA.gtf
 
 ```
 #identify non-overlapping transcripts 
-FEELnc_filter.pl -i mikado.loci.ncRNA.gtf -a Kronos.v2.1.gtf --monoex=-1 -s 200 -p 20 > mikado_candidate_lncRNA.gtf
-FEELnc_filter.pl -i ../stringtie.flipped.gtf -a Kronos.v2.1.gtf --monoex=-1 -s 200 -p 20 > stringtie_candidate_lncRNA.gtf
+FEELnc_filter.pl -i mikado.loci.ncRNA.gtf -a Kronos.v2.1.gtf --monoex=0 -s 200 -p 20 > mikado_candidate_lncRNA.gtf
+FEELnc_filter.pl -i tringtie.flipped.gtf -a Kronos.v2.1.gtf --monoex=0 -s 200 -p 20 > stringtie_candidate_lncRNA.gtf
 ```
 
 ```
