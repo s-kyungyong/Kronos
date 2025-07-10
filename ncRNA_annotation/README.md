@@ -223,35 +223,5 @@ python tRNA_gff.py
 • `miRNAs.final.gff3`: tRNA scan outputs
 
 
----
-
-### 2. UNITAS
-
-**📥 Inputs**    
-• `Triticum_aestivum.IWGSC.ncrna.fa.gz`: non-coding RNA annotations for Chinese Spring genome from Ensembl
-• `SRR288986[x]`: where x ranges from 57 to 65. sRNA datasets
-
-```
-#merge all sRNA datasets into a single fastq file. 
-unitas.pl -species x -refseq Triticum_aestivum.IWGSC.ncrna.fa -input all.fq -threads 48
-```
-
----
-
-### 2. tRNA search and annotations
-
-**📥 Inputs**  
-• `Kronos.collapsed.chromosomes.masked.v1.1.fa`: genome version v1.1  
-
-
-**📥 Outputs**  
-• `tRNAscan-SE.out`: tRNA scan outputs
-
-```
-tRNAscan-SE -E -o tRNAscan-SE.out -f tRNAscan-SE.ss -s tRNAscan-SE.iso -m tRNAscan-SE.stats -c tRNAscan-SE.conf Kronos.collapsed.chromosomes.v1.1.fa
-```
----
-
-
 
 
