@@ -137,7 +137,8 @@ def integrate(input_file, output_file, classified, te_info):
 
                 if not old_id in id_map:
                     new_id = make_new_id(chrom)
-                id_map[old_id] = new_id
+                    id_map[old_id] = new_id
+                new_id = id_map[old_id]
 
                 if old_id not in written:
                     written[old_id] = ''
