@@ -120,6 +120,7 @@ grep -Fwf mikado_Final_lncRNA_results.txt mikado_candidate_lncRNA.gtf > mikado_l
 
 **📥 Outputs**  
 • `lncRNA_classes.txt`: lncRNA classes  
+• `mikado_stringtie_merged_final_lncRNA.gtf`: merged lncRNA annotations
 
 ```
 #merge transcripts and classify
@@ -133,7 +134,17 @@ awk '{print $1 "\t" $4 "\t" $5 "\t" $10}' mikado_stringtie_merged_final_lncRNA.g
 bedtools intersect -a mikado_stringtie_merged_final_lncRNA.bed -b TEs.bed -wo | sort -u | awk '{print $1,$2,$3,$4,$6,$7,$8,$9}' | sed 's/ /\t/g' | sed '1iChr\tLncRNA_start\tLncRNA_end\tLncRNA_ID\tTE_start\tTE_end\tTE_ID\tOverlap' > TE_lncRNA_intersect.txt
 ```
 
----
+
+### 3. Renaming
+
+**📥 Inputs**  
+• `lncRNA_classes.txt`: lncRNA classes  
+• `mikado_stringtie_merged_final_lncRNA.gtf`: merged lncRNA annotations
+
+
+#sort 
+gffread mikado_stringtie_merged_final_lncRNA.gtf > mikado_stringtie_merged_final_lncRNA.gff3
+
 
 
 ## Small Non-coding RNAs
