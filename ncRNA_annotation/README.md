@@ -121,6 +121,7 @@ grep -Fwf mikado_Final_lncRNA_results.txt mikado_candidate_lncRNA.gtf > mikado_l
 **📥 Outputs**  
 • `lncRNA_classes.txt`: lncRNA classes  
 • `mikado_stringtie_merged_final_lncRNA.gtf`: merged lncRNA annotations
+• `TE_lncRNA_intersect.txt`: intersections with transposable elements
 
 ```
 #merge transcripts and classify
@@ -140,12 +141,16 @@ bedtools intersect -a mikado_stringtie_merged_final_lncRNA.bed -b TEs.bed -wo | 
 **📥 Inputs**  
 • `lncRNA_classes.txt`: lncRNA classes  
 • `mikado_stringtie_merged_final_lncRNA.gtf`: merged lncRNA annotations
+• `TE_lncRNA_intersect.txt`: intersections with transposable elements
 
+**📥 Outputs**  
+• `lncRNAs.final.gff3`: lncRNA classes  
 
+```
 #sort 
 gffread mikado_stringtie_merged_final_lncRNA.gtf > mikado_stringtie_merged_final_lncRNA.gff3
-
-
+python lncRNA_gff.py
+```
 
 ## Small Non-coding RNAs
 
