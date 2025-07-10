@@ -7,7 +7,7 @@
 
 |    | Example | Identifier | Numbering | Type |
 |----|---------|-----------| -----------|-----------|
-| lncRNA | TrturKRN1A01**LN0**00110  | LN (for **ln**cRNA) | start with 0  | tRNA/tRNA_pseudogene |
+| lncRNA | TrturKRN1A01**LN0**00110  | LN (for **ln**cRNA) | start with 0  | lncRNA |
 | tRNA | TrturKRN1A01**TR3**00110  | TR (for **tR**NA) | start with 3 | tRNA/tRNA_pseudogene |
 | rRNA | TrturKRN1A01**RR4**00110| RR (for **rR**NA) | start with 4 | rRNA/rRNA_fragment |
 | sn/snoRNA | TrturKRN1A01**SN50**0110| SN (for **sn**/**sn**oRNA) | start with 5 | snRNA/snoRNA |
