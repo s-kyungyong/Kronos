@@ -217,7 +217,7 @@ python tRNA_gff.py
 
 ### 4. miRNA Annotation
 **📥 Inputs**  
-• `miRNAs.gff3`: miRNA annotations. Please refer to this repository.
+• Refer to this GitHub [repository](https://github.com/joweihsieh/Kronos_miRNA_blastn)
 
 **📥 Outputs**  
 • `miRNAs.final.gff3`: tRNA scan outputs
