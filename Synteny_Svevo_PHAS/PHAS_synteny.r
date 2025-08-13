@@ -18,7 +18,7 @@ final_bed="${blast_result%.tab}.bed"
 extracted_fa="${final_bed%.bed}.fa"
 upper_fa="${final_bed%.bed}_Up.fa"
 
-sytem("blastn -query Ttu_Svevov1_PHAS.fa -db Ttu_Kronos_genome_db -outfmt 6 -out $blast_result -num_threads 12")
+system("blastn -query Ttu_Svevov1_PHAS.fa -db Ttu_Kronos_genome_db -outfmt 6 -out $blast_result -num_threads 12")
 
 # ========== 2. Read and filter ==========
 ## ---- Inputs (from your shell vars) ----
