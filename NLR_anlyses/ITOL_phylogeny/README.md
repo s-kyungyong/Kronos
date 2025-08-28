@@ -22,6 +22,7 @@ To visualize the phylogenetic tree, please use the files below:
   
 `Domain architecture`  
 
+----
 
 ⚙️ **ITOL** 
 
@@ -85,5 +86,5 @@ Delete branches: NA
 
 Lable functions: NA
 Auto assign taxonomy: NA
-Midpoint root: click once 
+Midpoint root: ✨click once✨ 
 ```
