@@ -2,25 +2,25 @@
 
 To visualize the phylogenetic tree, please use the files below:  
 
-`Tree`
+`Tree`  
 • `kronos_support.raxml.support`: maximum-likelihood tree inferred from NB-ARC domains  
 
-`Chromosome labels`
-• `00.chromosome_memberships_all`: 14 chromosomes are assigned with distinct colors 
-• `00.chromosome_memberships_per_homologous_chromosome`✨: one color is assigned for each set of homologous chromosomes (e.g. 1A and 1B)
+`Chromosome labels`  
+• `00.chromosome_memberships_all`: 14 chromosomes are assigned with distinct colors   
+• `00.chromosome_memberships_per_homologous_chromosome`✨: one color is assigned for each set of homologous chromosomes (e.g. 1A and 1B)  
 
-`Branch colors`
-• `01.categorical_branch_colors_and_ring`: hvNLRs, NLR-IDs, hvNLR-IDs and known genes are colored in branches and mapped around an outer ring 
-• `01.categorical_branch_colors_only`✨: hvNLRs, NLR-IDs, hvNLR-IDs and known genes are colored in bold branches
+`Branch colors`  
+• `01.categorical_branch_colors_and_ring`: hvNLRs, NLR-IDs, hvNLR-IDs and known genes are colored in branches and mapped around an outer ring   
+• `01.categorical_branch_colors_only`✨: hvNLRs, NLR-IDs, hvNLR-IDs and known genes are colored in bold branches  
 
-`Known genes`
-• `02.known_NLRs`: Cloned functional NLRs are indicated around an outer ring
+`Known genes`  
+• `02.known_NLRs`: Cloned functional NLRs are indicated around an outer ring  
 
-`Labels`
-• `03.HvNLRs_Kronos`: hvNLRs are indicated around an outer ring
-• `03.NLR-IDs_Kronos`: NLR-IDs are indicated around an outer ring
-
-`Domain architecture`
+`Labels`  
+• `03.HvNLRs_Kronos`: hvNLRs are indicated around an outer ring  
+• `03.NLR-IDs_Kronos`: NLR-IDs are indicated around an outer ring  
+  
+`Domain architecture`  
 
 
 ⚙️ **ITOL** 
