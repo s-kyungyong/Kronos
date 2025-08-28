@@ -14,13 +14,14 @@ To visualize the phylogenetic tree, please use the files below:
 • `01.categorical_branch_colors_only`✨: hvNLRs, NLR-IDs, hvNLR-IDs and known genes are colored in bold branches  
 
 `Known genes`  
-• `02.known_NLRs`: Cloned functional NLRs are indicated around an outer ring  
+• `02.known_NLRs`: cloned functional NLRs are indicated around an outer ring  
 
 `Labels`  
 • `03.HvNLRs_Kronos`: hvNLRs are indicated around an outer ring  
 • `03.NLR-IDs_Kronos`: NLR-IDs are indicated around an outer ring  
   
-`Domain architecture`  
+`Domain architecture`   
+• `04.domain_architecture`: multi-domain architectures will be visualized  
 
 ----
 
