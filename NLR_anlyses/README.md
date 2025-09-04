@@ -1,5 +1,7 @@
 # NLR Curation and Analyses
 
+TrturKRN2B02G099990 is a low-confidence NLR
+
 ## Data Availability
 
 ## Method
