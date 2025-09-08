@@ -1,9 +1,9 @@
-# NLR Curation and Analyses
+# NLR Curation
 
 TrturKRN2B02G099990 is a low-confidence NLR
 
 ## Data Availability
-
+Curated NLRs were deposited in [Zenodo](https://zenodo.org/records/15539721).
 
 ## Software Versions
 ```
@@ -22,25 +22,32 @@ agat v0.8.0
 
 ---
 
-
-## NLR Curation
-
 ### 1. Putative NLR Loci Detection
 The Kronos genome is large, and for targeted manual curation, NLR loci need to be first extracted from the genome. NLRs were loosely defined as NB-ARC domain-containing genes or proteins. Genomic regions containing NB-ARC domains were identified and extracted with 15,000 flanking sequences from both ends. You may choose to increase the flanking size, as a small number of genes could not be fully contained in this region.
 
+**📥 Inputs**  
+• `Kronos.collapsed.chromosomes.masked.v1.1.fa`: Kronos genome  
+
+**📥 Outputs**  
+• `Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa`: NLR loci  
+
+
+⚙️ **identify open reading frames**  
 ```
-#identify open reading frames (ORFs)
 orfipy --procs 56 --bed orfs.bed --pep orfs.aa.fa --max 45000 --ignore-case --partial-3 --partial-5 Kronos.collapsed.chromosomes.masked.v1.1.fa
-
-#search for NB-ARC domains using HMMER
+```
+⚙️ **Search for NB-ARC domains**  
+```
 hmmsearch --cpu 56 --domE 1e-4 -E 1e-4 --domtblout orfs.against.NBARC.out PF00931.hmm orfs.aa.fa
-
-#crop genome to NB-ARC-containing loci
+```
+⚙️ **Extract NLR loci**  
+We used 15,000 flanking regions, but some NLRs had really long introns could could not be contained in extracted sequences. It may better to increase this threshold. 
+```
 python crop_genome.py --hmm orfs.aa.fa.against.NBARC.out --genome Kronos.collapsed.chromosomes.masked.v1.1.fa
 ```
 
-
-We later learned that some divergent NB-ARC domains in Kronos cannot be properly detected by this approach and additionally incoporated NLR-Annotator.
+⚙️ **NLR annotator**  
+We later learned that some divergent NB-ARC domains cannot be properly detected by the HMM approach and additionally incoporated NLR-Annotator.
 ```
 java -jar NLR-Annotator-v2.1b.jar -t 40 -x ./NLR-Annotator/src/mot.txt -y ./NLR-Annotator/src/store.txt -i Kronos.collapsed.chromosomes.masked.v1.1.fa -o NLRannotator.whole-genome.out -g NLRannotator.whole-genome.gff3
 
@@ -54,8 +61,18 @@ python crop_genome.py --hmm orfs.aa.fa.against.NBARC.out --nlrannot NLRannotator
 ```
 
 ### 2. Gene model prediction
-Initial gene models are needed to faciliate curation. Typically, if NLRs do not have any mutations that disrupt their gene structures (e.g. framshift mutations or mutations in splicing sites), evidence-based annotators and even ab initio annotators can correctly predict their gene structures (most of the time). Gene structures were predicted with MAKER v3.01.03. For protein evidence, NLR sequences for 18 Poaceae species were collected from [this repository](https://zenodo.org/records/13627395) and 415 reference NLRs from [RefPlantNLR](https://zenodo.org/records/3936022). For EST evidence, the transcripts assemembled by Stringtie with short-reads (v1.0 annotation) and short/long-reads (v2.0 annotation) were used. The two ab initio parameters obtained in the v1 annotation were used: Augustus from BRAKER and SANP from GINGER. 
+Initial gene models were predicted with MAKER. 
 
+**📥 Inputs**  
+• `Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa`: Kronos genome  
+• `proteins.fa`: NLRs from 18 Poaceae species [(source)](https://zenodo.org/records/13627395) and 415 reference NLRs from [RefPlantNLR](https://zenodo.org/records/3936022).
+• `est.fa`: Stringtie transcripts assememblies (v1.0 annotation (short reads) and v2.0 annotation (short/long-reads). See [this record](https://github.com/s-kyungyong/Kronos/tree/main/Genome_annotation)
+• `Kronos_collapsed` & `Kronos.hmm`: The two ab initio parameters obtained in the v1 annotation: Augustus from BRAKER and SANP from GINGER. See [this folder](https://github.com/s-kyungyong/Kronos/tree/main/Genome_annotation/abinitio_parameters))
+
+**📥 Outputs**  
+• `Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.maker_out.gff3`: Initial NLR prediction results
+
+⚙️ **Run MAKER**  
 Default control files from MAKER will be used. In **maker_opts.ctl**, some parameters were modified as below. 
 ```
 est=est.fa                        #est evidence
