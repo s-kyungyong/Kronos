@@ -3,7 +3,7 @@
 TrturKRN2B02G099990 is a low-confidence NLR
 
 ## Data Availability
-Curated NLRs were deposited in [Zenodo](https://zenodo.org/records/15539721).
+Curated NLRs were deposited in [Zenodo](https://zenodo.org/records/15539721). High- and medium-confidence NLRs were integrated into v2.1 annotations. 
 
 ## Software Versions
 ```
@@ -11,10 +11,10 @@ orfipy v0.0.4
 hmmsearch v3.4
 nlr-annotator v2.1b
 maker v3.01.03
-seqkit v
+seqkit v2.8.2
 star v2.7.11b
 deeptools v3.5.5
-samtools v
+samtools v1.9
 interproscan v5.68-100.0
 apllo v2.0.6
 agat v0.8.0
