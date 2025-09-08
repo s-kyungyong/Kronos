@@ -97,7 +97,6 @@ awk '$3 == "21PHAS" { print $1, $4, $5, "green" } $3 == "24PHAS" { print $1, $4,
 awk '$3 == "MIRNA_hairpin" {print $1 "\t" $4 "\t" $5 }' miRNAs.gff3  | sed 's/Chr//g' > MIR_loci.bed
 bedtools intersect -a windows.bed -b MIR_loci.bed -c | awk '$4 > 0 {print $1 "\t" $2 "\t" $3 "\t" $4}' > 05.MIR_loci.txt
 ```
-3841799518
 
 
 ### 7. Circos
