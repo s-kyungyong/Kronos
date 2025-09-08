@@ -1,4 +1,4 @@
-# NLR Curation
+# NLR manual curation
 
 TrturKRN2B02G099990 is a low-confidence NLR
 
