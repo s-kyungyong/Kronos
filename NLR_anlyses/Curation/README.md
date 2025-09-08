@@ -59,12 +59,12 @@ Alternatively, the two outputs can be combined.
 ```
 python crop_genome.py --hmm orfs.aa.fa.against.NBARC.out --nlrannot NLRannotator.whole-genome.gff3 --genome Kronos.collapsed.chromosomes.masked.v1.1.fa
 ```
-
+---
 ### 2. Gene model prediction
 Initial gene models were predicted with MAKER. 
 
 **📥 Inputs**  
-• `Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa`: Kronos genome  
+• `Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa`: NLR loci  
 • `proteins.fa`: NLRs from 18 Poaceae species [(source)](https://zenodo.org/records/13627395) and 415 reference NLRs from [RefPlantNLR](https://zenodo.org/records/3936022).
 • `est.fa`: Stringtie transcripts assememblies (v1.0 annotation (short reads) and v2.0 annotation (short/long-reads). See [this record](https://github.com/s-kyungyong/Kronos/tree/main/Genome_annotation)
 • `Kronos_collapsed` & `Kronos.hmm`: The two ab initio parameters obtained in the v1 annotation: Augustus from BRAKER and SANP from GINGER. See [this folder](https://github.com/s-kyungyong/Kronos/tree/main/Genome_annotation/abinitio_parameters))
@@ -99,17 +99,21 @@ done
 cat */*.gff3 > Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.maker_out.gff3
 ```
 
+---
+### 3. Additional gene models 
+Other than MAKER annotations, intermediate and final annotation files produced during the version 1 and 2 annotations were also included.  
 
-### 3. Additional evidence
-Other than MAKER annotations, intermediate and final annotation files produced during the version 1 and 2 annotations were also included.
-```
-ls
-Kronos.v1.0.all.gff3  #version 1.0 annotation
-Kronos.v2.0.gff3      #version 2.0 annotation
-v1_abinitio.gff3      #includes annotations from BRAKER, Ginger and Funannotate produced as part of the version 1 annotation
-```
+**📥 Inputs**   
+• `Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa`: NLR loci  
+• `Kronos.v1.0.all.gff3`: version 1.0 annotation
+• `Kronos.v2.0.all.gff3`: version 2.0 annotation
+• `v1_abinitio.gff3`: annotations from BRAKER, Ginger and Funannotate produced as part of v 1.0 annotation. Re-coordinated file is available in this folder. 
 
-The coordinates in these GFF files were adjusted from the whole genome to the NLR-loci.
+**📥 Outputs**  
+• `all_models.recoordinated.gff3`: Additional NLR gene models
+
+
+⚙️ **Re-coordinate to match NLR loci**  
 ```
 grep ">" Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa | cut -d ">" -f 2 | sort -u > coordinates.list 
 python recoordinate_gff3.py Kronos.v1.0.all.gff3
@@ -118,14 +122,27 @@ python recoordinate_gff3.py v1_abinitio.gff3
 cat Kronos.v1.0.all.recoordinated.gff3 Kronos.v2.0.recoordinated.gff3 v1_abinitio.recoordinated.gff3  > all_models.recoordinated.gff3
 ```
 
-Not all NLRs are well expressed. When they are, however, the transcriptome evidence can be useuful. Especially, when exon-intron structures are complicated, or when there are integrated domains nearby, this evidence can help improve the annotation. The transcriptome evidence was generated as below. Not all short-read data were incoporated, mainly because the Apollo Genome Browswer cannot display the track if there is too much data. We tried to picked one sample per condition.
+---
+### 4. Transcriptome evidence
+
+**📥 Inputs**   
+• `Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa`: NLR loci  
+
+**📥 Outputs**  
+• `NLR.merged.bam`: transcriptome alignments
+• `NLR.merged.bigwig`: transcriptome coverage
+
+⚙️ **Run STAR**  
 ```
 #index
 STAR --runMode genomeGenerate \
      --genomeFastaFiles Kronos.collapsed.chromosomes.masked.v1.1.fa.NLR_loci.fa \
      --genomeDir GenomeDir
 
-#align transcriptome data from Kronos to the putative NLR loci 
+#align transcriptome data from Kronos to the putative NLR loci
+#Nnte that if coverage is high, the alignment may not be visuzlied in Apollo genome browser.
+#use publicly available RNAseq data (reads.list)
+
 while read -r read1 read2; do
     # Extract the prefix from the first read filename
     prefix=$(basename "$read1" | cut -d "_" -f 1)
@@ -147,12 +164,15 @@ for bam in *.bam; do
 done
 
 #merge and sort
-samtools merge -@ 56 merged.bam *.filtered.bam
-samtools index -@ 56 merged.bam
+samtools merge -@ 56 NLR.merged.bam *.filtered.bam
+samtools index -@ 56 NLR.merged.bam
 
 #collapse the bam file to a bigwig file.
-bamCoverage -b merged.bam -o output.bigwig --binSize 1 --normalizeUsing None
+bamCoverage -b NLR.merged.bam -o NLR.merged.bigwig --binSize 1 --normalizeUsing None
 ```
+
+---
+### 4. Domain annotation
 
 Lastly, domain prediction results are also useful. This information was generated as below.
 ```
