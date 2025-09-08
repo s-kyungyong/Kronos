@@ -1,25 +1,4 @@
 
-Phylogeny:
-hmmsearch --domE 1e-4 -E 1e-4 --domtblout Kronos_and_known_NLRs.against.Kronos_NBARC.hmm.out --cpu 40 ../NLR_annotations/HMM/Kronos_NBARC.hmm Kronos_and_known_NLRs.fa
-hmmalign --trim -o Kronos_and_known_NLRs.hmmalign.sto ../NLR_annotations/HMM/Kronos_NBARC.hmm Kronos_and_known_NLRs.fa
-esl-reformat fasta Kronos_and_known_NLRs.hmmalign.sto >Kronos_and_known_NLRs.hmmalign.fasta
-mafft --maxiterate 1000 --globalpair --thread 40 Kronos_and_known_NLRs.hmmalign.fasta > Kronos_and_known_NLRs.hmmalign.msa.fasta
-trimal -gt 0.3 -in Kronos_and_known_NLRs.hmmalign.msa.fasta -out Kronos_and_known_NLRs.hmmalign.msa.filtered.fasta
-python remove_gappy_seqs.py Kronos_and_known_NLRs.hmmalign.msa.filtered.fasta Kronos_and_known_NLRs.hmmalign.msa.filtered.clean.fasta
-15 gappy sequences removed
-
-less Kronos_and_known_NLRs.hmmalign.msa.filtered.clean.fasta | gre
-p ">" | grep -c "KRN"
-1074 #1121 total: non
-
-raxml-ng --all \
-  --msa Kronos_and_known_NLRs.hmmalign.msa.filtered.clean.fasta \
-  --search 20 \
-  --model LG+G8+F \
-  --tree pars{10} \
-  --bs-trees 1000 \
-  --threads 56
-
 
 ## NLR Prediction in Wheat Genomes
 
