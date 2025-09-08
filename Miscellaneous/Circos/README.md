@@ -4,6 +4,8 @@
 
 ```
 circos v0.69-8
+minimap v2.28-r1209
+bedtools v2.31.1
 ```
 
 ------
@@ -81,15 +83,21 @@ bedtools intersect -a windows.bed -b NLRs.reliable.bed -c | awk '{print $1 "\t" 
 ### 5. EMS mutation density
 ```
 #use MAPS-drivin EMS mutation density
-
+awk '{print $1 "\t" $2 "\t" $2+1 "\t" 1}' Kronos_v1.1.Exom-capture.corrected.deduped.10kb_bins.RH.byContig.MI.No_RH.maps.substitutions.vcf > exom.maps.ems.bed
+bedtools intersect -a windows.bed -b exom.maps.ems.bed -c | awk '{print $1 "\t" $2 "\t" $3 "\t" $4}' > exome_density.bed
+awk '{print $1 "\t" $2 "\t" $2+1 "\t" 1}' Kronos_v1.1.Promoter-capture.corrected.deduped.10kb_bins.RH.byContig.MI.No_RH.maps.substitutions.vcf > promoter.maps.ems.bed
+bedtools intersect -a windows.bed -b promoter.maps.ems.bed -c | awk '{print $1 "\t" $2 "\t" $3 "\t" $4}' > promoter_density.bed
+python normalize.py
 ```
 
 ### 6. PHAS and MIR loci
 ```
-#use MAPS-drivin EMS mutation density
-
+#use sRNA datasets 
+awk '$3 == "21PHAS" { print $1, $4, $5, "green" } $3 == "24PHAS" { print $1, $4, $5, "red" }'phas.gff3 > 05.PHAS_loci.txt
+awk '$3 == "MIRNA_hairpin" {print $1 "\t" $4 "\t" $5 }' miRNAs.gff3  | sed 's/Chr//g' > MIR_loci.bed
+bedtools intersect -a windows.bed -b MIR_loci.bed -c | awk '$4 > 0 {print $1 "\t" $2 "\t" $3 "\t" $4}' > 05.MIR_loci.txt
 ```
-
+3841799518
 
 
 ### 7. Circos
