@@ -95,6 +95,8 @@ bedtools intersect -a windows.bed -b NLRs.reliable.bed -c | awk '{print $1 "\t" 
 ### 7. Circos
 ```
 #with *.conf files in the current folder
+#check out the output circos.png
+#we further edited this backbone in Illustrator to create Fig. 1. 
 circos
 ```
 
