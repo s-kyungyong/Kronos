@@ -1,5 +1,74 @@
 # Phylogenetic tree
 
+
+## Software Versions
+```
+hmmsearch v3.4
+mafft v7.525
+trimal v1.5.rev0
+raxml-ng v1.2.2
+```
+
+---
+
+### 1. Sequence alignment
+
+**📥 Inputs**   
+• `Kronos_and_known_NLRs.fa`: Kronos and reference NLR sequences (1136 sequences; 1089 Kronos sequences)  
+• `Kronos_NBARC.hmm`: HMM profile constructed with reliable Kronos NLRs (1121 sequences in total; 1074 Kronos sequences)  
+ 
+**📥 Outputs**    
+• `Kronos_and_known_NLRs.hmmalign.msa.filtered.clean.fasta`: NB-ARC domain sequences of filtered NLRs  
+
+```
+#capture NB-ARC domains
+hmmalign --trim -o Kronos_and_known_NLRs.hmmalign.sto Kronos_NBARC.hmm Kronos_and_known_NLRs.fa
+esl-reformat fasta Kronos_and_known_NLRs.hmmalign.sto > Kronos_and_known_NLRs.hmmalign.fasta
+
+#align NB-ARC domains
+mafft --maxiterate 1000 --globalpair --thread 40 Kronos_and_known_NLRs.hmmalign.fasta > Kronos_and_known_NLRs.hmmalign.msa.fasta
+
+#remove low coverage sequences. 
+trimal -gt 0.3 -in Kronos_and_known_NLRs.hmmalign.msa.fasta -out Kronos_and_known_NLRs.hmmalign.msa.filtered.fasta
+python remove_gappy_seqs.py Kronos_and_known_NLRs.hmmalign.msa.filtered.fasta Kronos_and_known_NLRs.hmmalign.msa.filtered.clean.fasta
+15 gappy sequences removed
+```
+---
+### 2. Phylogenetic tree
+
+**📥 Inputs**    
+• `Kronos_and_known_NLRs.hmmalign.msa.filtered.clean.fasta`: NB-ARC domain sequences of filtered NLRs  
+
+**📥 Outputs**    
+• `kronos_support.raxml.support`: ML tree  
+
+```
+# Step 1: ML tree search
+raxml-ng \
+  --msa Kronos.NLRs.reliable.hmm.msa.filtered.clean.fasta \
+  --model LG+G8+F \
+  --tree pars{10} \
+  --search 50 \
+  --threads 40 \
+  --seed 12345 \
+  --prefix kronos_ml
+
+# Step 2: Bootstrap
+raxml-ng --bootstrap \
+  --msa Kronos.NLRs.reliable.hmm.msa.filtered.clean.fasta \
+  --model LG+G8+F \
+  --bs-trees 1000 \
+  --threads 40 \
+  --seed 12345 \
+  --prefix kronos_bs
+
+# Step 3: Compute support
+raxml-ng --support \
+  --tree kronos_ml.raxml.bestTree \
+  --bs-trees kronos_bs.raxml.bootstraps \
+  --prefix kronos_support
+```
+---
 To visualize the phylogenetic tree, please use the files below:  
 
 `Tree`  
