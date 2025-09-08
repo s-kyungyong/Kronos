@@ -48,24 +48,53 @@ for paf in *.minimap.paf; do
     color=${colors[$query_chr]}
 
     # Output file
-    out="circos_links/${fname%.minimap.paf}.links.txt"
+    out="${fname%.minimap.paf}.links.txt"
 
     # Filter and format
     awk -v col="$color" '$13 == "tp:A:P" && $11 > 150000 {
         print $1, $3, $4, $6, $8, $9, "color="col
     }' OFS='\t' "$paf" > "$out"
 done
+
+cat *.links.txt > 00.synteny_links.txt
 ```
 
-### 2. Repeat contents
+### 2. Repeat density
 ```
 #hard mask genomes using annotated repeats in Kronos.collapsed.chromosomes.masked.v1.1.fa.mod.EDTA.TEanno.gff3
 bedtools makewindows -g Kronos.collapsed.chromosomes.masked.v1.1.fa.fai -w 1000000 > windows.bed
-bedtools nuc -fi Kronos.collapsed.chromosomes.masked.v1.1.hard_masked_with_X.fa -pattern X -bed windows.bed | awk 'BEGIN{OFS="\t"} NR>1 { print $1, $2, $3, $13/$12 }'> repeat_density.txt
+bedtools nuc -fi Kronos.collapsed.chromosomes.masked.v1.1.hard_masked_with_X.fa -pattern X -bed windows.bed | awk 'BEGIN{OFS="\t"} NR>1 { print $1, $2, $3, $13/$12 }'> 01.repeat_density.txt
 ```
 
-### 3. Gene contents
+### 3. Gene density
 ```
 #use annotation version 2.1 (gff to bed)
-bedtools intersect -a windows.bed -b genes.v21.bed -c | awk '{print $1 "\t" $2 "\t" $3 "\t" $4}' > gene_density.bed
+bedtools intersect -a windows.bed -b genes.v21.bed -c | awk '{print $1 "\t" $2 "\t" $3 "\t" $4}' > 02.gene_density.txt
 ```
+
+### 4. NLR density
+```
+#use high and medium confidence NLRs (gff to bed)
+bedtools intersect -a windows.bed -b NLRs.reliable.bed -c | awk '{print $1 "\t" $2 "\t" $3 "\t" $4}' > 03.NLR_density.txt
+```
+
+### 5. EMS mutation density
+```
+#use MAPS-drivin EMS mutation density
+
+```
+
+### 6. PHAS and MIR loci
+```
+#use MAPS-drivin EMS mutation density
+
+```
+
+
+
+### 7. Circos
+```
+#with *.conf files in the current folder
+circos
+```
+
