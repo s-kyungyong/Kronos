@@ -1,0 +1,14 @@
+chr - 1A 1A 0 600443981 grey
+chr - 1B 1B 0 708842986 grey
+chr - 2A 2A 0 795820389 grey
+chr - 2B 2B 0 828541533 grey
+chr - 3A 3A 0 759128228 grey
+chr - 3B 3B 0 864152387 grey
+chr - 4A 4A 0 767865717 grey
+chr - 4B 4B 0 699696956 grey
+chr - 5A 5A 0 720280059 grey
+chr - 5B 5B 0 731153026 grey
+chr - 6A 6A 0 624303373 grey
+chr - 6B 6B 0 733599645 grey
+chr - 7A 7A 0 753476766 grey
+chr - 7B 7B 0 766026795 grey
