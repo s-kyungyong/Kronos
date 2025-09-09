@@ -11,7 +11,7 @@ diamond v2.1.9
 ### 1. Colinearity analyses with MCScanX
 
 **📥 Inputs**  
-• `AET_High_confidence_gene_protein.longest.fasta`: longest protein sequences per gene for Ae. tauschii (source)(http://aegilops.wheat.ucdavis.edu/ATGSP/annotation/)  
+• `AET_High_confidence_gene_protein.longest.fasta`: longest protein sequences per gene for Ae. tauschii [source](http://aegilops.wheat.ucdavis.edu/ATGSP/annotation/)  
 • `AET_High_confidence_gene.gff3`: gff file for Ae. tauschii  
 • `Kronos.v2.1.pep.longest.fa`: longest protein sequences per gene for Kronos    
 • `Kronos.v2.1.gff`: gff file for Kronos  
