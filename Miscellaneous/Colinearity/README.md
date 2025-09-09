@@ -8,16 +8,16 @@ diamond v2.1.9
 ```
 
 ------
-### 1. Comparison to Ae 
+### 1. Colinearity analyses with MCScanX
 
 **📥 Inputs**  
-• `AET_High_confidence_gene_protein.longest.fasta`: longest protein sequences per gene for Ae. tauschii. The original fasta file comes from [here](http://aegilops.wheat.ucdavis.edu/ATGSP/annotation/)  
-• `AET_High_confidence_gene.gff3`: gff file for Ae. tauschii
-• `Kronos.v2.1.pep.longest.fa`: longest protein sequences per gene for Kronos  
-• `Kronos.v2.1.gff`: gff file for Kronos
+• `AET_High_confidence_gene_protein.longest.fasta`: longest protein sequences per gene for Ae. tauschii (source)(http://aegilops.wheat.ucdavis.edu/ATGSP/annotation/)  
+• `AET_High_confidence_gene.gff3`: gff file for Ae. tauschii  
+• `Kronos.v2.1.pep.longest.fa`: longest protein sequences per gene for Kronos    
+• `Kronos.v2.1.gff`: gff file for Kronos  
 
-**📥 Outputs**  
-• `Kronos_vs_AET.collinearity`: colinearity prediction from mcscanx
+**📥 Outputs**    
+• `Kronos_vs_AET.collinearity`: colinearity prediction from mcscanx  
 
 ⚙️ **Similarity search**  
 ```
@@ -29,13 +29,15 @@ diamond blastp -q Kronos.v2.1.pep.longest.fa -d AET_High_confidence_gene_protein
 
 ⚙️ **Reformat gff**  
 ```
-python get_gff.py AET_High_confidence_gene.gff3
-python get_gff.py Kronos.v2.1.gff 
+python get_gff.py AET_High_confidence_gene.gff3 AET
+python get_gff.py Kronos.v2.1.gff KR
+cat KR.bed AET.bed > Kronos_vs_AET.bed
+cat KR.gff AET.gff > Kronos_vs_AET.gff
 ```
 
 ⚙️ **MCScanX**  
 ```
-MCScanX -a -b 2 Kronos_vs_AET
+MCScanX -a Kronos_vs_AET
 ```
 
 ⚙️ **Visualize a dot plot**  
