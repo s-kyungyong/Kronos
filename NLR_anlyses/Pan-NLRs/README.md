@@ -214,10 +214,12 @@ fathom -export 1000 -plus uni.ann uni.dna
 forge export.ann export.dna
 hmm-assembler.pl Kronos_NLRs . > Wheat_NLR.hmm
 ```
-
+---
 ### 3. NLR Prediction in Wheat Genomes
+**📥 Inputs**  
+• `genome.fa`: genome data available in **genome.list**. 
 
-NLRs were then predicted in wheat genomes. Genomes are listed in **genome.list**. 
+⚙️ **Donwload genomes** 
 ```
 #download genomes
 while IFS=$'\t' read -r col1 prefix url; do
@@ -227,7 +229,7 @@ while IFS=$'\t' read -r col1 prefix url; do
 done < genome.list
 ```
 
-Following the previous workflow, the NLR loci were detected
+⚙️ **Isolate putative NLR loci** 
 ```
 for prefix in */; do
   cd "${prefix}" || exit
@@ -250,8 +252,7 @@ for prefix in */; do
   done
 
   #crop genomes 
-  python crop_genome.py --hmm orfs.aa.fa.against.NBARC.out --nlrannot NLRannotator.whole-genome.gff3 --genome Kronos.collapsed.chromosomes.masked.v1.1.fa
-
+  python crop_genome.py --hmm orfs.aa.fa.against.NBARC.out --nlrannot NLRannotator.whole-genome.gff3 --genome 
   cd ..
 done
 ```
