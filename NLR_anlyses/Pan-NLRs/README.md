@@ -4,28 +4,37 @@
 
 ```
 augustus v3.3.3
-
+snap v2006-07-28
+seqkit v2.8.2
+cd-hit v4.8.1
 ```
 
-In order to identify highly variable NLRs, enough coverages of homologous sequences are needed. We will collect them by predicting NLR genes in other published wheat genomes. Let's first train NLR specific prediction parameters. 
 
-### 1. Trainning Augustus
-After curating and labeling about 2,400 loci, we now know which genes are reliable and which genes have been pseudoginized. Using high-confidence genes, we will train prediction parameters.
+---
+### 1. Trainning Augustus  
+To predict wheat NLRs, we first trained ab initio parameters using Kronos NLRs.  
 
+**📥 Inputs**  
+• `Kronos_NLRs.final.cds.fa`: Kronos NLR CDS  
+• `Kronos_all.NLRs.final.gff3`: Kronos NLR gff  
+
+
+**📥 Outputs**    
+• `Wheat_NLR`: optimized AUGUSTUS parameters for Kronos NLRs  
+  
+⚙️ **Get high-confidence NLRs**    
 ```
-#convert the nlr gff file to cds sequences. 
-gffread -x Kronos_NLRs.final.cds.fa -g Kronos.collapsed.chromosomes.masked.v1.1.fa Kronos_NLRs.final.gff3
-
 #get high-confidence NLRs and reduce redundancy 
-#this step generates 828 high-confidence nlrs
 seqkit grep -f <(awk '$2 == "High" {print $1".1"}' NLR_confidence.list) Kronos_NLRs.final.cds.fa > Kronos_hc.cds.fa
 cd-hit-est -c 0.9 -i Kronos_hc.cds.fa -o Kronos_hc.cds.cd-hit.c_0.9.fa -T 30
-grep ">" Kronos_hc.cds.cd-hit.c_0.9.fa | sed 's/>//g' > geneIDs.list
+grep ">" Kronos_hc.cds.cd-hit.c_0.9.fa | sed 's/>//g' > geneIDs.list #this step generates 828 high-confidence nlrs
 
 #create a separate gtf file for the selected high-confidence nlr genes
-gffread -T --ids geneIDs.list ../NLR_final_datasets_curation/Kronos_all.NLRs.final.gff3  > 828_hc_nlrs.gtf
+gffread -T --ids geneIDs.list Kronos_all.NLRs.final.gff3  > 828_hc_nlrs.gtf
 awk '$3 == "CDS" {print}' 828_hc_nlrs.gtf  > 828_hc_nlrs.cds.gtf
-
+```
+⚙️ **Train AUGUSTUS**    
+```
 #create a genbank file with 1,000 bp flanking regions
 perl gff2gbSmallDNA.pl 828_hc_nlrs.cds.gtf Kronos.collapsed.chromosomes.masked.v1.1.fa 1000 first.gb
 
@@ -34,16 +43,14 @@ perl gff2gbSmallDNA.pl 828_hc_nlrs.cds.gtf Kronos.collapsed.chromosomes.masked.v
 etraining --species=generic first.gb > train.err
 
 #separate the genes into 126 test set, and 700 trainning set
-/global/scratch/users/skyungyong/Software/Augustus-3.3.3/augustus-3.3.3/scripts/perl randomSplit.pl first.gb 126
+randomSplit.pl first.gb 126
 
 #train augustus 
-perl /global/scratch/users/skyungyong/Software/Augustus-3.3.3/augustus-3.3.3/scripts/new_species.pl --species=Wheat_NLR #this is in maker environemnt 
+perl new_species.pl --species=Wheat_NLR
 etraining --species=Wheat_NLR first.gb.train
 optimize_augustus.pl --cpus=40 --kfold=40 --species=Wheat_NLR first.gb.train
 ```
-
-### 2. Performance Evaluation
-
+---
 We can compare how well the parameters do in predicting the NLRs in the test set. 
 
 ```
@@ -182,17 +189,23 @@ transcript | #pred | #anno |   TP |   FP |   FN | sensitivity | specificity |
 gene level |   160 |   126 |   42 |  118 |   84 |       0.333 |       0.263 |
 ----------------------------------------------------------------------------/
 ```
+----
+### 2. Trainning SNAP 
+**📥 Inputs**  
+• `Kronos_hc.cds.cd-hit.c_0.9.fa`: filtered high-confidence NLRs from the previous step  
+• `828_hc_nlrs.gtf`: filtered high-confidence NLRs in gff from the previous step  
 
-So the NLR-specific parameters are much better!
+**📥 Outputs**    
+• `Wheat_NLR.hmm`: SNAP parameters for Kronos NLRs  
 
-We can also train NLR-specific parameters for SNAP as below. 
-
+⚙️ **Train SNAP**  
 ```
 #use randomly selected 700 genes for training 
 grep ">"  Kronos_hc.cds.cd-hit.c_0.9.fa  | cut -d ">" -f 2 | shuf | head -n 700 > selected.hc.list
 gffread --ids selected.hc.list  828_hc_nlrs.gtf > selected.hc.gff
 awk '$3 != "exon" {print}' selected.hc.gff  > selected.hc.cds.gff
 agat_convert_sp_gff2zff.pl --gff selected.hc.cds.gff  --fasta Kronos.collapsed.chromosomes.masked.v1.1.folded.fa -o genome.ann
+#this step is to re-order the genome sequences to match the trainning sequences
 grep ">" genome.ann  | cut -d ">" -f 2 | while read line; do awk -v seq=$line -v RS=">" '$1 == seq {print RS $0; exit}' Kronos.collapsed.chromosomes.masked.v1.1.fa; done > genome.dna
 
 fathom -validate genome.ann genome.dna
