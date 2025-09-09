@@ -215,9 +215,13 @@ forge export.ann export.dna
 hmm-assembler.pl Kronos_NLRs . > Wheat_NLR.hmm
 ```
 ---
-### 3. NLR Prediction in Wheat Genomes
+### 3. Identify NLR loci across wheat genomes
 **📥 Inputs**  
-• `genome.fa`: genome data available in **genome.list**. 
+• `genome.fa`: genome data available in **genome.list** 
+
+**📥 Outputs**    
+• `NLR_loci.fa`: Extracted NLR loci
+
 
 ⚙️ **Donwload genomes** 
 ```
@@ -230,6 +234,7 @@ done < genome.list
 ```
 
 ⚙️ **Isolate putative NLR loci** 
+This step essentially follows those described in the curation section.
 ```
 for prefix in */; do
   cd "${prefix}" || exit
@@ -252,7 +257,7 @@ for prefix in */; do
   done
 
   #crop genomes 
-  python crop_genome.py --hmm orfs.aa.fa.against.NBARC.out --nlrannot NLRannotator.whole-genome.gff3 --genome 
+  python crop_genome.py --hmm orfs.against.NBARC.out --nlrannot NLRannotator.whole-genome.gff3 --genome 
   cd ..
 done
 ```
