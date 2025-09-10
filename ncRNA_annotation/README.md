@@ -5,8 +5,8 @@
 ## Momenclature 
 
 
-|    | Example | Identifier | Numbering | Type |
-|----|---------|-----------| -----------|-----------|
+|    | Example | Identifier | Numbering | 
+|----|---------|-----------| -----------|
 | lncRNA | TrturKRN1A01**LN0**00110  | LN (for *ln*cRNA) | start with 0  | 
 | miRNA | TrturKRN1A01**MI1**00110  | MR (for *mi*RNA) | start with 1 |  
 | phasiRNA | TrturKRN1A01**PS2/3**00110| RR (for *p*ha*s*iRNA) | start with 2 (21-PHAS) and 3 (24-PHAS) | 
