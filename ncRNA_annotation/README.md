@@ -7,10 +7,13 @@
 
 |    | Example | Identifier | Numbering | Type |
 |----|---------|-----------| -----------|-----------|
-| lncRNA | TrturKRN1A01**LN0**00110  | LN (for **ln**cRNA) | start with 0  | lncRNA |
-| tRNA | TrturKRN1A01**TR3**00110  | TR (for **tR**NA) | start with 3 | tRNA/tRNA_pseudogene |
-| rRNA | TrturKRN1A01**RR4**00110| RR (for **rR**NA) | start with 4 | rRNA/rRNA_fragment |
-| sn/snoRNA | TrturKRN1A01**SN50**0110| SN (for **sn**/**sn**oRNA) | start with 5 | snRNA/snoRNA |
+| lncRNA | TrturKRN1A01**LN0**00110  | LN (for **ln**cRNA) | start with 0  | 
+| miRNA | TrturKRN1A01**MI1**00110  | MR (for **mi**RNA) | start with 1 |  x 
+| phasiRNA | TrturKRN1A01**PS2/3**00110| RR (for **p**ha**s**iRNA) | start with 2 (21-PHAS) and 3 (24-PHAS) | x
+| hc-siRNA | TrturKRN1A01**SI4**00110| RR (for **si**NA) | start with 4 | x
+| tRNA | TrturKRN1A01**TR5**00110  | TR (for **tR**NA) | start with 5 | x
+| rRNA | TrturKRN1A01**RR6**00110| RR (for **rR**NA) | start with 6 | 
+| sn/snoRNA | TrturKRN1A01**SN7**00110| SN (for **sn**/**sn**oRNA) | start with 7 | 
 
 ## Software version
 
