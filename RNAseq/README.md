@@ -224,7 +224,39 @@ dge <- calcNormFactors(dge, method = "TMM")
 
 # Normalized counts
 cpm_mat    <- cpm(dge, log = FALSE)                     # TMM-normalized CPM
-logCPM_mat <- cpm(dge, log = TRUE, prior.count = 1) 
+logCPM_mat <- cpm(dge, log = TRUE, prior.count = 1)
+
+# ---------------- Subset to NLRs--------------------------------------------------
+nlr_present <- intersect(nlr_ids, rownames(cpm_mat))
+nlr_missing <- setdiff(nlr_ids, rownames(cpm_mat))
+
+nlr_cpm <- rbind(
+  cpm_mat[nlr_present, , drop=FALSE],
+  matrix(0, nrow = length(nlr_missing), ncol = ncol(cpm_mat),
+         dimnames = list(nlr_missing, colnames(cpm_mat)))
+)[nlr_ids, , drop=FALSE]
+
+nlr_logCPM <- rbind(
+  logCPM_mat[nlr_present, , drop=FALSE],
+  matrix(0, nrow = length(nlr_missing), ncol = ncol(logCPM_mat),
+         dimnames = list(nlr_missing, colnames(logCPM_mat)))
+)[nlr_ids, , drop=FALSE]
+
+#--------------- NLR ranking --------------------------------------
+rank_mat <- apply(nlr_cpm, 2, function(x) rank(-x, ties.method = "average"))
+nlr_rank_pct <- 1 - (rank_mat - 1) / (nrow(rank_mat) - 1)
+
+# Optionally aggregate replicates: median by (project × condition)
+split_idx <- split(seq_len(ncol(nlr_cpm)), samples_clean$grp)
+
+rowMed_by_group <- function(mat, idx) {
+  out <- do.call(cbind, lapply(idx, function(ix) matrixStats::rowMedians(mat[, ix, drop = FALSE])))
+  colnames(out) <- names(idx); rownames(out) <- rownames(mat); out
+}
+
+nlr_rank_pct_grp <- rowMed_by_group(nlr_rank_pct, split_idx)     # for clustering / global comparisons
+nlr_CPM_grp   <- sapply(split_idx, function(ix) rowMeans(nlr_cpm[, ix, drop=FALSE]))
+nlr_logCPM_grp   <- sapply(split_idx, function(ix) rowMeans(nlr_logCPM[, ix, drop=FALSE]))
 
 #--------------- global ranking --------------------------------------
 rank_all <- apply(cpm_mat, 2, function(x) rank(-x, ties.method = "average"))
@@ -245,15 +277,6 @@ if (length(nlr_missing_global)) {
 nlr_rank_pct_global <- nlr_rank_pct_global[nlr_ids, , drop = FALSE]
 nlr_rank_pct_global_grp <- rowMed_by_group(nlr_rank_pct_global, split_idx)
 
-#--------------- Group expression --------------------------------------
-split_idx <- split(seq_len(ncol(nlr_cpm)), samples_clean$grp)
-
-rowMed_by_group <- function(mat, idx) {
-  out <- do.call(cbind, lapply(idx, function(ix) matrixStats::rowMedians(mat[, ix, drop = FALSE])))
-  colnames(out) <- names(idx); rownames(out) <- rownames(mat); out
-}
-
-CPM_grp   <- sapply(split_idx, function(ix) rowMeans(cpm_mat[, ix, drop=FALSE]))
 
 # ----------- Write output  -------------
 groups_keep <- c("|Base", "|Middle", "|Top"   ) # <------------- Conditions to export
@@ -268,7 +291,7 @@ write_tsv(
 )
 
 write_tsv(
-  as_tibble(tibble::rownames_to_column(as.data.frame(CPM_grp[nlr_ids, groups_keep, drop=FALSE]),
+  as_tibble(tibble::rownames_to_column(as.data.frame(nlr_CPM_grp[nlr_ids, groups_keep, drop=FALSE]),
                                        var = "gene_id")),
   "NLR_TMM_CPM.avg_by_group.SELECTED.tsv"
 )
@@ -301,4 +324,4 @@ colnames(cpm_cutoffs_df) <- paste0("Percentile_", cutoffs)
 cpm_cutoffs_df$Sample <- rownames(cpm_cutoffs_df)
 
 cpm_cutoffs_df
-
+```
