@@ -2,6 +2,9 @@
 
 ## Data availability 
 
+Non-coding RNA annotations can be downloaded from Zenodo.  
+• `v1.0 annotation`: [https://zenodo.org/records/17095902](https://zenodo.org/records/17095902)
+
 ## Momenclature 
 
 
