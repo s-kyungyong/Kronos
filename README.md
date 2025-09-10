@@ -20,7 +20,8 @@ Most of the datasets can be accessed through [Zenodo: Chromosome-level genome as
 | [3](https://zenodo.org/records/14189805)  | Genome annotation v2.0  |  |
 | [4](https://zenodo.org/records/14853918)  | Exome-capture sequencing data remapped for 1,440 Kronos EMS mutants v1.0 |
 | [5](https://zenodo.org/records/15539216)  | **✨Genome annovation v2.1✨** | Final genome annotation |
-| [6](https://zenodo.org/records/15801888)  |  **✨Mutation calls from exome and promoter capture sequencing data (MAPS)✨** | Final capture data re-anlayses |
+| [6](https://zenodo.org/records/15801888)  | **✨Mutation calls from exome and promoter capture sequencing data (MAPS)✨** | Final capture data re-anlayses |
+| [7](https://zenodo.org/records/17095902)  | **✨non-coding RNA annotation v1.0✨** | Final ncRNA annotation |
 
 Additional datasets are available in [Zenodo: Chromosome-level genome assembly of Triticum turgidum var 'Kronos' additional datasets](https://zenodo.org/records/15399687)
 | version                                   | Contents | Comments |
@@ -46,5 +47,5 @@ For clarity, here are the final versions of our datasets.
 • `NLR annotation`: Zenodo:15539721  
 • `Exome capture`: Zenodo:15801888 (MAPS) & Zenodo:15801566 (GATK)  
 • `promoter capture`: Zenodo:15801888 (MAPS)  & Zenodo: 15801566 (GATK)
-
+• `ncRNA annotation`: Zenodo 17095902
 
