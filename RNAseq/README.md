@@ -333,8 +333,6 @@ cpm_cutoffs_df
 
 **📥 Outputs**    
 • `NLR_GlobalrankPercentile`: median NLR percentile ranks per condition  
-
-**📥 Outputs**    
 • `NLR_CPM`: mean TMM-normalized CPM counts for NLRs per condition  
 
 ```
