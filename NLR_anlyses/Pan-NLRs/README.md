@@ -262,6 +262,38 @@ for prefix in */; do
 done
 ```
 
+----
+### 3. Ab initio prediction
+**📥 Inputs**  
+• `NLR_loci.fa`: Extracted NLR loci
+• `Kronos.collapsed.chromosomes.masked.v1.1.fa.mod.EDTA.intact.fa`: repeat annotations from EDTA
+
+**📥 Outputs**    
+• `augustus.gff3`: augustus prediction
+• `snap.gff3`: snap prediction
+
+
+⚙️ **Augustus on soft-masked genomes** 
+```
+RepeatMasker -pa 40 -xsmall -no_is -e rmblast -lib Kronos.collapsed.chromosomes.masked.v1.1.fa.mod.EDTA.intact.fa NLR_loci.fa
+augustus --species=Wheat_NLR --genemodel=complete --gff3=on --strand=both --softmasking=on NLR_loci.fa.masked > augustus.gff3
+```
+
+⚙️ **SNAP on hard-masked genomes** 
+```
+#convert softmask -> hardmask 
+snap Wheat_NLR.hmm NLR_loci.fa.masked.hardmasked > snap.zff
+zff2gff3.pl snap.zff > snap.gff3
+```
+
+----
+### 4. MAKER
+**📥 Inputs**  
+• `NLR_loci.fa`: Extracted NLR loci
+
+**📥 Outputs**    
+• `maker_v1.gff3`: maker prediction v1
+• `maker_v2.gff3`: maker prediction v2
 
 Then, gene models were predicted with maker. The evidence and ab initio predictors used is different from the Kronos NLR prediction.
 ```
@@ -359,3 +391,21 @@ for dir in */; do
 done
 
 ```
+
+
+snaphmm= #none
+augustus_species=Wheat_NLR
+
+V2 
+organism_type=eukaryotic
+est=/global/scratch/users/skyungyong/Kronos/NLR_annotations/Pan-NLRome/Evidence/hits.reduced.combined.reduced.est.fa 
+protein=/global/scratch/users/skyungyong/Kronos/NLR_annotations/Pan-NLRome/Evidence/proteins.fa
+
+rmlib=/global/scratch/users/skyungyong/Kronos/EDTA/Kronos.collapsed.chromosomes.masked.v1.1.fa.mod.EDTA.final/Kronos.collapsed.chromosomes.masked.v1.1.fa.mod.EDTA.TElib.fa
+repeat_protein=/global/scratch/users/skyungyong/Software/maker/data/te_proteins.fasta
+softmask=1
+
+snaphmm=/global/scratch/users/skyungyong/Kronos/NLR_annotations/Abinitio/Wheat_NLR.hmm
+augustus_species=Wheat_NLR
+
+### 5. Ab initio prediction
