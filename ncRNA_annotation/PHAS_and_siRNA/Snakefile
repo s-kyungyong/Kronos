@@ -1,0 +1,60 @@
+from snakemake.utils import min_version
+
+##### set minimum snakemake version #####
+min_version("7.3.8")
+
+##### set workdir #####
+#workdir: "/Users/sbelanger/data/"
+
+
+##### setup config #####
+#configfile: "config/config.yaml"
+
+
+##### setup report #####
+#report: "report/workflow.rst"
+
+
+#Declaring some variable required for the subsequent steps.
+##--------------------------------------------------------------------------------------##
+## Variables declaration
+## Declaring some variables used by tools available in this workflow...
+## (GTF file, INDEX, chromosome length)
+##--------------------------------------------------------------------------------------##
+workdir: "/Users/sbelanger/analysis/kronos/"
+CHR   = "/Users/sbelanger/data/{specie}/reference_2/genome/{specie}.dna.fasta.chromfile"
+FASTA = "/Users/sbelanger/data/{specie}/reference_2/genome/{specie}.dna.fasta"
+INDEX = "/Users/sbelanger/data/{specie}/reference_2/genome/{specie}.dna"
+
+##--------------------------------------------------------------------------------------##
+## The output files indicating which rules to run
+##--------------------------------------------------------------------------------------##
+
+
+SPECIES,SAMPLES, = glob_wildcards("/Users/sbelanger/data/{specie}/srna/clean/fastq/dcl5_RS_{sample}.fastq.gz")
+rule srna:
+    input:
+        expand('phasirna/{specie}/1align', zip, specie=SPECIES, sample=SAMPLES),
+
+
+        ### PhasiRNAs ###
+        expand('phasirna/{specie}/2call/', zip, specie=SPECIES),
+        expand('phasirna/{specie}/4coord/all.txt', zip, specie=SPECIES),
+        expand('phasirna/{specie}/4plots/mds.pdf', zip, specie=SPECIES),
+        expand('phasirna/{specie}/4plots/heat_phas21.pdf', zip, specie=SPECIES),
+
+
+        expand('phasirna/{specie}/5motif/4motif/21phasPRE/meme.txt', zip, specie=SPECIES),
+
+ 
+
+##### load rules #####
+include: "rules/phasirna_1_align.smk"
+include: "rules/phasirna_2_call.smk"
+include: "rules/phasirna_3_clean.smk"
+include: "rules/phasirna_4_annot.smk"
+include: "rules/phasirna_5_motif.smk"
+
+
+
+
