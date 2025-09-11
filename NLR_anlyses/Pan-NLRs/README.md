@@ -11,6 +11,7 @@ orfipy v0.0.4
 hmmsearch v3.4
 nlr-annotator v2.1b
 maker v3.01.03
+diamond v2.1.9
 ```
 
 
@@ -292,15 +293,19 @@ zff2gff3.pl snap.zff > snap.gff3
 ```
 
 ----
-### 4. Putative NLRs in *Triticum* IsoSeq data 
-**📥 Inputs**  
-• `long-read_transripts.list`: Isoseq data accessions
+### 4. Putative NLRs in *Triticum* IsoSeq data   
+**📥 Inputs**    
+• `long-read_transripts.list`: Isoseq data accessions 
+• `Kronos_NBARC.hmm`: Kronos-specific NBARC HMM profile
 
-**📥 Outputs**    
-• `Putative_NLRs_in_Triticum_IsoSeq.aa.fa`: putative NLR sequences in Isoseq data (protein sequencues)
-• `Putative_NLRs_in_Triticum_IsoSeq.transcripts.fa`: putative NLR sequences in Isoseq data (transcript sequencues)
 
-⚙️ **Transcript evidence** 
+**📥 Outputs**     
+• `Putative_NLRs_in_Triticum_IsoSeq.aa.fa`: putative NLR sequences in Isoseq data (protein sequences)  
+• `Putative_NLRs_in_Triticum_IsoSeq.transcripts.fa`: putative NLR sequences in Isoseq data (transcript sequences)    
+• `Putative_NLRs_in_Triticum_IsoSeq.aa.complete.hc.aa.fa`: filtered NLR sequences in Isoseq data (protein sequences)    
+• `Putative_NLRs_in_Triticum_IsoSeq.aa.complete.hc.transcripts.fa`: filtered NLR sequences in Isoseq data (protein sequences)    
+
+⚙️ **Non redundant transcript evidence** 
 ```
 #download isoseq data for triticum in long-read_transripts.list, using fasterq-dump
 while read -r accession; do
@@ -337,19 +342,36 @@ for fa in ../*.fasta; do
 done
 ```
 
+⚙️ **Confidence transcript evidence** 
+```
+#one more filtering was run
+#chose sequences if they begin with a start codon and end with a stop ocodon 
+python pick_complete_transcripts.py Putative_NLRs_in_Triticum_IsoSeq.aa.fa Putative_NLRs_in_Triticum_IsoSeq.aa.complete.fa 
+
+#compare to reliable Kronos NLRs
+diamond makedb --in Kronos.NLRs.reliable.fa --db Kronos.NLRs.reliable.dmnd
+diamond blastp --query Putative_NLRs_in_Triticum_IsoSeq.aa.complete.fa --db Kronos.NLRs.reliable.dmnd \
+               --max-target-seqs 1 --evalue 1e-10 --threads 56 --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen
+               --out Putative_NLRs_in_Triticum_IsoSeq.aa.complete.against.dmnd.out
+python pick_high_covNLRs.py # pick sequences if ≥ 90% coverage compare to kronos
+ ```
+
+
 ----
 ### 5. MAKER
 **📥 Inputs**  
-• `NLR_loci.fa`: Extracted NLR loci
-• `long-read_transripts.list`: Isoseq data accessions
-• `Kronos_NBARC.hmm`: Kronos-specific NBARC HMM profile
+• `NLR_loci.fa`: Extracted NLR loci  
+• `Putative_NLRs_in_Triticum_IsoSeq.transcripts.fa`: putative NLR sequences in Isoseq data (transcript sequences)    
+• `Putative_NLRs_in_Triticum_IsoSeq.aa.complete.hc.transcripts.fa`: filtered NLR sequences in Isoseq data (protein sequences)    
+• `proteins.fa`: Kronos reliable NLRs + RefPlantNLR (Kourelis et al., 2021)   
+• `Kronos.collapsed.chromosomes.masked.v1.1.fa.mod.EDTA.TElib.fa`: EDTA-derived repeat annotations   
+
 
 **📥 Outputs**    
 • `maker_v1.gff3`: maker prediction v1
 • `maker_v2.gff3`: maker prediction v2
 
-
-
+⚙️ **Split fasta** 
 For each locus, a separate directory was made to run maker in parallel. We ran > 500 jobs at the same time to speed up this step. This still took over 3 days. 
 ```
 #for each genome
@@ -366,10 +388,44 @@ for fa in *.fa; do
   prefix="${fa%.fa}"  # Extract prefix by removing ".fa"
   mkdir -p "$prefix"
   mv "$fa" "$prefix"/
-  cp /global/scratch/users/skyungyong/Kronos/NLR_annotations/Pan-NLRome/Evidence/maker* "$prefix"/ #copy control files
-#  maker -RM_off -genome ${dir}.fa 
+  cp ./Pan-NLRome/Evidence/maker* "$prefix"/ #copy control files
+  maker -RM_off -genome ${dir}.fa #for version 1 annotation
+  maker -genome ${dir}.fa #for version 2 annotation 
 done
 ```
+
+⚙️ **V1 annotation** 
+```
+#evidence for annotations
+est=Putative_NLRs_in_Triticum_IsoSeq.aa.complete.hc.transcripts.fa
+protein=proteins.fa
+
+#no repeat masking 
+rmlib= #
+repeat_protein= #
+
+#only use augustus 
+snaphmm=
+augustus_species=Wheat_NLR
+```
+
+⚙️ **V2 annotation** 
+```
+#evidence for annotations
+est=Putative_NLRs_in_Triticum_IsoSeq.transcripts.fa
+protein=proteins.fa
+
+#mask genome using maker 
+rmlib=Kronos.collapsed.chromosomes.masked.v1.1.fa.mod.EDTA.TElib.fa
+repeat_protein=te_proteins.fasta #this is within the MAKER installation folder 
+softmask=1
+
+#use snap and augustus
+snaphmm=Wheat_NLR.hmm
+augustus_species=Wheat_NLR
+```
+
+
 
 Once all jobs were finished, gff3 files were collected and genes were extracted. 
 ```
