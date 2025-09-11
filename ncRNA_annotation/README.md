@@ -226,5 +226,5 @@ python tRNA_gff.py
 
 ---
 ### 5. phasiRNA Annotation  
-• Please refer to this folder: PHAS_and_siRNA  
+• Please refer to this folder: [PHAS_and_siRNA](https://github.com/s-kyungyong/Kronos/tree/main/ncRNA_annotation/PHAS_and_siRNA)
 
