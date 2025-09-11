@@ -425,9 +425,7 @@ snaphmm=Wheat_NLR.hmm
 augustus_species=Wheat_NLR
 ```
 
-
-
-Once all jobs were finished, gff3 files were collected and genes were extracted. 
+⚙️ **Output collection** 
 ```
 #create gff3 outputs
 ls -d * | parallel -j 40 'gff3_merge -d "{}/{}.maker.output/{}_master_datastore_index.log" -o "{}/{}.gff3" && echo "Processed: {}"'
@@ -438,40 +436,32 @@ find split_genome -type f -name "*.gff3" -print0 | xargs -0 mv -t raw_gff/
 #combine gene annotations into a single gff3 file
 find raw_gff -type f -name "*.gff3" -exec grep -E 'gene|exon|mRNA|CDS' {} + | awk '$3 == "gene" || $3 == "exon" || $3 == "mRNA" || $3 == "CDS"' | cut -d ":" -f 2- > NLR_loci.maker.gff3
 
-awk -F ':' '{print $2}' NLR_loci.maker.gff3 > cleaned_NLR_loci.maker.gff3
-
-#get protein sequences
-for dir in */; do
-    if [[ -d "$dir" ]]; then
-        pushd "$dir" || continue
-        if [[ -f "NLR_loci.maker.gff3" && -f "NLR_loci.fa" ]]; then
-            cut -d ":" -f 2- NLR_loci.maker.gff3 > cleaned_NLR_loci.maker.gff3
-            gffread -x NLR_loci.maker.cds.fa -y NLR_loci.maker.pep.fa -g NLR_loci.fa cleaned_NLR_loci.maker.gff3
-            hmmsearch --domtblout NLR_loci.maker.pep.against.Kronos_NBARC.hmm.out -E 1e-4 --domE 1e-4 --cpu 56 /global/scratch/users/skyungyong/Kronos/NLR_annotations/HMM/Kronos_NBARC.hmm NLR_loci.maker.pep.fa
-            diamond blastp -q NLR_loci.maker.pep.fa -d /global/scratch/users/skyungyong/Kronos/NLR_annotations/HMM/blastdb/Kronos.NLRs.reliable.dmnd --evalue 1e-4 --masking 0 --max-target-seqs 1 --max-hsps 1 --threads 56 --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen -o NLR_loci.maker.pep.against.Kronos_NBARC.dmnd.out
-        else
-            echo "Skipping $dir: Required files not found."
-        fi
-        popd
-    fi
-done
-
+awk -F ':' '{print $2}' NLR_loci.maker.gff3 > cleaned_NLR_loci.maker.gff3 #renamed to maker_v1.gff3 and maker_v2.gff3
 ```
 
+### 5. Filtering
+**📥 Inputs**    
+• `maker_v1.gff3`: maker prediction v1
+• `maker_v2.gff3`: maker prediction v2
+• `augustus.gff3`: augustus prediction  
+• `snap.gff3`: snap prediction  
 
-snaphmm= #none
-augustus_species=Wheat_NLR
+**📥 Outputs**    
+• `NLR_evaluation.tsv`: classification output
+• `*.filtered.putative_nlrs.fa`: filtered NLRs per genome
 
-V2 
-organism_type=eukaryotic
-est=/global/scratch/users/skyungyong/Kronos/NLR_annotations/Pan-NLRome/Evidence/hits.reduced.combined.reduced.est.fa 
-protein=/global/scratch/users/skyungyong/Kronos/NLR_annotations/Pan-NLRome/Evidence/proteins.fa
+```
+#for each gff3
+gffread -g NLR_loci.fa -x {prefix}.cds.fa -y {prefix}.pep.fa NLR_loci.{prefix}.gff3
+diamond blastp -q {prefix}.pep.fa -d Putative_NLRs_in_Triticum_IsoSeq.aa.complete.hc.aa.fa.dmnd \
+               --evalue 1e-4 --masking 0 --max-target-seqs 1 --max-hsps 1 --threads 40 --outfmt 5 -o {prefix}.pep.against.est.dmnd.out
+diamond blastp -q {prefix}.pep.fa -d Kronos.NLRs.reliable.dmnd --evalue 1e-4 --masking 0 \
+               --max-target-seqs 1 --max-hsps 1 --threads 40 --outfmt 5 -o {prefix}.pep.against.kronos.dmnd.out
+```
 
-rmlib=/global/scratch/users/skyungyong/Kronos/EDTA/Kronos.collapsed.chromosomes.masked.v1.1.fa.mod.EDTA.final/Kronos.collapsed.chromosomes.masked.v1.1.fa.mod.EDTA.TElib.fa
-repeat_protein=/global/scratch/users/skyungyong/Software/maker/data/te_proteins.fasta
-softmask=1
-
-snaphmm=/global/scratch/users/skyungyong/Kronos/NLR_annotations/Abinitio/Wheat_NLR.hmm
-augustus_species=Wheat_NLR
-
-### 5. Ab initio prediction
+```
+#once the similarity search results are done, one NLR per loci can be picked with this script
+#this sort of mimic classification during manual curation
+#though it is not the best way, a goal here was to filter out puative pseudogenes to reduce noise. 
+pick_best_per_loci.py
+```
