@@ -1,7 +1,7 @@
 from Bio import SeqIO
 
 input = "Putative_NLRs_in_Triticum_IsoSeq.aa.complete.fa"
-output = "Putative_NLRs_in_Triticum_IsoSeq.aa.complete.hc.fa"
+output = "Putative_NLRs_in_Triticum_IsoSeq.aa.complete.hc.aa.fa"
 dmnd  = "Putative_NLRs_in_Triticum_IsoSeq.aa.complete.against.dmnd.out"
 
 with open(output, 'w') as o:
