@@ -222,14 +222,9 @@ python tRNA_gff.py
 ---
 
 ### 4. miRNA Annotation
-**📥 Inputs**  
-• Refer to this GitHub [repository](https://github.com/joweihsieh/Kronos_miRNA_blastn).
+• Please refer to this GitHub [repository](https://github.com/joweihsieh/Kronos_miRNA_blastn).
 
-**📥 Outputs**  
-• `miRNAs.final.gff3`: miRNA annotation outputs
-
-```
-please refer to Pipeline.sh in the repository above. 
-```
-
+---
+### 5. phasiRNA Annotation  
+• Please refer to this folder: PHAS_and_siRNA  
 
