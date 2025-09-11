@@ -7,6 +7,10 @@ augustus v3.3.3
 snap v2006-07-28
 seqkit v2.8.2
 cd-hit v4.8.1
+orfipy v0.0.4
+hmmsearch v3.4
+nlr-annotator v2.1b
+maker v3.01.03
 ```
 
 
@@ -263,14 +267,15 @@ done
 ```
 
 ----
-### 3. Ab initio prediction
-**📥 Inputs**  
-• `NLR_loci.fa`: Extracted NLR loci
-• `Kronos.collapsed.chromosomes.masked.v1.1.fa.mod.EDTA.intact.fa`: repeat annotations from EDTA
+### 3. Ab initio prediction  
+
+**📥 Inputs**    
+• `NLR_loci.fa`: Extracted NLR loci  
+• `Kronos.collapsed.chromosomes.masked.v1.1.fa.mod.EDTA.intact.fa`: repeat annotations from EDTA  
 
 **📥 Outputs**    
-• `augustus.gff3`: augustus prediction
-• `snap.gff3`: snap prediction
+• `augustus.gff3`: augustus prediction  
+• `snap.gff3`: snap prediction  
 
 
 ⚙️ **Augustus on soft-masked genomes** 
@@ -287,23 +292,17 @@ zff2gff3.pl snap.zff > snap.gff3
 ```
 
 ----
-### 4. MAKER
+### 4. Putative NLRs in *Triticum* IsoSeq data 
 **📥 Inputs**  
-• `NLR_loci.fa`: Extracted NLR loci
+• `long-read_transripts.list`: Isoseq data accessions
 
 **📥 Outputs**    
-• `maker_v1.gff3`: maker prediction v1
-• `maker_v2.gff3`: maker prediction v2
+• `Putative_NLRs_in_Triticum_IsoSeq.aa.fa`: putative NLR sequences in Isoseq data (protein sequencues)
+• `Putative_NLRs_in_Triticum_IsoSeq.transcripts.fa`: putative NLR sequences in Isoseq data (transcript sequencues)
 
-Then, gene models were predicted with maker. The evidence and ab initio predictors used is different from the Kronos NLR prediction.
+⚙️ **Transcript evidence** 
 ```
-est evidence: transcript assemblies from stringtie that combined short and long-read transcriptome alignments. This was produced in the v2.0 annotation.
-protein evidence: reliably curated Kronos NLRs, cloned functional NLRs, and NLRs from RefPlantNLR
-ab initio prediction: Wheat_NLR, trained above.
-```
-
-Let's first create the evidence datasets. We can capture NLR sequences from long-read transcriptome data in **long-read_transripts.list**.
-```
+#download isoseq data for triticum in long-read_transripts.list, using fasterq-dump
 while read -r accession; do
     fa=${accession}.fasta
     
@@ -313,33 +312,44 @@ while read -r accession; do
     
     #serch for nbarc domains and extract the hits
     hmmsearch --domtblout prot.fa.against.Kronos_NBARC.hmm.out --cpu 56 -E 1E-4 --domE 1e-4 orfipy_${fa}_out Kronos_NBARC.hmm prot.fa
-    seqkit grep -f <(awk '!/^#/ {print $1}' prot.fa.against.Kronos_NBARC.hmm.out | sort -u) prot.fa > hits.fasta
+    seqkit grep -f <(awk '!/^#/ {print $1}' prot.fa.against.Kronos_NBARC.hmm.out | sort -u prot.fa > hits.fasta
     
     #remove the exact matches 
     cd-hit -c 1 -T 40 -i hits.fasta -o hits.reduced.fasta
     cd ..
 done < long-read_transcripts.list
-```
 
-Combine all hits and remove exact matches again
-```
+
 #concatnate all NBARC-containging sequences into a single file
 cat *.fasta_out/hits.reduced.fasta > all_hits/hits.reduced.combined.fa
 
 #remove redundancy and reextract the hits 
 cd-hit -c 1.0 -M 6000000 -T 40 -i hits.reduced.combined.fa -o hits.reduced.combined.reduced.fa
-seqkit grep -f <( grep ">" hits.reduced.combined.reduced.fa | cut -d "_" -f 1 | sort -u) ../*.fasta > hits.reduced.combined.reduced.est.fa
-grep ">" hits.reduced.combined.reduced.fa | cut -d "_" -f 1 | sort -u | sed 's/>//g' > hit_ids.txt
+seqkit grep -f <( grep ">" hits.reduced.combined.reduced.fa | cut -d "_" -f 1 | sort -u) ../*.fasta > Putative_NLRs_in_Triticum_IsoSeq.aa.fa
+grep ">" Putative_NLRs_in_Triticum_IsoSeq.aa.fa | cut -d "_" -f 1 | sort -u | sed 's/>//g' > hit_ids.txt
 awk -F"[_\\.]" '{gsub(/^>/, "", $1); print $1"."$2 > "hit_ids_"$1".txt"}' hit_ids.txt
 
 for fa in ../*.fasta; do
     prefix=$(basename "$fa" .fasta)
     if [ -f "hit_ids_${prefix}.txt" ]; then
-        seqkit grep -f "hit_ids_${prefix}.txt" "$fa" >> hits.reduced.combined.reduced.est.fa
+        seqkit grep -f "hit_ids_${prefix}.txt" "$fa" >> Putative_NLRs_in_Triticum_IsoSeq.transcripts.fa
     fi
 done
 ```
- 
+
+----
+### 5. MAKER
+**📥 Inputs**  
+• `NLR_loci.fa`: Extracted NLR loci
+• `long-read_transripts.list`: Isoseq data accessions
+• `Kronos_NBARC.hmm`: Kronos-specific NBARC HMM profile
+
+**📥 Outputs**    
+• `maker_v1.gff3`: maker prediction v1
+• `maker_v2.gff3`: maker prediction v2
+
+
+
 For each locus, a separate directory was made to run maker in parallel. We ran > 500 jobs at the same time to speed up this step. This still took over 3 days. 
 ```
 #for each genome
