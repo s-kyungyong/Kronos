@@ -1,0 +1,5 @@
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - bioinfokit=2.0.8

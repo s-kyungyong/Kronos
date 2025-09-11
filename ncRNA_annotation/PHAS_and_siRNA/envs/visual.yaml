@@ -1,0 +1,7 @@
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - seaborn==0.11.2
+  - meme==5.4.1
+  - weblogo==3.7.9
