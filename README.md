@@ -7,6 +7,7 @@
 ---
 ## Databases
 
+[GrainGenes](https://graingenes.org/GG3/)
 
 ---
 ## Data Sharing through Zenodo
@@ -30,22 +31,14 @@ Additional datasets are available in [Zenodo: Chromosome-level genome assembly o
 | [2](https://zenodo.org/records/15539721)  | **✨NLR annotations✨** | Final NLR annotation | 
 | [3](https://zenodo.org/records/15644987)  | **✨Haplotype-resolved assembly✨** | Final haplotype-resolved assembly (contigs) | 
 | [4](https://zenodo.org/records/15801566)  | **✨Mutation calls from exome and promoter capture sequencing data (GATK)✨** | Final capture data re-anlayses |
+| [5](https://zenodo.org/records/17109839)  | **✨NLR prediction across wheat genomes ✨** | Final cross-species wheat NLR data |
 
 ## Data Sharing through NCBI
 Sequencing data were deposted in the NCBI under the BioProject assession, PRJNA1213727. The following runs include:  
-• `HiFi reads`: SRR32063042  
-• `PacBio sequencing data (bam)`: SRR32063043  
-• `Hi-C data`: SRR32063044  
+| accession                                   | Contents | format |
+|-------------------------------------------|---------|-----------|
+| SRR32063042  | HiFi reads  | fastq |
+| SRR32063043  | HiFi reads  | bam | 
+| SRR32063044  | Hi-C reads | fastq | 
 
----
-## Final Versions
-For clarity, here are the final versions of our datasets.
-
-• `Genome assembly v1.1`: Zenodo:11106422  
-• `Genome annoation v2.1`: Zenodo:15539216  
-• `Repeat annotation`: Zenodo:15399687  
-• `NLR annotation`: Zenodo:15539721  
-• `Exome capture`: Zenodo:15801888 (MAPS) & Zenodo:15801566 (GATK)  
-• `promoter capture`: Zenodo:15801888 (MAPS)  & Zenodo: 15801566 (GATK)
-• `ncRNA annotation`: Zenodo 17095902
 
