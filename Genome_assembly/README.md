@@ -130,6 +130,11 @@ jellyfish count -C -m 21 -s 50000000000 -t 20 Kronos.HiFi.filt.fastq -o kmer_cou
 jellyfish histo -h 5000000 -t 20 kmer_counts.jf > reads.histo
 
 genomescope2 -p 4 -i reads.histo -o genomescope --verbose  
+
+#for large k-mers (k=71 and 101)
+kmc -k101 -t56 -m512 -ci1 -cs10000 @FILES reads tmp/
+kmc_tools transform reads histogram reads.histo -cx10000
+genomescope2 -p 4 -k 101 -i reads.histo -o genomescope --verbose  
 ```
 ⚙️ **Comparison to Svevo**    
 The same analysis was performed for Svevo for comparison.
