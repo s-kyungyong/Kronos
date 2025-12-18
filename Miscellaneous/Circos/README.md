@@ -14,8 +14,21 @@ bedtools v2.31.1
 ### 1. Chromosomal synteny 
 
 ```
+#DNA-based
 #for each chromosome pairs, $chr1 and $chr2
 minimap2 -f 0.05 -t 40 -x asm10 Kronos.collapsed.chromosomes.masked.v1.1.${chr1}.fa Kronos.collapsed.chromosomes.masked.v1.1.${chr2}.fa > ${chr1}_vs_${chr2}.minimap.paf
+```
+
+```
+#protein-based
+diamond makedb --in genomeA.protein.faa -d A
+diamond makedb --in genomeB.protein.faa -d B
+
+# reciprocal search (recommended)
+diamond blastp -d A -q genomeB.protein.faa -o B_vs_A.m8 -f 6 qseqid sseqid pident length evalue bitscore -p 24
+diamond blastp -d B -q genomeA.protein.faa -o A_vs_B.m8 -f 6 qseqid sseqid pident length evalue bitscore -p 24
+
+cat A_vs_B.m8 B_vs_A.m8 > all_vs_all.m8
 ```
 
 ```
