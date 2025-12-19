@@ -21,14 +21,28 @@ minimap2 -f 0.05 -t 40 -x asm10 Kronos.collapsed.chromosomes.masked.v1.1.${chr1}
 
 ```
 #protein-based
-diamond makedb --in genomeA.protein.faa -d A
-diamond makedb --in genomeB.protein.faa -d B
+diamond makedb --in Kronos.v2.1.pep.longest.fa -d Kronos.v2.1.pep.longest.dmnd
 
-# reciprocal search (recommended)
-diamond blastp -d A -q genomeB.protein.faa -o B_vs_A.m8 -f 6 qseqid sseqid pident length evalue bitscore -p 24
-diamond blastp -d B -q genomeA.protein.faa -o A_vs_B.m8 -f 6 qseqid sseqid pident length evalue bitscore -p 24
+diamond blastp -q Kronos.v2.1.pep.longest.fa -d Kronos.v2.1.pep.longest.dmnd \
+               -o Kronos.blast -f 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore \
+               --masking 0 --max-target-seqs 5 --evalue 1e-10 --threads 56
+MCScanX -b 0 -a Kronos
 
-cat A_vs_B.m8 B_vs_A.m8 > all_vs_all.m8
+##reformat collinearity -> anchor: 3 fields, with block sepearted by #
+head Kronos.anchor
+#
+TrturKRN1A02G023390.2   TrturKRN4A02G051510.1   0
+TrturKRN1A02G023410.1   TrturKRN4A02G051580.1   9e-52
+TrturKRN1A02G023550.1   TrturKRN4A02G051780.1   9e-117
+TrturKRN1A02G023900.1   TrturKRN4A02G051980.1   7e-126
+TrturKRN1A02G023920.1   TrturKRN4A02G052210.1   2e-27
+TrturKRN1A02G023940.1   TrturKRN4A02G052270.1   1e-169
+TrturKRN1A02G024020.1   TrturKRN4A02G052410.1   0
+TrturKRN1A02G024030.1   TrturKRN4A02G052440.1   5e-266
+#
+
+#minimum 10 gene blocks
+python -m jcvi.compara.synteny screen Kronos.anchor --minspan=10 Kronos.jcvi.anchors --qbed=Kronos.bed --sbed=Kronos.bed
 ```
 
 ```
