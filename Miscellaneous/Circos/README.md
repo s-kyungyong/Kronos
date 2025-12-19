@@ -88,6 +88,12 @@ done
 cat *.links.txt > 00.synteny_links.txt
 ```
 
+```
+#for protein
+python block2link.py
+```
+
+
 ### 2. Repeat density
 ```
 #hard mask genomes using annotated repeats in Kronos.collapsed.chromosomes.masked.v1.1.fa.mod.EDTA.TEanno.gff3
