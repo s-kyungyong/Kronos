@@ -1,5 +1,5 @@
 
-# Protein-coding Gene Preidction
+# Protein-coding Gene Prediction
 
 ## Data availability 
 Protein coding genes can be downloaded from Zenodo.  
